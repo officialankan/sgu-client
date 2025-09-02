@@ -1,19 +1,9 @@
 """Base model classes for SGU Client."""
 
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
+import pandas as pd
 from pydantic import BaseModel, ConfigDict
-
-if TYPE_CHECKING:
-    import pandas as pd
-
-try:
-    import pandas as pd
-
-    HAS_PANDAS = True
-except ImportError:
-    HAS_PANDAS = False
-    pd = None
 
 
 class SGUBaseModel(BaseModel):
@@ -36,20 +26,11 @@ class SGUResponse(SGUBaseModel):
         """Convert to dictionary."""
         return self.model_dump()
 
-    def to_dataframe(self) -> "pd.DataFrame | None":
-        """Convert to pandas DataFrame if pandas is available.
+    def to_dataframe(self) -> pd.DataFrame:
+        """Convert to pandas DataFrame.
 
         Returns:
-            DataFrame if pandas is installed, None otherwise
-
-        Raises:
-            ImportError: If pandas is not available
+            DataFrame with the data
         """
-        if not HAS_PANDAS:
-            raise ImportError(
-                "pandas is required for to_dataframe(). "
-                "Install with: uv add 'sgu-client[recommended]'"
-            )
-
         # This will be implemented by subclasses
         raise NotImplementedError("Subclasses must implement to_dataframe()")

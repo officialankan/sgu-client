@@ -8,7 +8,7 @@ class SGUConfig(BaseModel):
 
     # HTTP settings
     base_url: str = Field(
-        default="https://resource.sgu.se/produkter/historiska-data/api",
+        default="https://api.sgu.se/oppnadata/grundvattennivaer-observerade/ogc/features/v1/",
         description="Base URL for SGU API",
     )
     timeout: float = Field(
