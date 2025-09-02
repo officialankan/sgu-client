@@ -1,5 +1,7 @@
 """Basic tests for observed groundwater levels endpoints."""
 
+from datetime import datetime
+
 from sgu_client import SGUClient
 from sgu_client.models.observed import GroundwaterMeasurement, GroundwaterStation
 
@@ -32,6 +34,7 @@ def test_get_measurement_by_id() -> None:
     assert isinstance(measurement, GroundwaterMeasurement)
     assert measurement.id == TEST_MEASUREMENT_ID
     assert measurement.properties.metod_for_matning == TEST_MEASUREMENT_METOD_FOR_M
+    assert isinstance(measurement.properties.observation_date, datetime)
 
 
 def test_stations_to_dataframe() -> None:
