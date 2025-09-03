@@ -1,6 +1,6 @@
 """Levels client module."""
 
-from .modeled import ModeledGroundwaterLevelsClient
+from .modeled import ModeledGroundwaterLevelClient
 from .observed import ObservedGroundwaterLevelClient
 
 
@@ -13,7 +13,8 @@ class LevelsClient:
     Example:
         >>> client = SGUClient()
         >>> stations = client.levels.observed.get_stations()
-        >>> measurements = client.levels.modeled.get_measurements()
+        >>> areas = client.levels.modeled.get_areas()
+        >>> levels = client.levels.modeled.get_levels()
     """
 
     def __init__(self, base_client):
@@ -23,7 +24,7 @@ class LevelsClient:
             base_client: The base HTTP client instance.
         """
         self.observed = ObservedGroundwaterLevelClient(base_client)
-        self.modeled = ModeledGroundwaterLevelsClient(base_client)
+        self.modeled = ModeledGroundwaterLevelClient(base_client)
 
 
 __all__ = ["LevelsClient"]

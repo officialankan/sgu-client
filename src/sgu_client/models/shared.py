@@ -35,5 +35,12 @@ class Polygon(SGUBaseModel):
     coordinates: list[list[list[float]]]
 
 
+class MultiPolygon(SGUBaseModel):
+    """GeoJSON MultiPolygon geometry."""
+
+    type: Literal["MultiPolygon"] = "MultiPolygon"
+    coordinates: list[list[list[list[float]]]]
+
+
 # Union type for all geometry types
-Geometry = Point | MultiPoint | LineString | Polygon
+Geometry = Point | MultiPoint | LineString | Polygon | MultiPolygon
