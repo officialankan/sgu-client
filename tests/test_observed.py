@@ -3,6 +3,7 @@
 from datetime import UTC, datetime
 
 import pytest
+from pandas.api.types import is_datetime64_any_dtype as is_datetime
 
 from sgu_client import SGUClient
 from sgu_client.models.observed import (
@@ -376,3 +377,7 @@ def test_measurements_to_dataframe() -> None:
         platsbeteckning == TEST_STATION_PLATSBETECKNING
         for platsbeteckning in df["platsbeteckning"].tolist()
     )
+
+    # Assert that it is sorted by 'observation_date'
+    assert is_datetime(df["observation_date"])
+    assert df["observation_date"].is_monotonic_increasing
