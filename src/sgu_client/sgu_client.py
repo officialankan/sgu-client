@@ -32,10 +32,20 @@ class SGUClient:
         self.levels = LevelsClient(self._base_client)
 
     def __enter__(self):
-        """Context manager entry."""
+        """Context manager entry.
+        
+        Returns:
+            The SGU client instance for use in with statements
+        """
         self._base_client.__enter__()
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        """Context manager exit."""
+        """Context manager exit - clean up resources.
+        
+        Args:
+            exc_type: Exception type (if any)
+            exc_val: Exception value (if any)
+            exc_tb: Exception traceback (if any)
+        """
         self._base_client.__exit__(exc_type, exc_val, exc_tb)

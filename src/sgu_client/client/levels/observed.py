@@ -147,7 +147,7 @@ class ObservedGroundwaterLevelClient:
     def get_station_by_name(
         self, platsbeteckning: str | None = None, obsplatsnamn: str | None = None
     ) -> GroundwaterStation:
-        """Convinence function to get a station by name ('platsbeteckning' or 'obsplatsnamn').
+        """Convenience function to get a station by name ('platsbeteckning' or 'obsplatsnamn').
 
         Args:
             platsbeteckning: Station 'platsbeteckning' value
@@ -155,6 +155,10 @@ class ObservedGroundwaterLevelClient:
 
         Returns:
             Typed groundwater monitoring station
+
+        Raises:
+            ValueError: If neither parameter is provided, both are provided,
+                       or if multiple stations are found
         """
         if not platsbeteckning and not obsplatsnamn:
             raise ValueError(

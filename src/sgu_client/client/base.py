@@ -130,19 +130,57 @@ class BaseClient:
     def get(
         self, endpoint: str, params: dict[str, Any] | None = None, **kwargs
     ) -> dict[str, Any]:
-        """Make a GET request."""
+        """Make a GET request.
+        
+        Args:
+            endpoint: API endpoint path
+            params: Query parameters
+            **kwargs: Additional arguments passed to requests
+            
+        Returns:
+            JSON response data
+            
+        Raises:
+            SGUConnectionError: If connection fails
+            SGUTimeoutError: If request times out
+            SGUAPIError: If API returns an error
+        """
         return self._make_request("GET", endpoint, params=params, **kwargs)
 
     def post(
         self, endpoint: str, data: dict[str, Any] | None = None, **kwargs
     ) -> dict[str, Any]:
-        """Make a POST request."""
+        """Make a POST request.
+        
+        Args:
+            endpoint: API endpoint path
+            data: Request body data
+            **kwargs: Additional arguments passed to requests
+            
+        Returns:
+            JSON response data
+            
+        Raises:
+            SGUConnectionError: If connection fails
+            SGUTimeoutError: If request times out
+            SGUAPIError: If API returns an error
+        """
         return self._make_request("POST", endpoint, data=data, **kwargs)
 
     def __enter__(self):
-        """Context manager entry."""
+        """Context manager entry.
+        
+        Returns:
+            The client instance for use in with statements
+        """
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        """Context manager exit - close session."""
+        """Context manager exit - clean up resources.
+        
+        Args:
+            exc_type: Exception type (if any)
+            exc_val: Exception value (if any)  
+            exc_tb: Exception traceback (if any)
+        """
         self._session.close()
