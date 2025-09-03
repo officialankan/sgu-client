@@ -1,8 +1,7 @@
 """Main SGU Client class."""
 
 from .client.base import BaseClient
-from .client.levels.modeled import ModeledGroundwaterLevelsClient
-from .client.levels.observed import ObservedGroundwaterLevelClient
+from .client.levels import LevelsClient
 from .config import SGUConfig
 
 
@@ -13,8 +12,8 @@ class SGUClient:
 
     Example:
         >>> client = SGUClient()
-        >>> data = client.groundwater.get_measurements(station_id="12345")
-        >>> stations = client.groundwater.get_stations()
+        >>> stations = client.levels.observed.get_stations()
+        >>> measurements = client.levels.observed.get_measurements()
 
         >>> # With custom config
         >>> config = SGUConfig(timeout=60, debug=True)
@@ -30,8 +29,7 @@ class SGUClient:
         self._base_client = BaseClient(config)
 
         # Initialize sub-clients
-        self.observed_levels = ObservedGroundwaterLevelClient(self._base_client)
-        self.modeled_levels = ModeledGroundwaterLevelsClient(self._base_client)
+        self.levels = LevelsClient(self._base_client)
 
     def __enter__(self):
         """Context manager entry."""
