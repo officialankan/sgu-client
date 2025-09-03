@@ -189,7 +189,9 @@ class GroundwaterStationCollection(SGUResponse):
     links: list[Link] | None = Field(None, description="Related links")
     crs: CRS | None = Field(None, description="Coordinate reference system")
 
-    def to_dataframe(self) -> pd.DataFrame:
+    def to_dataframe(
+        self,
+    ) -> pd.DataFrame:
         """Convert to pandas DataFrame with flattened station properties."""
 
         data = []
@@ -231,8 +233,15 @@ class GroundwaterMeasurementCollection(SGUResponse):
     links: list[Link] | None = Field(None, description="Related links")
     crs: CRS | None = Field(None, description="Coordinate reference system")
 
-    def to_dataframe(self) -> pd.DataFrame:
-        """Convert to pandas DataFrame with measurement data."""
+    def to_dataframe(self, sort_by_date: bool = True) -> pd.DataFrame:
+        """Convert to pandas DataFrame with measurement data.
+
+        Args
+            sort_by_date: Whether to sort the DataFrame by observation date.
+
+        Returns
+            pd.DataFrame: DataFrame containing measurement data.
+        """
 
         data = []
         for feature in self.features:
@@ -259,4 +268,7 @@ class GroundwaterMeasurementCollection(SGUResponse):
             row.update(feature.properties.model_dump())
             data.append(row)
 
-        return pd.DataFrame(data)
+        df = pd.DataFrame(data)
+        if sort_by_date:
+            df = df.sort_values(by="observation_date")
+        return df
