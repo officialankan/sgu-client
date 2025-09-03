@@ -1,5 +1,7 @@
 """Observed groundwater level client endpoints."""
 
+import logging
+from datetime import datetime
 from typing import Any
 
 from sgu_client.client.base import BaseClient
@@ -9,6 +11,8 @@ from sgu_client.models.observed import (
     GroundwaterStation,
     GroundwaterStationCollection,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class ObservedGroundwaterLevelClient:
@@ -205,6 +209,144 @@ class ObservedGroundwaterLevelClient:
 
         return self.get_stations(filter_expr=filter_expr)
 
+    def get_measurements_by_name(
+        self,
+        platsbeteckning: str | None = None,
+        obsplatsnamn: str | None = None,
+        tmin: str | datetime | None = None,
+        tmax: str | datetime | None = None,
+        limit: int | None = None,
+        **kwargs: Any,
+    ) -> GroundwaterMeasurementCollection:
+        """Get measurements for a specific station by name with optional time filtering.
+
+        Args:
+            platsbeteckning: Station 'platsbeteckning' value
+            obsplatsnamn: Station 'obsplatsnamn' value
+            tmin: Start time (ISO string or datetime object)
+            tmax: End time (ISO string or datetime object)
+            limit: Maximum number of measurements to return
+            **kwargs: Additional query parameters
+
+        Returns:
+            Typed collection of groundwater level measurements
+
+        Raises:
+            ValueError: If neither or both name parameters are provided,
+                       or if station lookup fails
+        """
+        if not platsbeteckning and not obsplatsnamn:
+            raise ValueError(
+                "Either 'platsbeteckning' or 'obsplatsnamn' must be provided."
+            )
+        if platsbeteckning and obsplatsnamn:
+            raise ValueError(
+                "Only one of 'platsbeteckning' or 'obsplatsnamn' can be provided."
+            )
+
+        # If obsplatsnamn provided, look up the station to get platsbeteckning
+        if obsplatsnamn:
+            logger.warning(
+                "Using 'obsplatsnamn' requires an additional API request to lookup the station. "
+                "For better performance, use 'platsbeteckning' directly if available."
+            )
+            station = self.get_station_by_name(obsplatsnamn=obsplatsnamn)
+            target_platsbeteckning = station.properties.platsbeteckning
+            if not target_platsbeteckning:
+                raise ValueError(
+                    f"Station with obsplatsnamn '{obsplatsnamn}' has no platsbeteckning"
+                )
+        else:
+            target_platsbeteckning = platsbeteckning
+
+        # Build filter expressions
+        filters = [f"platsbeteckning='{target_platsbeteckning}'"]
+
+        # Add datetime filters if tmin/tmax provided
+        datetime_filters = self._build_datetime_filters(tmin, tmax)
+        filters.extend(datetime_filters)
+
+        # Combine all filters with AND
+        combined_filter = " AND ".join(filters)
+
+        return self.get_measurements(
+            filter_expr=combined_filter,
+            limit=limit,
+            **kwargs,
+        )
+
+    def get_measurements_by_names(
+        self,
+        platsbeteckning: list[str] | None = None,
+        obsplatsnamn: list[str] | None = None,
+        tmin: str | datetime | None = None,
+        tmax: str | datetime | None = None,
+        limit: int | None = None,
+        **kwargs: Any,
+    ) -> GroundwaterMeasurementCollection:
+        """Get measurements for multiple stations by name with optional time filtering.
+
+        Args:
+            platsbeteckning: List of station 'platsbeteckning' values
+            obsplatsnamn: List of station 'obsplatsnamn' values
+            tmin: Start time (ISO string or datetime object)
+            tmax: End time (ISO string or datetime object)
+            limit: Maximum number of measurements to return
+            **kwargs: Additional query parameters
+
+        Returns:
+            Typed collection of groundwater level measurements
+
+        Raises:
+            ValueError: If neither or both name parameters are provided,
+                       or if station lookup fails
+        """
+        if not platsbeteckning and not obsplatsnamn:
+            raise ValueError(
+                "Either 'platsbeteckning' or 'obsplatsnamn' must be provided."
+            )
+        if platsbeteckning and obsplatsnamn:
+            raise ValueError(
+                "Only one of 'platsbeteckning' or 'obsplatsnamn' can be provided."
+            )
+
+        # If obsplatsnamn provided, look up stations to get platsbeteckning values
+        if obsplatsnamn:
+            logger.warning(
+                "Using 'obsplatsnamn' requires an additional API request to lookup stations. "
+                "For better performance, use 'platsbeteckning' directly if available."
+            )
+            stations = self.get_stations_by_names(obsplatsnamn=obsplatsnamn)
+            target_platsbeteckningar = []
+            for station in stations.features:
+                if station.properties.platsbeteckning:
+                    target_platsbeteckningar.append(station.properties.platsbeteckning)
+                else:
+                    raise ValueError(
+                        f"Station {station.id} with obsplatsnamn '{station.properties.obsplatsnamn}' "
+                        f"has no platsbeteckning"
+                    )
+        else:
+            target_platsbeteckningar = platsbeteckning
+
+        # Build filter expressions
+        # target_platsbeteckningar is guaranteed to not be None by validation above
+        quoted_stations = [f"'{station}'" for station in target_platsbeteckningar]  # type: ignore[union-attr]
+        filters = [f"platsbeteckning in ({', '.join(quoted_stations)})"]
+
+        # Add datetime filters if tmin/tmax provided
+        datetime_filters = self._build_datetime_filters(tmin, tmax)
+        filters.extend(datetime_filters)
+
+        # Combine all filters with AND
+        combined_filter = " AND ".join(filters)
+
+        return self.get_measurements(
+            filter_expr=combined_filter,
+            limit=limit,
+            **kwargs,
+        )
+
     def _build_query_params(self, **params: Any) -> dict[str, Any]:
         """Build query parameters for API requests.
 
@@ -228,6 +370,38 @@ class ObservedGroundwaterLevelClient:
                 query_params[key] = value
 
         return query_params
+
+    def _build_datetime_filters(
+        self, tmin: str | datetime | None, tmax: str | datetime | None
+    ) -> list[str]:
+        """Build CQL datetime filter expressions from tmin/tmax parameters.
+
+        Args:
+            tmin: Start time (ISO string or datetime object)
+            tmax: End time (ISO string or datetime object)
+
+        Returns:
+            List of CQL filter expressions for datetime constraints
+        """
+        filters = []
+
+        # Convert datetime objects to ISO strings
+        def to_iso_string(dt: str | datetime | None) -> str | None:
+            if dt is None:
+                return None
+            if isinstance(dt, datetime):
+                return dt.isoformat()
+            return dt
+
+        if tmin:
+            tmin_str = to_iso_string(tmin)
+            filters.append(f"obsdatum >= '{tmin_str}'")
+
+        if tmax:
+            tmax_str = to_iso_string(tmax)
+            filters.append(f"obsdatum <= '{tmax_str}'")
+
+        return filters
 
     def _make_request(self, endpoint: str, params: dict[str, Any]) -> dict[str, Any]:
         """Make HTTP request to SGU API.
