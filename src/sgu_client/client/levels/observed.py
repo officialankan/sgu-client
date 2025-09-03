@@ -140,6 +140,71 @@ class ObservedGroundwaterLevelClient:
 
         return collection.features[0]
 
+    def get_station_by_name(
+        self, platsbeteckning: str | None = None, obsplatsnamn: str | None = None
+    ) -> GroundwaterStation:
+        """Convinence function to get a station by name ('platsbeteckning' or 'obsplatsnamn').
+
+        Args:
+            platsbeteckning: Station 'platsbeteckning' value
+            obsplatsnamn: Station 'obsplatsnamn' value
+
+        Returns:
+            Typed groundwater monitoring station
+        """
+        if not platsbeteckning and not obsplatsnamn:
+            raise ValueError(
+                "Either 'platsbeteckning' or 'obsplatsnamn' must be provided."
+            )
+        if platsbeteckning and obsplatsnamn:
+            raise ValueError(
+                "Only one of 'platsbeteckning' or 'obsplatsnamn' can be provided."
+            )
+
+        name_type = "platsbeteckning" if platsbeteckning else "obsplatsnamn"
+        station = platsbeteckning if platsbeteckning else obsplatsnamn
+        filter_expr = f"{name_type}='{station}'"
+        response = self.get_stations(filter_expr=filter_expr)
+        if len(response.features) > 1:
+            raise ValueError(f"Multiple stations found for {filter_expr}")
+        return response.features[0]
+
+    def get_stations_by_names(
+        self,
+        platsbeteckning: list[str] | None = None,
+        obsplatsnamn: list[str] | None = None,
+    ) -> GroundwaterStationCollection:
+        """Convenience function to get multiple stations by name ('platsbeteckning' or 'obsplatsnamn').
+
+        Args:
+            platsbeteckning: List of station 'platsbeteckning' values
+            obsplatsnamn: List of station 'obsplatsnamn' values
+
+        Returns:
+            Typed collection of groundwater monitoring stations
+
+        Raises:
+            ValueError: If neither parameter is provided or both are provided
+        """
+        if not platsbeteckning and not obsplatsnamn:
+            raise ValueError(
+                "Either 'platsbeteckningar' or 'obsplatsnamn' must be provided."
+            )
+        if platsbeteckning and obsplatsnamn:
+            raise ValueError(
+                "Only one of 'platsbeteckningar' or 'obsplatsnamn' can be provided."
+            )
+
+        name_type = "platsbeteckning" if platsbeteckning else "obsplatsnamn"
+        stations = platsbeteckning if platsbeteckning else obsplatsnamn
+
+        # Build filter expression for multiple stations using IN clause
+        # stations is guaranteed to not be None by the validation above
+        quoted_stations = [f"'{station}'" for station in stations]  # type: ignore[union-attr]
+        filter_expr = f"{name_type} in ({', '.join(quoted_stations)})"
+
+        return self.get_stations(filter_expr=filter_expr)
+
     def _build_query_params(self, **params: Any) -> dict[str, Any]:
         """Build query parameters for API requests.
 
