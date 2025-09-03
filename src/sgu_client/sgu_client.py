@@ -33,7 +33,7 @@ class SGUClient:
 
     def __enter__(self):
         """Context manager entry.
-        
+
         Returns:
             The SGU client instance for use in with statements
         """
@@ -42,7 +42,7 @@ class SGUClient:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         """Context manager exit - clean up resources.
-        
+
         Args:
             exc_type: Exception type (if any)
             exc_val: Exception value (if any)
