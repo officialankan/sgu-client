@@ -1,5 +1,6 @@
 """Modeled groundwater level client endpoints."""
 
+import logging
 from typing import Any
 
 from sgu_client.client.base import BaseClient
@@ -176,6 +177,63 @@ class ModeledGroundwaterLevelClient:
             filter_expr = f"omrade_id IN ({area_ids_str})"
 
         return self.get_levels(filter_expr=filter_expr, **kwargs)
+
+    def get_levels_by_coords(
+        self,
+        lat: float,
+        lon: float,
+        buffer: float = 0.01,
+        **kwargs: Any,
+    ) -> ModeledGroundwaterLevelCollection:
+        """Get modeled groundwater levels for a specific coordinate.
+
+        This convenience function first finds relevant areas containing or near
+        the specified coordinates, then retrieves modeled levels for those areas.
+
+        Args:
+            lat: Latitude coordinate (WGS84)
+            lon: Longitude coordinate (WGS84)
+            buffer: Buffer distance in degrees around the point (default 0.01 ≈ 1km)
+            **kwargs: Additional query parameters (limit, datetime, etc.)
+
+        Returns:
+            Typed collection of modeled groundwater levels for areas near the coordinates
+
+        Raises:
+            ValueError: If no areas found near the specified coordinates
+        """
+        logger = logging.getLogger(__name__)
+
+        # Create bounding box around the point
+        bbox = [
+            lon - buffer,  # min_lon
+            lat - buffer,  # min_lat
+            lon + buffer,  # max_lon
+            lat + buffer,  # max_lat
+        ]
+
+        # Find areas within the bounding box
+        areas = self.get_areas(bbox=bbox, limit=1000)
+
+        if not areas.features:
+            raise ValueError(
+                f"No modeled groundwater areas found near coordinates "
+                f"({lat}, {lon}) within {buffer}° buffer"
+            )
+
+        # Extract area IDs
+        area_ids = [int(area.properties.omrade_id) for area in areas.features]
+
+        # Log warning if multiple areas found (near boundary)
+        if len(area_ids) > 1:
+            logger.warning(
+                f"Found {len(area_ids)} modeled groundwater areas near coordinates "
+                f"({lat}, {lon}). This suggests the point is close to an area boundary. "
+                f"Area IDs: {area_ids}. All areas will be included in the results."
+            )
+
+        # Get levels for all found areas
+        return self.get_levels_by_areas(area_ids, **kwargs)
 
     def _build_query_params(self, **params: Any) -> dict[str, Any]:
         """Build query parameters for API requests.

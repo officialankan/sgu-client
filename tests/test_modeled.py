@@ -378,3 +378,119 @@ def test_build_query_params_helper() -> None:
     assert params["limit"] == 100
     assert params["filter"] == "omrade_id = 30125"
     assert params["datetime"] == "2024-08-01Z"
+
+
+def test_get_levels_by_coords_single_area() -> None:
+    """Test get_levels_by_coords with coordinates that find a single area."""
+    client = SGUClient()
+    # Test with coordinates in Gothenburg area (should find single area)
+    levels = client.levels.modeled.get_levels_by_coords(
+        lat=57.7089, lon=11.9746, limit=5
+    )
+    assert levels is not None
+    assert isinstance(levels, ModeledGroundwaterLevelCollection)
+    assert len(levels.features) > 0
+
+    # Check that all levels have the same area ID (single area found)
+    area_ids = {level.properties.omrade_id for level in levels.features}
+    assert len(area_ids) == 1  # Should only find one area
+
+
+def test_get_levels_by_coords_boundary_warning(caplog) -> None:
+    """Test get_levels_by_coords with coordinates near boundary (multiple areas)."""
+    import logging
+
+    # Set up logging to capture warnings
+    caplog.set_level(logging.WARNING)
+
+    client = SGUClient()
+    # Test with coordinates in Stockholm area (known to find multiple areas)
+    levels = client.levels.modeled.get_levels_by_coords(
+        lat=59.3293, lon=18.0686, limit=5
+    )
+    assert levels is not None
+    assert isinstance(levels, ModeledGroundwaterLevelCollection)
+    assert len(levels.features) > 0
+
+    # Check that warning was logged (indicating multiple areas were found)
+    warning_logged = any(
+        "Found" in record.message and "areas near coordinates" in record.message
+        for record in caplog.records
+        if record.levelname == "WARNING"
+    )
+    assert warning_logged, "Expected boundary warning was not logged"
+
+    # Verify the warning mentions multiple areas
+    warning_messages = [
+        record.message
+        for record in caplog.records
+        if record.levelname == "WARNING" and "Found" in record.message
+    ]
+    assert len(warning_messages) > 0
+    # The warning should mention that multiple areas were found
+    assert any(
+        "Found 2" in msg or "Found 3" in msg or "Found 4" in msg
+        for msg in warning_messages
+    ), f"Warning should mention multiple areas: {warning_messages}"
+
+
+def test_get_levels_by_coords_outside_sweden() -> None:
+    """Test get_levels_by_coords with coordinates outside Sweden."""
+    client = SGUClient()
+    # Test with coordinates outside Sweden (London)
+    with pytest.raises(
+        ValueError, match="No modeled groundwater areas found near coordinates"
+    ):
+        client.levels.modeled.get_levels_by_coords(lat=51.5074, lon=-0.1278, limit=5)
+
+
+def test_get_levels_by_coords_with_datetime() -> None:
+    """Test get_levels_by_coords with datetime filtering."""
+    client = SGUClient()
+    # Test with coordinates and datetime filtering (2023 data)
+    levels = client.levels.modeled.get_levels_by_coords(
+        lat=57.7089, lon=11.9746, datetime="2023-01-01/2023-12-31", limit=10
+    )
+    assert levels is not None
+    assert isinstance(levels, ModeledGroundwaterLevelCollection)
+    assert len(levels.features) > 0
+
+    # Check that all dates are from 2023
+    for level in levels.features:
+        if level.properties.date:
+            assert level.properties.date.year == 2023
+
+
+def test_get_levels_by_coords_custom_buffer() -> None:
+    """Test get_levels_by_coords with custom buffer parameter."""
+    client = SGUClient()
+
+    # Test with small buffer (should find fewer/no areas)
+    small_buffer_levels = client.levels.modeled.get_levels_by_coords(
+        lat=57.7089,
+        lon=11.9746,
+        buffer=0.001,  # Very small buffer (~100m)
+        limit=10,
+    )
+
+    # Test with larger buffer (should find more areas)
+    large_buffer_levels = client.levels.modeled.get_levels_by_coords(
+        lat=57.7089,
+        lon=11.9746,
+        buffer=0.1,  # Large buffer (~10km)
+        limit=10,
+    )
+
+    assert small_buffer_levels is not None
+    assert large_buffer_levels is not None
+    assert isinstance(small_buffer_levels, ModeledGroundwaterLevelCollection)
+    assert isinstance(large_buffer_levels, ModeledGroundwaterLevelCollection)
+
+    # Large buffer should find more or equal areas than small buffer
+    small_area_ids = {
+        level.properties.omrade_id for level in small_buffer_levels.features
+    }
+    large_area_ids = {
+        level.properties.omrade_id for level in large_buffer_levels.features
+    }
+    assert len(large_area_ids) >= len(small_area_ids)
