@@ -227,7 +227,7 @@ class ModeledGroundwaterLevelClient:
         # Log warning if multiple areas found (near boundary)
         if len(area_ids) > 1:
             logger.warning(
-                f"Found {len(area_ids)} modeled groundwater areas near coordinates "
+                f"Found {len(area_ids)} modeled areas near coordinates "
                 f"({lat}, {lon}). This suggests the point is close to an area boundary. "
                 f"Area IDs: {area_ids}. All areas will be included in the results."
             )
