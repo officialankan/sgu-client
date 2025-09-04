@@ -17,3 +17,7 @@ CLAUDE.md
 
 # IDE
 .vscode/
+
+# OpenAPI definitions
+modeled_sgu_openapi.json
+levels_sgu_openapi.json
