@@ -1,6 +1,6 @@
 """Configuration management for SGU Client."""
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class SGUConfig(BaseModel):
@@ -26,8 +26,7 @@ class SGUConfig(BaseModel):
     # Debug settings
     debug: bool = Field(default=False, description="Enable debug logging")
 
-    class Config:
-        """Pydantic configuration."""
-
-        frozen = True  # Make config immutable
-        extra = "forbid"  # Don't allow extra fields
+    model_config = ConfigDict(
+        frozen=True,  # Make config immutable
+        extra="forbid",  # Don't allow extra fields
+    )
