@@ -60,6 +60,7 @@ class BaseClient:
         endpoint: str,
         params: dict[str, Any] | None = None,
         data: dict[str, Any] | None = None,
+        base_url: str | None = None,
         **kwargs,
     ) -> dict[str, Any]:
         """Make an HTTP request to the SGU API.
@@ -69,6 +70,7 @@ class BaseClient:
             endpoint: API endpoint path
             params: Query parameters
             data: Request body data
+            base_url: Optional override for base URL (for different API endpoints)
             **kwargs: Additional arguments passed to requests
 
         Returns:
@@ -79,7 +81,7 @@ class BaseClient:
             SGUTimeoutError: If request times out
             SGUAPIError: If API returns an error
         """
-        url = urljoin(self.config.base_url, endpoint)
+        url = urljoin(base_url or self.config.base_url, endpoint)
 
         try:
             if self.config.debug:
@@ -116,25 +118,35 @@ class BaseClient:
 
             return response.json()
 
+        except requests.exceptions.ReadTimeout as e:
+            raise SGUTimeoutError(f"Read timeout after {self.config.timeout}s") from e
         except requests.exceptions.ConnectTimeout as e:
             raise SGUTimeoutError(
                 f"Connection timeout after {self.config.timeout}s"
             ) from e
-        except requests.exceptions.ReadTimeout as e:
-            raise SGUTimeoutError(f"Read timeout after {self.config.timeout}s") from e
         except requests.exceptions.ConnectionError as e:
+            # Check if this is a timeout wrapped in MaxRetryError
+            if "Read timed out" in str(e) or "ReadTimeoutError" in str(e):
+                raise SGUTimeoutError(
+                    f"Read timeout after {self.config.timeout}s"
+                ) from e
             raise SGUConnectionError(f"Connection failed: {e}") from e
         except requests.exceptions.RequestException as e:
             raise SGUAPIError(f"Request failed: {e}") from e
 
     def get(
-        self, endpoint: str, params: dict[str, Any] | None = None, **kwargs
+        self,
+        endpoint: str,
+        params: dict[str, Any] | None = None,
+        base_url: str | None = None,
+        **kwargs,
     ) -> dict[str, Any]:
         """Make a GET request.
 
         Args:
             endpoint: API endpoint path
             params: Query parameters
+            base_url: Optional override for base URL
             **kwargs: Additional arguments passed to requests
 
         Returns:
@@ -145,7 +157,9 @@ class BaseClient:
             SGUTimeoutError: If request times out
             SGUAPIError: If API returns an error
         """
-        return self._make_request("GET", endpoint, params=params, **kwargs)
+        return self._make_request(
+            "GET", endpoint, params=params, base_url=base_url, **kwargs
+        )
 
     def post(
         self, endpoint: str, data: dict[str, Any] | None = None, **kwargs

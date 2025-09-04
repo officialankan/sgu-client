@@ -3,7 +3,6 @@
 from typing import Any
 
 from sgu_client.client.base import BaseClient
-from sgu_client.config import SGUConfig
 from sgu_client.models.modeled import (
     ModeledArea,
     ModeledAreaCollection,
@@ -16,6 +15,7 @@ class ModeledGroundwaterLevelClient:
     """Client for modeled groundwater level-related SGU API endpoints."""
 
     BASE_PATH = "collections"
+    MODELED_BASE_URL = "https://api.sgu.se/oppnadata/grundvattennivaer-sgu-hype-omraden/ogc/features/v1/"
 
     def __init__(self, base_client: BaseClient):
         """Initialize modeled groundwater level client.
@@ -23,15 +23,7 @@ class ModeledGroundwaterLevelClient:
         Args:
             base_client: Base HTTP client instance
         """
-        # Create a new client with modeled data API URL
-        modeled_config = SGUConfig(
-            base_url="https://api.sgu.se/oppnadata/grundvattennivaer-sgu-hype-omraden/ogc/features/v1/",
-            timeout=base_client.config.timeout,
-            max_retries=base_client.config.max_retries,
-            user_agent=base_client.config.user_agent,
-            debug=base_client.config.debug,
-        )
-        self._client = BaseClient(modeled_config)
+        self._client = base_client
 
     def get_areas(
         self,
@@ -146,7 +138,20 @@ class ModeledGroundwaterLevelClient:
 
         return collection.features[0]
 
-    # TODO: add convenience methods like `get_levels_by_area` and `get_levels_by_areas`
+    def get_levels_by_area(
+        self, area_id: int, **kwargs: Any
+    ) -> ModeledGroundwaterLevelCollection:
+        """Get modeled groundwater levels for a specific area.
+
+        Args:
+            area_id: Area ID to filter by
+            **kwargs: Additional query parameters (limit, datetime, bbox, etc.)
+
+        Returns:
+            Typed collection of modeled groundwater levels for the specified area
+        """
+        filter_expr = f"omrade_id = {area_id}"
+        return self.get_levels(filter_expr=filter_expr, **kwargs)
 
     def _build_query_params(self, **params: Any) -> dict[str, Any]:
         """Build query parameters for API requests.
@@ -185,4 +190,4 @@ class ModeledGroundwaterLevelClient:
         Raises:
             Various HTTP and API exceptions via base client
         """
-        return self._client.get(endpoint, params=params)
+        return self._client.get(endpoint, params=params, base_url=self.MODELED_BASE_URL)

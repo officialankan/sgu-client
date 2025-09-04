@@ -6,6 +6,8 @@ import pytest
 from pandas.api.types import is_datetime64_any_dtype as is_datetime
 
 from sgu_client import SGUClient
+from sgu_client.config import SGUConfig
+from sgu_client.exceptions import SGUTimeoutError
 from sgu_client.models.modeled import (
     ModeledArea,
     ModeledAreaCollection,
@@ -206,6 +208,57 @@ def test_percentile_validation() -> None:
             assert 0 <= props.fyllnadsgrad_sma <= 100
         if props.fyllnadsgrad_stora is not None:
             assert 0 <= props.fyllnadsgrad_stora <= 100
+
+
+def test_get_levels_by_area() -> None:
+    client = SGUClient()
+    levels = client.levels.modeled.get_levels_by_area(TEST_LEVEL_OMRADE_ID, limit=10)
+    assert levels is not None
+    assert isinstance(levels, ModeledGroundwaterLevelCollection)
+    assert len(levels.features) > 0
+
+    # All results should have the specified area ID
+    for level in levels.features:
+        assert level.properties.omrade_id == TEST_LEVEL_OMRADE_ID
+
+
+def test_get_levels_by_area_to_dataframe() -> None:
+    client = SGUClient()
+    levels = client.levels.modeled.get_levels_by_area(TEST_LEVEL_OMRADE_ID, limit=10)
+    df = levels.to_dataframe(sort_by_date=True)
+    assert not df.empty
+    assert "level_id" in df.columns
+    assert "date" in df.columns
+    assert "omrade_id" in df.columns
+    assert "datum" in df.columns
+
+    assert is_datetime(df["date"])
+    # Note: some dates might be None, so we need to handle that
+    valid_dates = df["date"].dropna()
+    if len(valid_dates) > 1:
+        assert valid_dates.is_monotonic_increasing
+
+
+def test_get_levels_by_area_with_limit() -> None:
+    client = SGUClient()
+    levels = client.levels.modeled.get_levels_by_area(TEST_LEVEL_OMRADE_ID, limit=5)
+    assert levels is not None
+    assert isinstance(levels, ModeledGroundwaterLevelCollection)
+    assert len(levels.features) <= 5
+
+    # All results should have the specified area ID
+    for level in levels.features:
+        assert level.properties.omrade_id == TEST_LEVEL_OMRADE_ID
+
+
+def test_get_levels_by_area_nonexistent() -> None:
+    # Use short timeout to avoid freezing on non-existent area
+    config = SGUConfig(timeout=5.0, max_retries=0)
+    client = SGUClient(config=config)
+
+    # API freezes when searching for non-existent area, so expect timeout
+    with pytest.raises(SGUTimeoutError):
+        client.levels.modeled.get_levels_by_area(999999, limit=10)
 
 
 def test_build_query_params_helper() -> None:
