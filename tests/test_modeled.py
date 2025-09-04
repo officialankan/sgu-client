@@ -261,6 +261,98 @@ def test_get_levels_by_area_nonexistent() -> None:
         client.levels.modeled.get_levels_by_area(999999, limit=10)
 
 
+def test_get_levels_by_areas() -> None:
+    client = SGUClient()
+    area_ids = [TEST_LEVEL_OMRADE_ID, 30126]  # Use test area and another one
+    levels = client.levels.modeled.get_levels_by_areas(area_ids, limit=20)
+    assert levels is not None
+    assert isinstance(levels, ModeledGroundwaterLevelCollection)
+    assert len(levels.features) > 0
+
+    # All results should have one of the specified area IDs
+    for level in levels.features:
+        assert level.properties.omrade_id in area_ids
+
+
+def test_get_levels_by_areas_single_area() -> None:
+    client = SGUClient()
+    # Test with single area ID in list (should work same as get_levels_by_area)
+    area_ids = [TEST_LEVEL_OMRADE_ID]
+    levels = client.levels.modeled.get_levels_by_areas(area_ids, limit=10)
+    assert levels is not None
+    assert isinstance(levels, ModeledGroundwaterLevelCollection)
+    assert len(levels.features) > 0
+
+    # All results should have the specified area ID
+    for level in levels.features:
+        assert level.properties.omrade_id == TEST_LEVEL_OMRADE_ID
+
+
+def test_get_levels_by_areas_empty_list() -> None:
+    client = SGUClient()
+    # Test with empty area IDs list - should raise ValueError
+    with pytest.raises(ValueError, match="At least one area ID must be provided"):
+        client.levels.modeled.get_levels_by_areas([], limit=10)
+
+
+def test_get_levels_by_areas_to_dataframe() -> None:
+    client = SGUClient()
+    area_ids = [TEST_LEVEL_OMRADE_ID, 30126]
+    levels = client.levels.modeled.get_levels_by_areas(area_ids, limit=10)
+    df = levels.to_dataframe(sort_by_date=True)
+    assert not df.empty
+    assert "level_id" in df.columns
+    assert "date" in df.columns
+    assert "omrade_id" in df.columns
+    assert "datum" in df.columns
+
+    assert is_datetime(df["date"])
+    # Note: some dates might be None, so we need to handle that
+    valid_dates = df["date"].dropna()
+    if len(valid_dates) > 1:
+        assert valid_dates.is_monotonic_increasing
+
+    # Check that all area IDs in dataframe are from our requested list
+    for omrade_id in df["omrade_id"].unique():
+        assert omrade_id in area_ids
+
+
+def test_get_levels_by_areas_with_limit() -> None:
+    client = SGUClient()
+    area_ids = [TEST_LEVEL_OMRADE_ID, 30126]
+    levels = client.levels.modeled.get_levels_by_areas(area_ids, limit=5)
+    assert levels is not None
+    assert isinstance(levels, ModeledGroundwaterLevelCollection)
+    assert len(levels.features) <= 5
+
+    # All results should have one of the specified area IDs
+    for level in levels.features:
+        assert level.properties.omrade_id in area_ids
+
+
+def test_get_levels_by_areas_nonexistent() -> None:
+    # Use short timeout to avoid freezing on non-existent area
+    config = SGUConfig(timeout=5.0, max_retries=0)
+    client = SGUClient(config=config)
+
+    # API freezes when searching for non-existent areas, so expect timeout
+    with pytest.raises(SGUTimeoutError):
+        client.levels.modeled.get_levels_by_areas([999998, 999999], limit=10)
+
+
+def test_get_levels_by_areas_mixed_existing_nonexistent() -> None:
+    client = SGUClient()
+    # Mix existing and non-existent area IDs
+    area_ids = [TEST_LEVEL_OMRADE_ID, 999999]
+    levels = client.levels.modeled.get_levels_by_areas(area_ids, limit=10)
+    assert levels is not None
+    assert isinstance(levels, ModeledGroundwaterLevelCollection)
+
+    # Should only have levels from the existing area
+    for level in levels.features:
+        assert level.properties.omrade_id == TEST_LEVEL_OMRADE_ID
+
+
 def test_build_query_params_helper() -> None:
     client = SGUClient()
     modeled_client = client.levels.modeled

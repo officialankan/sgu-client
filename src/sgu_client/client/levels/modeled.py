@@ -153,6 +153,30 @@ class ModeledGroundwaterLevelClient:
         filter_expr = f"omrade_id = {area_id}"
         return self.get_levels(filter_expr=filter_expr, **kwargs)
 
+    def get_levels_by_areas(
+        self, area_ids: list[int], **kwargs: Any
+    ) -> ModeledGroundwaterLevelCollection:
+        """Get modeled groundwater levels for multiple areas.
+
+        Args:
+            area_ids: List of area IDs to filter by
+            **kwargs: Additional query parameters (limit, datetime, bbox, etc.)
+
+        Returns:
+            Typed collection of modeled groundwater levels for the specified areas
+        """
+        if not area_ids:
+            raise ValueError("At least one area ID must be provided")
+
+        # Create CQL filter expression for multiple area IDs
+        if len(area_ids) == 1:
+            filter_expr = f"omrade_id = {area_ids[0]}"
+        else:
+            area_ids_str = ", ".join(str(area_id) for area_id in area_ids)
+            filter_expr = f"omrade_id IN ({area_ids_str})"
+
+        return self.get_levels(filter_expr=filter_expr, **kwargs)
+
     def _build_query_params(self, **params: Any) -> dict[str, Any]:
         """Build query parameters for API requests.
 
