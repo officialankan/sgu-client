@@ -6,6 +6,8 @@ A modern Python client library for accessing Geological Survey of Sweden (SGU) g
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Code style: ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 
+>> This package is not affiliated with or endorsed by SGU.
+
 ## Features
 
 - **Type-safe**: Full type hints with Pydantic validation
@@ -20,7 +22,7 @@ Using `uv`
 # basic installation
 uv add sgu-client
 
-# bith pandas support for dataframe conversion
+# with pandas support for dataframe conversion
 uv add "sgu-client[recommended]"
 ```
 
