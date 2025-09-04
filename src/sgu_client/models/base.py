@@ -1,9 +1,13 @@
 """Base model classes for SGU Client."""
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-import pandas as pd
 from pydantic import BaseModel, ConfigDict
+
+from sgu_client.utils.pandas_helpers import optional_pandas_method
+
+if TYPE_CHECKING:
+    import pandas as pd
 
 
 class SGUBaseModel(BaseModel):
@@ -26,7 +30,8 @@ class SGUResponse(SGUBaseModel):
         """Convert to dictionary."""
         return self.model_dump()
 
-    def to_dataframe(self) -> pd.DataFrame:
+    @optional_pandas_method("to_dataframe() method")
+    def to_dataframe(self) -> "pd.DataFrame":
         """Convert to pandas DataFrame.
 
         Returns:

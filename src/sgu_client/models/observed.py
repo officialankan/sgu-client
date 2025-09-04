@@ -1,13 +1,16 @@
 """Pydantic models for groundwater data from SGU API."""
 
 from datetime import datetime
-from typing import Any, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
-import pandas as pd
 from pydantic import Field
 
 from sgu_client.models.base import SGUBaseModel, SGUResponse
 from sgu_client.models.shared import Geometry
+from sgu_client.utils.pandas_helpers import get_pandas, optional_pandas_method
+
+if TYPE_CHECKING:
+    import pandas as pd
 
 
 # Groundwater station properties (Swedish API field names)
@@ -189,9 +192,10 @@ class GroundwaterStationCollection(SGUResponse):
     links: list[Link] | None = Field(None, description="Related links")
     crs: CRS | None = Field(None, description="Coordinate reference system")
 
+    @optional_pandas_method("to_dataframe() method")
     def to_dataframe(
         self,
-    ) -> pd.DataFrame:
+    ) -> "pd.DataFrame":
         """Convert to pandas DataFrame with flattened station properties."""
 
         data = []
@@ -210,6 +214,7 @@ class GroundwaterStationCollection(SGUResponse):
             row.update(feature.properties.model_dump())
             data.append(row)
 
+        pd = get_pandas()
         return pd.DataFrame(data)
 
 
@@ -233,14 +238,15 @@ class GroundwaterMeasurementCollection(SGUResponse):
     links: list[Link] | None = Field(None, description="Related links")
     crs: CRS | None = Field(None, description="Coordinate reference system")
 
-    def to_dataframe(self, sort_by_date: bool = True) -> pd.DataFrame:
+    @optional_pandas_method("to_dataframe() method")
+    def to_dataframe(self, sort_by_date: bool = True) -> "pd.DataFrame":
         """Convert to pandas DataFrame with measurement data.
 
         Args
             sort_by_date: Whether to sort the DataFrame by observation date.
 
         Returns
-            pd.DataFrame: DataFrame containing measurement data.
+            DataFrame containing measurement data.
         """
 
         data = []
@@ -268,6 +274,7 @@ class GroundwaterMeasurementCollection(SGUResponse):
             row.update(feature.properties.model_dump())
             data.append(row)
 
+        pd = get_pandas()
         df = pd.DataFrame(data)
         if sort_by_date:
             df = df.sort_values(by="observation_date")

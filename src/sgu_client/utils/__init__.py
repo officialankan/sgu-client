@@ -1,4 +1,5 @@
 """Utilities module for SGU Client."""
 
-# Placeholder for future utility functions
-__all__ = []
+from .pandas_helpers import PandasImportError, check_pandas_available, get_pandas
+
+__all__ = ["PandasImportError", "check_pandas_available", "get_pandas"]

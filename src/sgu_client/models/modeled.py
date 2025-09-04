@@ -1,14 +1,17 @@
 """Pydantic models for modeled groundwater data from SGU API."""
 
 from datetime import datetime
-from typing import Literal
+from typing import TYPE_CHECKING, Literal
 
-import pandas as pd
 from pydantic import Field, field_validator
 
 from sgu_client.models.base import SGUBaseModel, SGUResponse
 from sgu_client.models.observed import CRS, Link
 from sgu_client.models.shared import Geometry
+from sgu_client.utils.pandas_helpers import get_pandas, optional_pandas_method
+
+if TYPE_CHECKING:
+    import pandas as pd
 
 
 # Modeled area properties (from omraden collection)
@@ -116,7 +119,8 @@ class ModeledAreaCollection(SGUResponse):
         """Handle 'unknown' string values for totalFeatures."""
         return None if v == "unknown" else v
 
-    def to_dataframe(self) -> pd.DataFrame:
+    @optional_pandas_method("to_dataframe() method")
+    def to_dataframe(self) -> "pd.DataFrame":
         """Convert to pandas DataFrame with flattened area properties."""
 
         data = []
@@ -158,6 +162,7 @@ class ModeledAreaCollection(SGUResponse):
             row.update(feature.properties.model_dump())
             data.append(row)
 
+        pd = get_pandas()
         return pd.DataFrame(data)
 
 
@@ -187,14 +192,15 @@ class ModeledGroundwaterLevelCollection(SGUResponse):
         """Handle 'unknown' string values for totalFeatures."""
         return None if v == "unknown" else v
 
-    def to_dataframe(self, sort_by_date: bool = True) -> pd.DataFrame:
+    @optional_pandas_method("to_dataframe() method")
+    def to_dataframe(self, sort_by_date: bool = True) -> "pd.DataFrame":
         """Convert to pandas DataFrame with modeled level data.
 
         Args:
             sort_by_date: Whether to sort the DataFrame by date.
 
         Returns:
-            pd.DataFrame: DataFrame containing modeled level data.
+            DataFrame containing modeled level data.
         """
 
         data = []
@@ -208,6 +214,7 @@ class ModeledGroundwaterLevelCollection(SGUResponse):
             row.update(feature.properties.model_dump())
             data.append(row)
 
+        pd = get_pandas()
         df = pd.DataFrame(data)
         if sort_by_date and "date" in df.columns:
             df = df.sort_values(by="date")
