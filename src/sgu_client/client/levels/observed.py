@@ -145,13 +145,17 @@ class ObservedGroundwaterLevelClient:
         return collection.features[0]
 
     def get_station_by_name(
-        self, platsbeteckning: str | None = None, obsplatsnamn: str | None = None
+        self,
+        platsbeteckning: str | None = None,
+        obsplatsnamn: str | None = None,
+        **kwargs: Any,
     ) -> GroundwaterStation:
         """Convenience function to get a station by name ('platsbeteckning' or 'obsplatsnamn').
 
         Args:
             platsbeteckning: Station 'platsbeteckning' value
             obsplatsnamn: Station 'obsplatsnamn' value
+            **kwargs: Additional query parameters (e.g., limit)
 
         Returns:
             Typed groundwater monitoring station
@@ -172,7 +176,7 @@ class ObservedGroundwaterLevelClient:
         name_type = "platsbeteckning" if platsbeteckning else "obsplatsnamn"
         station = platsbeteckning if platsbeteckning else obsplatsnamn
         filter_expr = f"{name_type}='{station}'"
-        response = self.get_stations(filter_expr=filter_expr)
+        response = self.get_stations(filter_expr=filter_expr, **kwargs)
         if len(response.features) > 1:
             raise ValueError(f"Multiple stations found for {filter_expr}")
         return response.features[0]
@@ -181,12 +185,14 @@ class ObservedGroundwaterLevelClient:
         self,
         platsbeteckning: list[str] | None = None,
         obsplatsnamn: list[str] | None = None,
+        **kwargs: Any,
     ) -> GroundwaterStationCollection:
         """Convenience function to get multiple stations by name ('platsbeteckning' or 'obsplatsnamn').
 
         Args:
             platsbeteckning: List of station 'platsbeteckning' values
             obsplatsnamn: List of station 'obsplatsnamn' values
+            **kwargs: Additional query parameters (e.g., limit)
 
         Returns:
             Typed collection of groundwater monitoring stations
@@ -211,7 +217,7 @@ class ObservedGroundwaterLevelClient:
         quoted_stations = [f"'{station}'" for station in stations]  # type: ignore[union-attr]
         filter_expr = f"{name_type} in ({', '.join(quoted_stations)})"
 
-        return self.get_stations(filter_expr=filter_expr)
+        return self.get_stations(filter_expr=filter_expr, **kwargs)
 
     def get_measurements_by_name(
         self,
@@ -254,6 +260,7 @@ class ObservedGroundwaterLevelClient:
                 "Using 'obsplatsnamn' requires an additional API request to lookup the station. "
                 "For better performance, use 'platsbeteckning' directly if available."
             )
+            # Don't pass kwargs to station lookup as it's a single result operation
             station = self.get_station_by_name(obsplatsnamn=obsplatsnamn)
             target_platsbeteckning = station.properties.platsbeteckning
             if not target_platsbeteckning:
@@ -320,6 +327,7 @@ class ObservedGroundwaterLevelClient:
                 "Using 'obsplatsnamn' requires an additional API request to lookup stations. "
                 "For better performance, use 'platsbeteckning' directly if available."
             )
+            # Don't pass kwargs to station lookup as it's a separate operation
             stations = self.get_stations_by_names(obsplatsnamn=obsplatsnamn)
             target_platsbeteckningar = []
             for station in stations.features:

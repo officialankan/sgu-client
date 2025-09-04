@@ -47,7 +47,9 @@ def test_get_measurement_by_id() -> None:
 
 def test_stations_to_dataframe() -> None:
     client = SGUClient()
-    stations = client.levels.observed.get_stations(filter_expr=TEST_STATIONS_FILTER)
+    stations = client.levels.observed.get_stations(
+        filter_expr=TEST_STATIONS_FILTER, limit=10
+    )
     assert stations is not None
     df = stations.to_dataframe()
     assert not df.empty
@@ -105,7 +107,7 @@ def test_station_by_name_both_args() -> None:
 def test_get_stations_by_names_platsbeteckning() -> None:
     client = SGUClient()
     stations = client.levels.observed.get_stations_by_names(
-        platsbeteckning=["95_2", "101_1"]
+        platsbeteckning=["95_2", "101_1"], limit=10
     )
     assert stations is not None
     assert len(stations.features) >= 2
@@ -118,7 +120,9 @@ def test_get_stations_by_names_platsbeteckning() -> None:
 
 def test_get_stations_by_names_obsplatsnamn() -> None:
     client = SGUClient()
-    stations = client.levels.observed.get_stations_by_names(obsplatsnamn=["Lagga_2"])
+    stations = client.levels.observed.get_stations_by_names(
+        obsplatsnamn=["Lagga_2"], limit=5
+    )
     assert stations is not None
     assert len(stations.features) >= 1
     obsplatsnamn_list = [
@@ -130,7 +134,7 @@ def test_get_stations_by_names_obsplatsnamn() -> None:
 def test_get_stations_by_names_single_station() -> None:
     client = SGUClient()
     stations = client.levels.observed.get_stations_by_names(
-        platsbeteckning=[TEST_STATION_PLATSBETECKNING]
+        platsbeteckning=[TEST_STATION_PLATSBETECKNING], limit=5
     )
     assert stations is not None
     assert len(stations.features) == 1
@@ -171,7 +175,7 @@ def test_get_stations_by_names_empty_list() -> None:
 def test_get_stations_by_names_to_dataframe() -> None:
     client = SGUClient()
     stations = client.levels.observed.get_stations_by_names(
-        platsbeteckning=["95_2", "101_1"]
+        platsbeteckning=["95_2", "101_1"], limit=10
     )
     assert stations is not None
     df = stations.to_dataframe()
