@@ -93,7 +93,7 @@ with SGUClient() as client:
     )
     # or multiple stations by names
     stations = client.levels.observed.get_stations_by_names(
-        platsbeteckningar=["95_2", "101_1"]  # or obsplatsnamn=["Lagga_2", ...]
+        platsbeteckning=["95_2", "101_1"]  # or obsplatsnamn=["Lagga_2", ...]
     )
 
     # convenience function to get measurements by station name
@@ -103,7 +103,7 @@ with SGUClient() as client:
     )
     # or multiple stations by names
     measurements = client.levels.observed.get_measurements_by_names(
-        platsbeteckningar=["95_2", "101_1"],  # or obsplatsnamn=["Lagga_2", ...]
+        platsbeteckning=["95_2", "101_1"],  # or obsplatsnamn=["Lagga_2", ...]
         limit=100
     )
 
@@ -116,7 +116,7 @@ with SGUClient() as client:
     
     # responses that create lists of features can be converted to pandas DataFrames
     measurements = client.levels.observed.get_measurements_by_names(
-        platsbeteckningar=["95_2", "101_1"],  # or obsplatsnamn=["Lagga_2", ...]
+        platsbeteckning=["95_2", "101_1"],  # or obsplatsnamn=["Lagga_2", ...]
         limit=100
     )
     df = measurements.to_dataframe()  # requires pandas
@@ -153,9 +153,9 @@ with SGUClient() as client:
     )
 
     # convenience function to get levels by coordinates
-    levels = client.levels.modeled.get_levels_by_coordinates(
-        latitude=57.7089,
-        longitude=11.9746,
+    levels = client.levels.modeled.get_levels_by_coords(
+        lat=57.7089,
+        lon=11.9746,
         limit=10
     )
     
@@ -165,6 +165,7 @@ with SGUClient() as client:
         limit=50
     )
     df = levels.to_dataframe()  # requires pandas
+```
 
 ### Working with Typed Data
 
@@ -219,7 +220,7 @@ We recommend using [uv](https://github.com/astral-sh/uv) for development:
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/sgu-client.git
+git clone https://github.com/officialankan/sgu-client.git
 cd sgu-client
 
 # Install dependencies and sync environment
