@@ -6,13 +6,25 @@ A modern Python client library for accessing Geological Survey of Sweden (SGU) g
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Code style: ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 
->> This package is not affiliated with or endorsed by SGU.
+> This package is not affiliated with or endorsed by SGU.
 
 ## Features
 
 - **Type-safe**: Full type hints with Pydantic validation
 - **Pandas integration**: Convert data to DataFrames with optional pandas dependency
 - **Friendly shortcuts**: Convenience functions to access stations by names, modeled levels by coordinates, and much more.
+
+Get going with your analysis in just a few lines of code:
+
+```python
+from sgu_client import SGUClient
+
+with SGUClient() as client:
+    measurements = client.levels.observed.get_measurements_by_name(platsbeteckning="95_2")
+    df = measurements.to_dataframe()
+
+# ... rest of your awesome workflow
+```
 
 ## Installation
 
@@ -61,6 +73,8 @@ Access real-time and historical groundwater monitoring data from SGU's network o
 
 ```python
 from sgu_client import SGUClient
+from datetime import UTC, datetime
+
 
 with SGUClient() as client:
     # basic API endpoint usage
