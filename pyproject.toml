@@ -16,7 +16,11 @@ build-backend = "uv_build"
 recommended = ["pandas>=1.5.0"]
 
 [dependency-groups]
-dev = ["pytest>=8.4.1", "ruff>=0.12.11"]
+dev = [
+    "coverage[toml]>=7.10.6",
+    "pytest>=8.4.1",
+    "ruff>=0.12.11",
+]
 
 [tool.ruff]
 line-length = 88
@@ -55,3 +59,26 @@ line-ending = "auto"
 
 [tool.ruff.lint.isort]
 known-first-party = ["sgu_client"]
+
+[tool.coverage.run]
+source = ["src"]
+branch = true
+omit = [
+    "*/tests/*",
+    "*/test_*.py",
+    "*/__init__.py",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if __name__ == .__main__.:",
+    "raise NotImplementedError",
+    "if TYPE_CHECKING:",
+]
+show_missing = true
+precision = 1
+
+[tool.coverage.html]
+directory = "htmlcov"
