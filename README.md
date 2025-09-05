@@ -3,6 +3,7 @@
 A modern Python client library for accessing Geological Survey of Sweden (SGU) groundwater data APIs with type safety and pandas integration.
 
 [![Python Version](https://img.shields.io/badge/python-3.11+-blue.svg)](https://python.org)
+[![PyPI version](https://badge.fury.io/py/sgu-client.svg)](https://badge.fury.io/py/sgu-client)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Code style: ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 
@@ -232,22 +233,13 @@ uv run ruff format
 uv run ruff check --fix
 ```
 
-### Development Commands
+### Release Process
 
-```bash
-# Install dependencies
-uv sync --all-extras
+To release a new version:
 
-# Run tests
-uv run pytest tests/ -v
-
-# Code formatting and linting
-uv run ruff format
-uv run ruff check --fix
-
-# Build package
-uv build
-```
+1. Create PR with your changes + version bump in `pyproject.toml`
+2. PR will be tested and published to TestPyPI for verification
+3. Once merged, the new version is automatically published to PyPI
 
 ## Contributing
 
@@ -259,7 +251,6 @@ Contributions are welcome! Please feel free to submit a Pull Request. For major 
 - [ ] Add example notebooks and tutorials
 - [ ] Add support for groundwater quality API
 - [ ] Add support for geological data API
-- [ ] Add support for climate indicator API
 
 ## License
 
@@ -267,5 +258,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Acknowledgments
 
-- [Sveriges geologiska unders�kning (SGU)](https://www.sgu.se/) for providing open access to groundwater data
+- [Sveriges geologiska undersökning (SGU)](https://www.sgu.se/) for providing open access to groundwater data
 - Built with [uv](https://github.com/astral-sh/uv), [Pydantic](https://pydantic.dev/), and [requests](https://requests.readthedocs.io/)
