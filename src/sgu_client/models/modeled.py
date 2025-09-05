@@ -1,7 +1,7 @@
 """Pydantic models for modeled groundwater data from SGU API."""
 
 from datetime import datetime
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
 from pydantic import Field, field_validator
 
@@ -125,7 +125,7 @@ class ModeledAreaCollection(SGUResponse):
 
         data = []
         for feature in self.features:
-            row = {
+            row: dict[str, Any] = {
                 "area_id": feature.id,
                 "geometry_type": feature.geometry.type,
             }
@@ -133,30 +133,25 @@ class ModeledAreaCollection(SGUResponse):
             # Add geometry coordinates (MultiPolygon handling)
             if feature.geometry.coordinates:
                 # For MultiPolygon, take centroid of first polygon's first ring
-                if (
-                    hasattr(feature.geometry, "coordinates")
-                    and feature.geometry.coordinates
-                ):
+                if feature.geometry.type == "MultiPolygon":
                     try:
                         # MultiPolygon structure: [polygon][ring][point][lon/lat]
+                        # Type narrowing: we know this is MultiPolygon, so coordinates is list[list[list[list[float]]]]
                         first_ring = feature.geometry.coordinates[0][0]
                         # Calculate simple centroid
                         lons = [point[0] for point in first_ring]
                         lats = [point[1] for point in first_ring]
-                        row.update(
-                            {
-                                "centroid_longitude": sum(lons) / len(lons),
-                                "centroid_latitude": sum(lats) / len(lats),
-                            }
-                        )
+                        row["centroid_longitude"] = sum(lons) / len(lons)
+                        row["centroid_latitude"] = sum(lats) / len(lats)
                     except (IndexError, TypeError):
-                        row.update(
-                            {"centroid_longitude": None, "centroid_latitude": None}
-                        )
+                        row["centroid_longitude"] = None
+                        row["centroid_latitude"] = None
                 else:
-                    row.update({"centroid_longitude": None, "centroid_latitude": None})
+                    row["centroid_longitude"] = None
+                    row["centroid_latitude"] = None
             else:
-                row.update({"centroid_longitude": None, "centroid_latitude": None})
+                row["centroid_longitude"] = None
+                row["centroid_latitude"] = None
 
             # Add all properties
             row.update(feature.properties.model_dump())
