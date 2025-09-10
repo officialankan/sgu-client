@@ -385,3 +385,26 @@ def test_measurements_to_dataframe() -> None:
     # Assert that it is sorted by 'observation_date'
     assert is_datetime(df["observation_date"])
     assert df["observation_date"].is_monotonic_increasing
+
+
+def test_measurements_to_series() -> None:
+    client = SGUClient()
+    measurements = client.levels.observed.get_measurements_by_name(
+        platsbeteckning=TEST_STATION_PLATSBETECKNING, limit=5
+    )
+    assert measurements is not None
+    series = measurements.to_series()
+    assert not series.empty
+    assert series.name == "grundvattenniva_m_o_h"
+    assert is_datetime(series.index)
+
+
+def test_measurements_to_series_custom_index_data() -> None:
+    client = SGUClient()
+    measurements = client.levels.observed.get_measurements_by_name(
+        platsbeteckning=TEST_STATION_PLATSBETECKNING, limit=5
+    )
+    assert measurements is not None
+    series = measurements.to_series(index="obsdatum", data="grundvattenniva_m_urok")
+    assert not series.empty
+    assert series.name == "grundvattenniva_m_urok"
