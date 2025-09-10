@@ -62,5 +62,5 @@ known-first-party = ["sgu_client"]
 
 
 [tool.pytest.ini_options]
-addopts = "--cov=src --cov-report=term-missing --cov-report=html --cov-branch"
+addopts = "--cov=src --cov-report=term-missing --cov-report=html --cov-report=xml --cov-branch"
 testpaths = ["tests"]
