@@ -97,18 +97,6 @@ jobs:
         echo "This PR is ready to be merged into the dev branch"
         echo "After merging, create a PR from dev to main to trigger a release"
 
-  dev-integration:
-    needs: test
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
-    
-    steps:
-    - name: Dev Integration Success
-      run: |
-        echo "✅ Integration tests passed on dev branch"
-        echo "Dev branch is ready for release PR to main"
-        echo "Create a PR from dev to main to publish a new release"
-
   publish-and-release:
     needs: test
     runs-on: ubuntu-latest
