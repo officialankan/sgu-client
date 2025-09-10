@@ -5,6 +5,7 @@ A modern Python client library for accessing Geological Survey of Sweden (SGU) g
 [![Python Version](https://img.shields.io/badge/python-3.11+-blue.svg)](https://python.org)
 [![PyPI version](https://badge.fury.io/py/sgu-client.svg)](https://badge.fury.io/py/sgu-client)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![codecov](https://codecov.io/gh/officialankan/sgu-client/branch/main/graph/badge.svg)](https://codecov.io/gh/officialankan/sgu-client)
 [![Code style: ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 
 > This package is not affiliated with or endorsed by SGU.
