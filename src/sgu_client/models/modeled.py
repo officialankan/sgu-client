@@ -214,3 +214,41 @@ class ModeledGroundwaterLevelCollection(SGUResponse):
         if sort_by_date and "date" in df.columns:
             df = df.sort_values(by="date")
         return df
+
+    @optional_pandas_method("to_series() method")
+    def to_series(
+        self,
+        index: str | None = None,
+        data: str | None = None,
+        sort_by_date: bool = True,
+    ) -> "pd.Series":
+        """Convert to pandas Series with modeled data.
+
+        Args:
+            index: Column name to use as index. If None, `date` is used.
+            data: Column name to use as data. If None, `fyllnadsgrad_sma` is used.
+            sort_by_date: Whether to sort the data by observation date before creating the Series.
+
+        Returns:
+            Series containing modeled data.
+        """
+        df = self.to_dataframe(sort_by_date=sort_by_date)
+        pd = get_pandas()
+
+        if data is None:
+            data = "fyllnadsgrad_sma"
+        if index is None:
+            index = "date"
+
+        if df.empty:
+            return pd.Series(dtype=float)
+
+        if index and index not in df.columns:
+            raise ValueError(f"Index column '{index}' not found in DataFrame.")
+
+        if data and data not in df.columns:
+            raise ValueError(f"Data column '{data}' not found in DataFrame.")
+
+        series = pd.Series(data=df[data].values, index=df[index] if index else None)
+        series.name = data
+        return series
