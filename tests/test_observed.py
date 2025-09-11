@@ -408,3 +408,9 @@ def test_measurements_to_series_custom_index_data() -> None:
     series = measurements.to_series(index="obsdatum", data="grundvattenniva_m_urok")
     assert not series.empty
     assert series.name == "grundvattenniva_m_urok"
+
+    with pytest.raises(ValueError):
+        measurements.to_series(index="invalid_column", data="grundvattenniva_m_o_h")
+
+    with pytest.raises(ValueError):
+        measurements.to_series(index="obsdatum", data="invalid_column")

@@ -190,6 +190,12 @@ def test_levels_to_series_custom_index_data() -> None:
     series = levels.to_series(index="fyllnadsgrad_sma", data="fyllnadsgrad_stora")
     assert not series.empty
 
+    with pytest.raises(ValueError):
+        levels.to_series(index="invalid_column")
+
+    with pytest.raises(ValueError):
+        levels.to_series(data="invalid_column")
+
 
 def test_levels_to_dataframe_no_sort() -> None:
     client = SGUClient()
