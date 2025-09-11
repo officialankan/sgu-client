@@ -2,16 +2,17 @@ name: CI/CD Pipeline
 
 on:
   pull_request:
-    branches: [ main ]
+    types: [ opened, synchronize, closed ]  # Standard PR events + closed for releases
+    branches: [ main, dev ]  # Allow PRs to both main and dev
   push:
-    branches: [ main ]
+    branches: [ dev ]  # Only allow direct pushes to dev (main gets PRs only)
 
 jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.11", "3.12"]
+        python-version: ["3.11", "3.12", "3.13"]
     
     steps:
     - uses: actions/checkout@v4
@@ -31,15 +32,23 @@ jobs:
         uv run ruff format --check
         
     - name: Run tests with coverage
-      run: uv run pytest
+      run: uv run pytest --cov=src --cov-report=term-missing --cov-report=html --cov-report=xml --cov-branch
+      
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v5
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        files: ./coverage.xml
+        fail_ci_if_error: true
 
   test-publish:
     needs: test
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request' && github.base_ref == 'main'
     
     permissions:
-      id-token: write  # For trusted publishing to TestPyPI
+      id-token: write        # For trusted publishing to TestPyPI
+      pull-requests: write   # For commenting on PRs
     
     steps:
     - uses: actions/checkout@v4
@@ -51,12 +60,15 @@ jobs:
       run: uv python install 3.11
       
     - name: Create dev version for TestPyPI
+      id: create_version
       run: |
-        # Create unique version for PR testing (e.g., 0.1.0.dev42.1701234567)
+        # Create unique version for PR testing (e.g., 0.2.0.dev14)
         PR_VERSION=$(python -c "import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['version'])")
-        DEV_VERSION="${PR_VERSION}.dev${{ github.event.number }}.$(date +%s)"
+        # Use PR number + run number for uniqueness
+        DEV_VERSION="${PR_VERSION}.dev${{ github.event.number }}${{ github.run_number }}"
         sed -i "s/version = \".*\"/version = \"$DEV_VERSION\"/" pyproject.toml
         echo "Created dev version: $DEV_VERSION"
+        echo "dev_version=$DEV_VERSION" >> $GITHUB_OUTPUT
         
     - name: Build package
       run: uv build
@@ -70,18 +82,30 @@ jobs:
       uses: actions/github-script@v7
       with:
         script: |
-          const version = process.env.DEV_VERSION || 'dev-version';
+          const version = '${{ steps.create_version.outputs.dev_version }}';
           github.rest.issues.createComment({
             issue_number: context.issue.number,
             owner: context.repo.owner,
             repo: context.repo.repo,
-            body: `🚀 **TestPyPI Release Published**\n\nYou can test this version with:\n\`\`\`bash\npip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ sgu-client\n\`\`\`\n\n_This is a staging release for testing purposes only._`
+            body: `🚀 **TestPyPI Release Published**\n\nVersion: \`${version}\`\n\nYou can test this version with:\n\`\`\`bash\npip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ sgu-client==${version}\n\`\`\`\n\n_This is a staging release for testing purposes only._`
           })
+
+  dev-pr-check:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' && github.base_ref == 'dev'
+    
+    steps:
+    - name: Dev PR Success
+      run: |
+        echo "✅ All tests passed for dev branch PR"
+        echo "This PR is ready to be merged into the dev branch"
+        echo "After merging, create a PR from dev to main to trigger a release"
 
   publish-and-release:
     needs: test
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main'
     
     permissions:
       contents: write  # For creating releases
@@ -89,6 +113,8 @@ jobs:
     
     steps:
     - uses: actions/checkout@v4
+      with:
+        ref: main  # Checkout the main branch after merge
     
     - name: Install uv
       uses: astral-sh/setup-uv@v3
@@ -118,17 +144,16 @@ jobs:
         files: |
           dist/*.tar.gz
           dist/*.whl
-        body: |
-          ## 📦 PyPI Release
-          
+        body: ${{ github.event.pull_request.body || format('## 📦 PyPI Release
+
           This release has been automatically published to PyPI.
           
           **Install with:**
           ```bash
-          pip install sgu-client==${{ steps.get_version.outputs.version }}
+          pip install sgu-client=={0}
           ```
           
           **Or upgrade:**
           ```bash
           pip install --upgrade sgu-client
-          ```
+          ```', steps.get_version.outputs.version) }}

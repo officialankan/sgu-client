@@ -5,6 +5,7 @@ A modern Python client library for accessing Geological Survey of Sweden (SGU) g
 [![Python Version](https://img.shields.io/badge/python-3.11+-blue.svg)](https://python.org)
 [![PyPI version](https://badge.fury.io/py/sgu-client.svg)](https://badge.fury.io/py/sgu-client)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![codecov](https://codecov.io/gh/officialankan/sgu-client/branch/main/graph/badge.svg)](https://codecov.io/gh/officialankan/sgu-client)
 [![Code style: ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 
 > This package is not affiliated with or endorsed by SGU.
@@ -12,7 +13,7 @@ A modern Python client library for accessing Geological Survey of Sweden (SGU) g
 ## Features
 
 - **Type-safe**: Full type hints with Pydantic validation
-- **Pandas integration**: Convert data to DataFrames with optional pandas dependency
+- **Pandas integration**: Convert data to DataFrames or Series with optional pandas dependency
 - **Friendly shortcuts**: Convenience functions to access stations by names, modeled levels by coordinates, and much more.
 
 Get going with your analysis in just a few lines of code:
@@ -119,7 +120,9 @@ with SGUClient() as client:
         platsbeteckning=["95_2", "101_1"],  # or obsplatsnamn=["Lagga_2", ...]
         limit=100
     )
-    df = measurements.to_dataframe()  # requires pandas
+    df = measurements.to_dataframe()  
+    # or series
+    series = measurements.to_series()  # defaults to 'grundvattenniva_m_o_h' (head) column with datetime index
 ```
 
 ### Modeled groundwater levels
@@ -164,7 +167,9 @@ with SGUClient() as client:
         area_ids=[30125, 30126],
         limit=50
     )
-    df = levels.to_dataframe()  # requires pandas
+    df = levels.to_dataframe()
+    # or series
+    series = levels.to_series()  # defaults to 'fyllnadsgrad_sma' (relative level, small resources) column with datetime index
 ```
 
 ### Working with Typed Data
