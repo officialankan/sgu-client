@@ -13,7 +13,7 @@ A modern Python client library for accessing Geological Survey of Sweden (SGU) g
 ## Features
 
 - **Type-safe**: Full type hints with Pydantic validation
-- **Pandas integration**: Convert data to DataFrames with optional pandas dependency
+- **Pandas integration**: Convert data to DataFrames or Series with optional pandas dependency
 - **Friendly shortcuts**: Convenience functions to access stations by names, modeled levels by coordinates, and much more.
 
 Get going with your analysis in just a few lines of code:
@@ -120,7 +120,9 @@ with SGUClient() as client:
         platsbeteckning=["95_2", "101_1"],  # or obsplatsnamn=["Lagga_2", ...]
         limit=100
     )
-    df = measurements.to_dataframe()  # requires pandas
+    df = measurements.to_dataframe()  
+    # or series
+    series = measurements.to_series()  # defaults to 'grundvattenniva_m_o_h' (head) column with datetime index
 ```
 
 ### Modeled groundwater levels
@@ -165,7 +167,9 @@ with SGUClient() as client:
         area_ids=[30125, 30126],
         limit=50
     )
-    df = levels.to_dataframe()  # requires pandas
+    df = levels.to_dataframe()
+    # or series
+    series = levels.to_series()  # defaults to 'fyllnadsgrad_sma' (relative level, small resources) column with datetime index
 ```
 
 ### Working with Typed Data
