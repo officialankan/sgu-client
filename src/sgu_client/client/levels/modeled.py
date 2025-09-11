@@ -38,7 +38,7 @@ class ModeledGroundwaterLevelClient:
 
         Args:
             bbox: Bounding box as [min_lon, min_lat, max_lon, max_lat]
-            limit: Maximum number of features to return (1-50000, default 50000)
+            limit: Maximum number of features to return (automatically paginated if needed)
             filter_expr: CQL filter expression
             sortby: List of sort expressions (e.g., ['+omrade_id'])
             **kwargs: Additional query parameters
@@ -95,7 +95,7 @@ class ModeledGroundwaterLevelClient:
         Args:
             bbox: Bounding box as [min_lon, min_lat, max_lon, max_lat]
             datetime: Date/time filter (RFC 3339 format or interval)
-            limit: Maximum number of features to return (1-50000, default 50000)
+            limit: Maximum number of features to return (automatically paginated if needed)
             filter_expr: CQL filter expression
             sortby: List of sort expressions (e.g., ['+datum', '-omrade_id'])
             **kwargs: Additional query parameters
