@@ -2,9 +2,10 @@ name: CI/CD Pipeline
 
 on:
   pull_request:
+    types: [ opened, synchronize, closed ]  # Standard PR events + closed for releases
     branches: [ main, dev ]  # Allow PRs to both main and dev
   push:
-    branches: [ main, dev ]  # Allow pushes to both main and dev
+    branches: [ dev ]  # Only allow direct pushes to dev (main gets PRs only)
 
 jobs:
   test:
@@ -100,7 +101,7 @@ jobs:
   publish-and-release:
     needs: test
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main'
     
     permissions:
       contents: write  # For creating releases
@@ -108,6 +109,8 @@ jobs:
     
     steps:
     - uses: actions/checkout@v4
+      with:
+        ref: main  # Checkout the main branch after merge
     
     - name: Install uv
       uses: astral-sh/setup-uv@v3
@@ -137,17 +140,16 @@ jobs:
         files: |
           dist/*.tar.gz
           dist/*.whl
-        body: |
-          ## 📦 PyPI Release
-          
+        body: ${{ github.event.pull_request.body || format('## 📦 PyPI Release
+
           This release has been automatically published to PyPI.
           
           **Install with:**
           ```bash
-          pip install sgu-client==${{ steps.get_version.outputs.version }}
+          pip install sgu-client=={0}
           ```
           
           **Or upgrade:**
           ```bash
           pip install --upgrade sgu-client
-          ```
+          ```', steps.get_version.outputs.version) }}
