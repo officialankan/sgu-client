@@ -172,6 +172,7 @@ def test_levels_to_dataframe() -> None:
     if len(valid_dates) > 1:
         assert valid_dates.is_monotonic_increasing
 
+
 def test_levels_to_series() -> None:
     client = SGUClient()
     levels = client.levels.modeled.get_levels(limit=5)
