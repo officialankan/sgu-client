@@ -1,4 +1,8 @@
-"""Basic tests for SGU Client."""
+"""Basic tests for SGU Client.
+
+TODO: Switch to mock requests like in tests/test_observed.py to improve test speed
+and reliability. Currently uses real API calls which makes tests slower.
+"""
 
 import pytest
 
