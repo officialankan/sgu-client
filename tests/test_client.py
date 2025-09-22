@@ -1,12 +1,25 @@
-"""Basic tests for SGU Client.
+"""Basic tests for SGU Client using mocked API responses.
 
-TODO: Switch to mock requests like in tests/test_observed.py to improve test speed
-and reliability. Currently uses real API calls which makes tests slower.
+These tests use mocked HTTP responses to ensure fast, reliable testing without
+depending on external API availability.
 """
 
+from unittest.mock import Mock, patch
+
 import pytest
+from requests import Response
 
 from sgu_client import SGUAPIError, SGUClient, SGUConfig
+from tests.mock_responses import create_mock_single_station_response
+
+
+def create_mock_response(response_data, status_code=200):
+    """Create a mock HTTP response object."""
+    mock_response = Mock(spec=Response)
+    mock_response.ok = True
+    mock_response.status_code = status_code
+    mock_response.json.return_value = response_data
+    return mock_response
 
 
 def test_create_basic_client():
@@ -28,8 +41,16 @@ def test_client_context_manager():
         assert client is not None
 
 
-def test_request_with_kwargs() -> None:
+@patch.object(SGUClient().levels.observed._client._session, "request")
+def test_request_with_kwargs(mock_request) -> None:
     """Test that we can pass additional kwargs to the request method."""
+    mock_response_data = create_mock_single_station_response(
+        station_id="stationer.test",
+        platsbeteckning="TEST_1",
+        obsplatsnamn="Test_Station",
+    )
+    mock_request.return_value = create_mock_response(mock_response_data)
+
     client = SGUClient(config=SGUConfig(debug=True))
     _ = client.levels.observed.get_stations(
         limit=1, params={"key": "value"}, data={"key": "value"}
@@ -37,8 +58,14 @@ def test_request_with_kwargs() -> None:
 
 
 def test_http_error() -> None:
-    client = SGUClient(
-        config=SGUConfig(debug=True, base_url="https://httpbin.org/status/404")
-    )
-    with pytest.raises(SGUAPIError):
-        _ = client.levels.observed.get_stations(limit=1)
+    """Test that HTTP errors are properly raised."""
+    with patch("requests.Session.request") as mock_request:
+        mock_response = Mock(spec=Response)
+        mock_response.ok = False
+        mock_response.status_code = 404
+        mock_response.json.return_value = {"error": "Not Found"}
+        mock_request.return_value = mock_response
+
+        client = SGUClient(config=SGUConfig(debug=True))
+        with pytest.raises(SGUAPIError):
+            _ = client.levels.observed.get_stations(limit=1)
