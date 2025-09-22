@@ -625,7 +625,7 @@ def test_api_timeout_error() -> None:
     """Test that API timeout errors are properly raised."""
     import requests.exceptions
 
-    with patch('requests.Session.request') as mock_request:
+    with patch("requests.Session.request") as mock_request:
         mock_request.side_effect = requests.exceptions.ReadTimeout("Read timeout")
 
         client = SGUClient()
@@ -637,8 +637,10 @@ def test_api_connection_error() -> None:
     """Test that API connection errors are properly raised."""
     import requests.exceptions
 
-    with patch('requests.Session.request') as mock_request:
-        mock_request.side_effect = requests.exceptions.ConnectionError("Connection failed")
+    with patch("requests.Session.request") as mock_request:
+        mock_request.side_effect = requests.exceptions.ConnectionError(
+            "Connection failed"
+        )
 
         client = SGUClient()
         with pytest.raises(SGUConnectionError, match="Connection failed"):
@@ -647,7 +649,7 @@ def test_api_connection_error() -> None:
 
 def test_api_server_error() -> None:
     """Test that API server errors are properly raised."""
-    with patch('requests.Session.request') as mock_request:
+    with patch("requests.Session.request") as mock_request:
         mock_response = Mock(spec=Response)
         mock_response.ok = False
         mock_response.status_code = 500
@@ -661,7 +663,7 @@ def test_api_server_error() -> None:
 
 def test_api_not_found_error() -> None:
     """Test that API 404 errors are properly raised."""
-    with patch('requests.Session.request') as mock_request:
+    with patch("requests.Session.request") as mock_request:
         mock_response = Mock(spec=Response)
         mock_response.ok = False
         mock_response.status_code = 404
@@ -675,7 +677,7 @@ def test_api_not_found_error() -> None:
 
 def test_empty_station_response_handling() -> None:
     """Test handling of empty station responses."""
-    with patch('requests.Session.request') as mock_request:
+    with patch("requests.Session.request") as mock_request:
         mock_response_data = create_mock_empty_collection_response()
         mock_request.return_value = create_mock_response(mock_response_data)
 
@@ -686,7 +688,7 @@ def test_empty_station_response_handling() -> None:
 
 def test_multiple_station_response_handling() -> None:
     """Test handling of multiple stations returned for single ID (edge case)."""
-    with patch('requests.Session.request') as mock_request:
+    with patch("requests.Session.request") as mock_request:
         # Create response with multiple stations (should not happen but test edge case)
         stations = [
             create_mock_station_feature(station_id="duplicate.1"),
@@ -702,7 +704,7 @@ def test_multiple_station_response_handling() -> None:
 
 def test_malformed_json_response() -> None:
     """Test handling of malformed JSON responses."""
-    with patch('requests.Session.request') as mock_request:
+    with patch("requests.Session.request") as mock_request:
         mock_response = Mock(spec=Response)
         mock_response.ok = False
         mock_response.status_code = 500
