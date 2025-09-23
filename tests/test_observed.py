@@ -718,3 +718,39 @@ def test_malformed_json_response() -> None:
 
         # Should raise SGUAPIError when JSON parsing fails
         assert "API request failed with status 500" in str(exc_info.value)
+
+
+def test_station_with_float_idiam() -> None:
+    """Test that stations with float idiam values are handled correctly.
+
+    This addresses the bug where idiam field was expected to be int but
+    the API returns float values like 50.8, causing ValidationError.
+    """
+    # Create a mock station with float idiam value
+    station_data = create_mock_station_feature(
+        station_id="stationer.float_idiam", platsbeteckning="float_test"
+    )
+
+    # Add the problematic float idiam field to properties
+    station_data["properties"]["idiam"] = 50.8
+    station_data["properties"]["stationsanmarkning"] = "markanvändningspåverkad"
+
+    collection_data = create_mock_station_collection_response([station_data])
+
+    with patch("requests.Session.request") as mock_request:
+        mock_request.return_value = create_mock_response(collection_data)
+
+        client = SGUClient()
+
+        # This should not raise a ValidationError anymore
+        stations = client.levels.observed.get_stations(
+            filter_expr="stationsanmarkning='markanvändningspåverkad'"
+        )
+
+        assert len(stations.features) == 1
+        station = stations.features[0]
+
+        # Verify the float idiam value is preserved correctly
+        assert station.properties.idiam == 50.8
+        assert isinstance(station.properties.idiam, float)
+        assert station.properties.stationsanmarkning == "markanvändningspåverkad"
