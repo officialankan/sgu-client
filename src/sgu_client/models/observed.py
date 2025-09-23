@@ -51,7 +51,7 @@ class GroundwaterStationProperties(SGUBaseModel):
     tecken_jorddjup: str | None = Field(None, description="Soil depth sign")
 
     # Well construction
-    idiam: int | None = Field(None, description="Inner diameter")
+    idiam: float | None = Field(None, description="Inner diameter")
     brunnsmtrl: str | None = Field(None, description="Well material")
     brunnsmtrl_tx: str | None = Field(None, description="Well material description")
     borrhalslutning: str | None = Field(None, description="Borehole closure")
