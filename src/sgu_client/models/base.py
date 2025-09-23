@@ -20,6 +20,8 @@ class SGUBaseModel(BaseModel):
         use_enum_values=True,
         # Validate assignments
         validate_assignment=True,
+        # Allow instantiation by both field names and aliases
+        populate_by_name=True,
     )
 
 

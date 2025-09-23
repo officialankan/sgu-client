@@ -68,9 +68,9 @@ def create_mock_measurement_feature(
         "id": measurement_id,
         "geometry": {"type": "Point", "coordinates": [16.123456, 58.789012]},
         "properties": {
+            "rowid": 12345,  # Required field
             "platsbeteckning": platsbeteckning,
             "obsdatum": observation_date.isoformat(),
-            "observation_date": observation_date.isoformat(),
             "grundvattenniva_m_o_h": water_level,
             "grundvattenniva_m_urok": 85.35,  # markyta_m_o_h - grundvattenniva_m_o_h
             "metod_for_matning": metod,
