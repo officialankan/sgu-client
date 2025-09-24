@@ -18,8 +18,12 @@ if TYPE_CHECKING:
 class ModeledAreaProperties(SGUBaseModel):
     """Properties for a modeled groundwater area."""
 
-    omrade_id: int = Field(..., description="Area ID")
-    url_tidsserie: str | None = Field(None, description="Time series URL for this area")
+    model_config = {"populate_by_name": True}
+
+    area_id: int = Field(..., alias="omrade_id", description="Area ID")
+    time_series_url: str | None = Field(
+        None, alias="url_tidsserie", description="Time series URL for this area"
+    )
 
 
 class ModeledArea(SGUBaseModel):
@@ -37,42 +41,54 @@ class ModeledArea(SGUBaseModel):
 class ModeledGroundwaterLevelProperties(SGUBaseModel):
     """Properties for a modeled groundwater level."""
 
+    model_config = {"populate_by_name": True}
+
     # Date and area identification
-    datum: str | None = Field(None, description="Date (ISO format)")
-    omrade_id: int = Field(..., description="Area ID")
+    date: str | None = Field(None, alias="datum", description="Date (ISO format)")
+    area_id: int = Field(..., alias="omrade_id", description="Area ID")
 
     # Deviation percentiles (0-100)
-    grundvattensituation_sma: int | None = Field(
-        None, description="Deviation for small resources (percentile 0-100)"
+    deviation_small_resources: int | None = Field(
+        None,
+        alias="grundvattensituation_sma",
+        description="Deviation for small resources (percentile 0-100)",
     )
-    grundvattensituation_stora: int | None = Field(
-        None, description="Deviation for large resources (percentile 0-100)"
+    deviation_large_resources: int | None = Field(
+        None,
+        alias="grundvattensituation_stora",
+        description="Deviation for large resources (percentile 0-100)",
     )
 
     # Relative level percentiles (0-100)
-    fyllnadsgrad_sma: int | None = Field(
-        None, description="Relative level for small resources (percentile 0-100)"
+    relative_level_small_resources: int | None = Field(
+        None,
+        alias="fyllnadsgrad_sma",
+        description="Relative level for small resources (percentile 0-100)",
     )
-    fyllnadsgrad_stora: int | None = Field(
-        None, description="Relative level for large resources (percentile 0-100)"
+    relative_level_large_resources: int | None = Field(
+        None,
+        alias="fyllnadsgrad_stora",
+        description="Relative level for large resources (percentile 0-100)",
     )
 
     # Object identifier
-    objectid: int = Field(..., description="Object ID")
+    object_id: int = Field(..., alias="objectid", description="Object ID")
 
-    @field_validator("grundvattensituation_stora", "fyllnadsgrad_stora", mode="before")
+    @field_validator(
+        "deviation_large_resources", "relative_level_large_resources", mode="before"
+    )
     @classmethod
     def transform_missing_values(cls, v):
         """Transform -1 values to None for large resource fields."""
         return None if v == -1 else v
 
     @property
-    def date(self) -> datetime | None:
+    def date_parsed(self) -> datetime | None:
         """Parse date as datetime object (daily data, no timezone)."""
-        if self.datum:
+        if self.date:
             try:
                 # Remove 'Z' suffix and parse as naive datetime (daily data)
-                date_str = self.datum.rstrip("Z")
+                date_str = self.date.rstrip("Z")
                 return datetime.fromisoformat(date_str)
             except (ValueError, AttributeError):
                 return None
@@ -126,7 +142,7 @@ class ModeledAreaCollection(SGUResponse):
         data = []
         for feature in self.features:
             row: dict[str, Any] = {
-                "area_id": feature.id,
+                "feature_id": feature.id,
                 "geometry_type": feature.geometry.type,
             }
 
@@ -153,8 +169,8 @@ class ModeledAreaCollection(SGUResponse):
                 row["centroid_longitude"] = None
                 row["centroid_latitude"] = None
 
-            # Add all properties
-            row.update(feature.properties.model_dump())
+            # Add all properties using English field names
+            row.update(feature.properties.model_dump(by_alias=False))
             data.append(row)
 
         pd = get_pandas()
@@ -202,11 +218,14 @@ class ModeledGroundwaterLevelCollection(SGUResponse):
         for feature in self.features:
             row = {
                 "level_id": feature.id,
-                "date": feature.properties.date,
+                "date": feature.properties.date_parsed,
             }
 
-            # Add all properties
-            row.update(feature.properties.model_dump())
+            # Add all properties using English field names
+            props = feature.properties.model_dump(by_alias=False)
+            # Remove the raw date string since we want the parsed datetime
+            props.pop("date", None)
+            row.update(props)
             data.append(row)
 
         pd = get_pandas()
@@ -226,7 +245,7 @@ class ModeledGroundwaterLevelCollection(SGUResponse):
 
         Args:
             index: Column name to use as index. If None, `date` is used.
-            data: Column name to use as data. If None, `fyllnadsgrad_sma` is used.
+            data: Column name to use as data. If None, `relative_level_small_resources` is used.
             sort_by_date: Whether to sort the data by observation date before creating the Series.
 
         Returns:
@@ -236,7 +255,7 @@ class ModeledGroundwaterLevelCollection(SGUResponse):
         pd = get_pandas()
 
         if data is None:
-            data = "fyllnadsgrad_sma"
+            data = "relative_level_small_resources"
         if index is None:
             index = "date"
 

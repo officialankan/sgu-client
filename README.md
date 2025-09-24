@@ -144,7 +144,7 @@ with SGUClient() as client:
     
     # get a specific area by ID
     area = client.levels.modeled.get_area("omraden.30125")
-    print(f"Area ID: {area.properties.omrade_id}")
+    print(f"Area ID: {area.properties.area_id}")
     print(f"Geometry: {area.geometry.type}")
     
     # convenience function to get levels for a specific area
@@ -169,7 +169,7 @@ with SGUClient() as client:
     )
     df = levels.to_dataframe()
     # or series
-    series = levels.to_series()  # defaults to 'fyllnadsgrad_sma' (relative level, small resources) column with datetime index
+    series = levels.to_series()  # defaults to 'relative_level_small_resources' column with datetime index
 ```
 
 ### Working with Typed Data
