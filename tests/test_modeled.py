@@ -81,7 +81,7 @@ def test_get_area_by_id(mock_request) -> None:
     assert area is not None
     assert isinstance(area, ModeledArea)
     assert area.id == TEST_AREA_ID
-    assert area.properties.omrade_id == TEST_AREA_OMRADE_ID
+    assert area.properties.area_id == TEST_AREA_OMRADE_ID
     assert area.geometry.type == "MultiPolygon"
     assert area.geometry.coordinates is not None
 
@@ -129,10 +129,10 @@ def test_get_level_by_id(mock_request) -> None:
     assert level is not None
     assert isinstance(level, ModeledGroundwaterLevel)
     assert level.id == TEST_LEVEL_ID
-    assert level.properties.omrade_id == TEST_LEVEL_OMRADE_ID
-    assert level.properties.datum == TEST_LEVEL_DATUM
-    assert level.properties.objectid == TEST_LEVEL_OBJECTID
-    assert isinstance(level.properties.date, datetime)
+    assert level.properties.area_id == TEST_LEVEL_OMRADE_ID
+    assert level.properties.date == TEST_LEVEL_DATUM
+    assert level.properties.object_id == TEST_LEVEL_OBJECTID
+    assert isinstance(level.properties.date_parsed, datetime)
 
 
 def test_get_level_not_found() -> None:
@@ -180,8 +180,8 @@ def test_levels_basic_query(mock_request) -> None:
 
     # Check that we got some basic data structure
     for level in levels.features:
-        assert level.properties.omrade_id is not None
-        assert level.properties.objectid is not None
+        assert level.properties.area_id is not None
+        assert level.properties.object_id is not None
 
 
 @patch.object(SGUClient().levels.modeled._client._session, "request")
@@ -203,7 +203,7 @@ def test_levels_with_filter_expr(mock_request) -> None:
 
     # All results should have the specified area ID
     for level in levels.features:
-        assert level.properties.omrade_id == TEST_LEVEL_OMRADE_ID
+        assert level.properties.area_id == TEST_LEVEL_OMRADE_ID
 
 
 @patch.object(SGUClient().levels.modeled._client._session, "request")
@@ -226,7 +226,9 @@ def test_levels_with_sortby(mock_request) -> None:
 
     # Check that dates are in descending order (latest first)
     dates = [
-        level.properties.date for level in levels.features if level.properties.date
+        level.properties.date_parsed
+        for level in levels.features
+        if level.properties.date_parsed
     ]
     for i in range(len(dates) - 1):
         assert dates[i] >= dates[i + 1]
@@ -245,14 +247,14 @@ def test_areas_to_dataframe(mock_request) -> None:
     assert areas is not None
     df = areas.to_dataframe()
     assert not df.empty
+    assert "feature_id" in df.columns
     assert "area_id" in df.columns
-    assert "omrade_id" in df.columns
     assert "geometry_type" in df.columns
     assert "centroid_longitude" in df.columns
     assert "centroid_latitude" in df.columns
 
     # Check that we have the expected area
-    assert TEST_AREA_ID in df["area_id"].tolist()
+    assert TEST_AREA_ID in df["feature_id"].tolist()
 
 
 @patch.object(SGUClient().levels.modeled._client._session, "request")
@@ -270,9 +272,9 @@ def test_levels_to_dataframe(mock_request) -> None:
     assert not df.empty
     assert "level_id" in df.columns
     assert "date" in df.columns
-    assert "omrade_id" in df.columns
-    assert "datum" in df.columns
-    assert "objectid" in df.columns
+    assert "area_id" in df.columns
+    assert "date" in df.columns
+    assert "object_id" in df.columns
 
     # Assert that it is sorted by date by default
     assert is_datetime(df["date"])
@@ -310,7 +312,9 @@ def test_levels_to_series_custom_index_data(mock_request) -> None:
     client = SGUClient()
     levels = client.levels.modeled.get_levels(limit=5)
     assert levels is not None
-    series = levels.to_series(index="fyllnadsgrad_sma", data="fyllnadsgrad_stora")
+    series = levels.to_series(
+        index="relative_level_small_resources", data="relative_level_large_resources"
+    )
     assert not series.empty
 
     with pytest.raises(ValueError):
@@ -349,11 +353,11 @@ def test_date_property_parsing(mock_request) -> None:
 
     client = SGUClient()
     level = client.levels.modeled.get_level(TEST_LEVEL_ID)
-    assert level.properties.datum == TEST_LEVEL_DATUM
-    assert isinstance(level.properties.date, datetime)
-    assert level.properties.date.year == 2024
-    assert level.properties.date.month == 8
-    assert level.properties.date.day == 1
+    assert level.properties.date == TEST_LEVEL_DATUM
+    assert isinstance(level.properties.date_parsed, datetime)
+    assert level.properties.date_parsed.year == 2024
+    assert level.properties.date_parsed.month == 8
+    assert level.properties.date_parsed.day == 1
 
 
 @patch.object(SGUClient().levels.modeled._client._session, "request")
@@ -371,14 +375,14 @@ def test_percentile_validation(mock_request) -> None:
     for level in levels.features:
         props = level.properties
         # Check that percentiles are either None or in valid range
-        if props.grundvattensituation_sma is not None:
-            assert 0 <= props.grundvattensituation_sma <= 100
-        if props.grundvattensituation_stora is not None:
-            assert 0 <= props.grundvattensituation_stora <= 100
-        if props.fyllnadsgrad_sma is not None:
-            assert 0 <= props.fyllnadsgrad_sma <= 100
-        if props.fyllnadsgrad_stora is not None:
-            assert 0 <= props.fyllnadsgrad_stora <= 100
+        if props.deviation_small_resources is not None:
+            assert 0 <= props.deviation_small_resources <= 100
+        if props.deviation_large_resources is not None:
+            assert 0 <= props.deviation_large_resources <= 100
+        if props.relative_level_small_resources is not None:
+            assert 0 <= props.relative_level_small_resources <= 100
+        if props.relative_level_large_resources is not None:
+            assert 0 <= props.relative_level_large_resources <= 100
 
 
 @patch.object(SGUClient().levels.modeled._client._session, "request")
@@ -397,7 +401,7 @@ def test_get_levels_by_area(mock_request) -> None:
 
     # All results should have the specified area ID
     for level in levels.features:
-        assert level.properties.omrade_id == TEST_LEVEL_OMRADE_ID
+        assert level.properties.area_id == TEST_LEVEL_OMRADE_ID
 
 
 @patch.object(SGUClient().levels.modeled._client._session, "request")
@@ -414,8 +418,8 @@ def test_get_levels_by_area_to_dataframe(mock_request) -> None:
     assert not df.empty
     assert "level_id" in df.columns
     assert "date" in df.columns
-    assert "omrade_id" in df.columns
-    assert "datum" in df.columns
+    assert "area_id" in df.columns
+    assert "date" in df.columns
 
     assert is_datetime(df["date"])
     # Note: some dates might be None, so we need to handle that
@@ -440,7 +444,7 @@ def test_get_levels_by_area_with_limit(mock_request) -> None:
 
     # All results should have the specified area ID
     for level in levels.features:
-        assert level.properties.omrade_id == TEST_LEVEL_OMRADE_ID
+        assert level.properties.area_id == TEST_LEVEL_OMRADE_ID
 
 
 def test_get_levels_by_area_nonexistent() -> None:
@@ -486,7 +490,7 @@ def test_get_levels_by_areas(mock_request) -> None:
 
     # All results should have one of the specified area IDs
     for level in levels.features:
-        assert level.properties.omrade_id in area_ids
+        assert level.properties.area_id in area_ids
 
 
 @patch.object(SGUClient().levels.modeled._client._session, "request")
@@ -507,7 +511,7 @@ def test_get_levels_by_areas_single_area(mock_request) -> None:
 
     # All results should have the specified area ID
     for level in levels.features:
-        assert level.properties.omrade_id == TEST_LEVEL_OMRADE_ID
+        assert level.properties.area_id == TEST_LEVEL_OMRADE_ID
 
 
 def test_get_levels_by_areas_empty_list() -> None:
@@ -545,8 +549,8 @@ def test_get_levels_by_areas_to_dataframe(mock_request) -> None:
     assert not df.empty
     assert "level_id" in df.columns
     assert "date" in df.columns
-    assert "omrade_id" in df.columns
-    assert "datum" in df.columns
+    assert "area_id" in df.columns
+    assert "date" in df.columns
 
     assert is_datetime(df["date"])
     # Note: some dates might be None, so we need to handle that
@@ -555,8 +559,8 @@ def test_get_levels_by_areas_to_dataframe(mock_request) -> None:
         assert valid_dates.is_monotonic_increasing
 
     # Check that all area IDs in dataframe are from our requested list
-    for omrade_id in df["omrade_id"].unique():
-        assert omrade_id in area_ids
+    for area_id in df["area_id"].unique():
+        assert area_id in area_ids
 
 
 @patch.object(SGUClient().levels.modeled._client._session, "request")
@@ -576,7 +580,7 @@ def test_get_levels_by_areas_with_limit(mock_request) -> None:
 
     # All results should have one of the specified area IDs
     for level in levels.features:
-        assert level.properties.omrade_id in area_ids
+        assert level.properties.area_id in area_ids
 
 
 def test_get_levels_by_areas_nonexistent() -> None:
@@ -609,7 +613,7 @@ def test_get_levels_by_areas_mixed_existing_nonexistent(mock_request) -> None:
 
     # Should only have levels from the existing area
     for level in levels.features:
-        assert level.properties.omrade_id == TEST_LEVEL_OMRADE_ID
+        assert level.properties.area_id == TEST_LEVEL_OMRADE_ID
 
 
 def test_build_query_params_helper() -> None:
@@ -658,7 +662,7 @@ def test_get_levels_by_coords_single_area(mock_request) -> None:
     assert len(levels.features) > 0
 
     # Check that all levels have the same area ID (single area found)
-    area_ids = {level.properties.omrade_id for level in levels.features}
+    area_ids = {level.properties.area_id for level in levels.features}
     assert len(area_ids) == 1  # Should only find one area
 
 
@@ -759,8 +763,8 @@ def test_get_levels_by_coords_with_datetime(mock_request) -> None:
 
     # Check that all dates are from 2023
     for level in levels.features:
-        if level.properties.date:
-            assert level.properties.date.year == 2023
+        if level.properties.date_parsed:
+            assert level.properties.date_parsed.year == 2023
 
 
 @patch.object(SGUClient().levels.modeled._client._session, "request")
@@ -810,10 +814,10 @@ def test_get_levels_by_coords_custom_buffer(mock_request) -> None:
 
     # Large buffer should find more or equal areas than small buffer
     small_area_ids = {
-        level.properties.omrade_id for level in small_buffer_levels.features
+        level.properties.area_id for level in small_buffer_levels.features
     }
     large_area_ids = {
-        level.properties.omrade_id for level in large_buffer_levels.features
+        level.properties.area_id for level in large_buffer_levels.features
     }
     assert len(large_area_ids) >= len(small_area_ids)
 

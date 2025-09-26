@@ -13,72 +13,126 @@ if TYPE_CHECKING:
     import pandas as pd
 
 
-# Groundwater station properties (Swedish API field names)
+# Groundwater station properties (English field names with Swedish API aliases)
 class GroundwaterStationProperties(SGUBaseModel):
     """Properties for a groundwater monitoring station."""
 
     # Station identification
-    rowid: int = Field(..., description="Row ID")
-    platsbeteckning: str | None = Field(None, description="Platsbeteckning")
-    obsplatsnamn: str | None = Field(None, description="Observation place name")
-    provplatsid: str | None = Field(None, description="Sample site ID")
+    row_id: int = Field(..., alias="rowid", description="Row ID")
+    station_id: str | None = Field(
+        None, alias="platsbeteckning", description="Station identifier"
+    )
+    station_name: str | None = Field(
+        None, alias="obsplatsnamn", description="Observation station name"
+    )
+    sample_site_id: str | None = Field(
+        None, alias="provplatsid", description="Sample site ID"
+    )
 
     # Time period
-    fdat: str | None = Field(None, description="From date")  # ISO date string
-    tdat: str | None = Field(None, description="To date")  # ISO date string
+    active_since: str | None = Field(
+        None, alias="fdat", description="Active since date"
+    )  # ISO date string
+    active_until: str | None = Field(
+        None, alias="tdat", description="Active until date"
+    )  # ISO date string
 
     # Elevation and reference
-    refniva: float | None = Field(None, description="Reference level")
-    hojdmetod: str | None = Field(None, description="Height method")
-    hojdsystem: str | None = Field(None, description="Height system")
-    rorhojd: float | None = Field(None, description="Pipe height")
-    rorlangd: float | None = Field(None, description="Pipe length")
+    reference_level: float | None = Field(
+        None, alias="refniva", description="Reference level"
+    )
+    elevation_method: str | None = Field(
+        None, alias="hojdmetod", description="Height/elevation measurement method"
+    )
+    elevation_system: str | None = Field(
+        None, alias="hojdsystem", description="Height/elevation reference system"
+    )
+    well_height: float | None = Field(None, alias="rorhojd", description="Pipe height")
+    well_length: float | None = Field(None, alias="rorlangd", description="Pipe length")
 
     # Aquifer information
-    akvifer: str | None = Field(None, description="Aquifer code")
-    akvifer_tx: str | None = Field(None, description="Aquifer description")
+    aquifer_code: str | None = Field(None, alias="akvifer", description="Aquifer code")
+    aquifer_description: str | None = Field(
+        None, alias="akvifer_tx", description="Aquifer description"
+    )
 
     # Geology
-    jordart: str | None = Field(None, description="Soil type code")
-    jordart_tx: str | None = Field(None, description="Soil type description")
-    genes_jord: str | None = Field(None, description="Soil genesis code")
-    genes_jord_tx: str | None = Field(None, description="Soil genesis description")
-    jord_ovan_jord: str | None = Field(None, description="Soil above soil")
-    jord_ovan_jord_tx: str | None = Field(
-        None, description="Soil above soil description"
+    soil_code: str | None = Field(None, alias="jordart", description="Soil type code")
+    soil_description: str | None = Field(
+        None, alias="jordart_tx", description="Soil type description"
     )
-    jorddjup: float | None = Field(None, description="Soil depth")
-    tecken_jorddjup: str | None = Field(None, description="Soil depth sign")
+    soil_genesis_code: str | None = Field(
+        None, alias="genes_jord", description="Soil genesis code"
+    )
+    soil_genesis_description: str | None = Field(
+        None, alias="genes_jord_tx", description="Soil genesis description"
+    )
+    overlying_soil_code: str | None = Field(
+        None, alias="jord_ovan_jord", description="Soil above soil code"
+    )
+    overlying_soil_description: str | None = Field(
+        None, alias="jord_ovan_jord_tx", description="Soil above soil description"
+    )
+    soil_depth: float | None = Field(None, alias="jorddjup", description="Soil depth")
+    soil_depth_qualifier: str | None = Field(
+        None, alias="tecken_jorddjup", description="Soil depth sign/qualifier"
+    )
 
     # Well construction
-    idiam: float | None = Field(None, description="Inner diameter")
-    brunnsmtrl: str | None = Field(None, description="Well material")
-    brunnsmtrl_tx: str | None = Field(None, description="Well material description")
-    borrhalslutning: str | None = Field(None, description="Borehole closure")
-    sillangd: float | None = Field(None, description="Screen length")
+    inner_diameter: float | None = Field(
+        None, alias="idiam", description="Inner diameter"
+    )
+    well_material_code: str | None = Field(
+        None, alias="brunnsmtrl", description="Well material code"
+    )
+    well_material_description: str | None = Field(
+        None, alias="brunnsmtrl_tx", description="Well material description"
+    )
+    borehole_completion: str | None = Field(
+        None, alias="borrhalslutning", description="Borehole closure/completion"
+    )
+    screen_length: float | None = Field(
+        None, alias="sillangd", description="Screen length"
+    )
 
     # Hydrogeological setting
-    geohylag: str | None = Field(None, description="Geohydrological position code")
-    geohylag_tx: str | None = Field(
-        None, description="Geohydrological position description"
+    hydrogeological_setting_code: str | None = Field(
+        None, alias="geohylag", description="Geohydrological position code"
+    )
+    hydrogeological_setting_description: str | None = Field(
+        None, alias="geohylag_tx", description="Geohydrological position description"
     )
 
     # Administrative
-    kommunkod: str | None = Field(None, description="Municipality code")
-    kommun: str | None = Field(None, description="Municipality")
-    lanskod: str | None = Field(None, description="County code")
-    lan: str | None = Field(None, description="County")
-    eucd_gwb: str | None = Field(None, description="EU groundwater body")
+    municipality_code: str | None = Field(
+        None, alias="kommunkod", description="Municipality code"
+    )
+    municipality: str | None = Field(None, alias="kommun", description="Municipality")
+    county_code: str | None = Field(None, alias="lanskod", description="County code")
+    county: str | None = Field(None, alias="lan", description="County")
+    eu_groundwater_body: str | None = Field(
+        None, alias="eucd_gwb", description="EU groundwater body"
+    )
 
     # Coordinates (projected)
-    n: float | None = Field(None, description="North coordinate")
-    e: float | None = Field(None, description="East coordinate")
+    north_coordinate: float | None = Field(
+        None, alias="n", description="North coordinate"
+    )
+    east_coordinate: float | None = Field(
+        None, alias="e", description="East coordinate"
+    )
 
     # Symbols and notes
-    symbol_magasin: str | None = Field(None, description="Aquifer symbol")
-    symbol_paverkan: str | None = Field(None, description="Impact symbol")
-    stationsanmarkning: str | None = Field(None, description="Station note")
-    kommentar: str | None = Field(None, description="Comment")
+    aquifer_symbol: str | None = Field(
+        None, alias="symbol_magasin", description="Aquifer symbol"
+    )
+    impact_symbol: str | None = Field(
+        None, alias="symbol_paverkan", description="Impact symbol"
+    )
+    station_remark: str | None = Field(
+        None, alias="stationsanmarkning", description="Station note/remarks"
+    )
+    comments: str | None = Field(None, alias="kommentar", description="Comment")
 
 
 class GroundwaterStation(SGUBaseModel):
@@ -92,53 +146,67 @@ class GroundwaterStation(SGUBaseModel):
     )
 
 
-# Groundwater measurement properties
+# Groundwater measurement properties (English field names with Swedish API aliases)
 class GroundwaterMeasurementProperties(SGUBaseModel):
     """Properties for a groundwater level measurement."""
 
     # Identification
-    rowid: int = Field(..., description="Row ID")
-    platsbeteckning: str | None = Field(None, description="Platsbeteckning")
+    row_id: int = Field(..., alias="rowid", description="Row ID")
+    station_id: str | None = Field(
+        None, alias="platsbeteckning", description="Station identifier"
+    )
 
     # Measurement data
-    obsdatum: str | None = Field(
-        None, description="Observation date"
+    observation_date: str | None = Field(
+        None, alias="obsdatum", description="Observation date"
     )  # ISO datetime string
-    grundvattenniva_m_urok: float | None = Field(
-        None, description="Groundwater level (m below ground)"
+    water_level_below_ground_m: float | None = Field(
+        None,
+        alias="grundvattenniva_m_urok",
+        description="Groundwater level (m below ground)",
     )
-    grundvattenniva_m_o_h: float | None = Field(
-        None, description="Groundwater level (m above sea level)"
+    water_level_masl_m: float | None = Field(
+        None,
+        alias="grundvattenniva_m_o_h",
+        description="Groundwater level (m above sea level)",
     )
-    grundvattenniva_m_u_markyta: float | None = Field(
-        None, description="Groundwater level (m below surface)"
+    water_level_below_surface_m: float | None = Field(
+        None,
+        alias="grundvattenniva_m_u_markyta",
+        description="Groundwater level (m below surface)",
     )
 
     # Measurement method and quality
-    metod_for_matning: str | None = Field(None, description="Measurement method")
-    nivaanmarkning: str | None = Field(None, description="Level note")
+    measurement_method: str | None = Field(
+        None, alias="metod_for_matning", description="Measurement method"
+    )
+    level_remark: str | None = Field(
+        None, alias="nivaanmarkning", description="Level note/remarks"
+    )
 
     # Metadata
-    lastupdate: str | None = Field(
-        None, description="Last update"
+    last_updated: str | None = Field(
+        None, alias="lastupdate", description="Last update timestamp"
     )  # ISO datetime string
 
     @property
-    def observation_date(self) -> datetime | None:
+    def observation_datetime(self) -> datetime | None:
         """Parse observation date as datetime object."""
-        if self.obsdatum:
+        if self.observation_date:
             try:
-                return datetime.fromisoformat(self.obsdatum.replace("Z", "+00:00"))
+                return datetime.fromisoformat(
+                    self.observation_date.replace("Z", "+00:00")
+                )
             except (ValueError, AttributeError):
                 return None
         return None
 
     @property
-    def last_update_date(self) -> datetime | None:
+    def last_updated_datetime(self) -> datetime | None:
         """Parse last update as datetime object."""
-        if self.lastupdate:
+        if self.last_updated:
             try:
-                return datetime.fromisoformat(self.lastupdate.replace("Z", "+00:00"))
+                return datetime.fromisoformat(self.last_updated.replace("Z", "+00:00"))
             except (ValueError, AttributeError):
                 return None
         return None
@@ -253,8 +321,8 @@ class GroundwaterMeasurementCollection(SGUResponse):
         for feature in self.features:
             row = {
                 "measurement_id": feature.id,
-                "observation_date": feature.properties.observation_date,
-                "last_update": feature.properties.last_update_date,
+                "observation_date": feature.properties.observation_datetime,
+                "last_update": feature.properties.last_updated_datetime,
             }
             # Add geometry if present
             if feature.geometry:
@@ -276,6 +344,13 @@ class GroundwaterMeasurementCollection(SGUResponse):
 
         pd = get_pandas()
         df = pd.DataFrame(data)
+
+        # Ensure datetime columns are properly typed
+        if not df.empty and "observation_date" in df.columns:
+            df["observation_date"] = pd.to_datetime(df["observation_date"])
+        if not df.empty and "last_update" in df.columns:
+            df["last_update"] = pd.to_datetime(df["last_update"])
+
         if sort_by_date:
             df = df.sort_values(by="observation_date")
         return df
@@ -291,7 +366,7 @@ class GroundwaterMeasurementCollection(SGUResponse):
 
         Args:
             index: Column name to use as index. If None, `observation_date` is used.
-            data: Column name to use as data. If None, `grundvattenniva_m_o_h` is used.
+            data: Column name to use as data. If None, `water_level_masl_m` is used.
             sort_by_date: Whether to sort the data by observation date before creating the Series.
 
         Returns:
@@ -301,7 +376,7 @@ class GroundwaterMeasurementCollection(SGUResponse):
         pd = get_pandas()
 
         if data is None:
-            data = "grundvattenniva_m_o_h"
+            data = "water_level_masl_m"
         if index is None:
             index = "observation_date"
 

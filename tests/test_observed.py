@@ -70,8 +70,8 @@ def test_get_lagga_station_by_id(mock_request) -> None:
     assert station is not None
     assert isinstance(station, GroundwaterStation)
     assert station.id == TEST_STATION_ID
-    assert station.properties.platsbeteckning == TEST_STATION_PLATSBETECKNING
-    assert station.properties.obsplatsnamn == TEST_STATION_OBSPLATSNAMN
+    assert station.properties.station_id == TEST_STATION_PLATSBETECKNING
+    assert station.properties.station_name == TEST_STATION_OBSPLATSNAMN
 
 
 @patch.object(SGUClient().levels.observed._client._session, "request")
@@ -89,8 +89,8 @@ def test_get_measurement_by_id(mock_request) -> None:
 
     assert isinstance(measurement, GroundwaterMeasurement)
     assert measurement.id == TEST_MEASUREMENT_ID
-    assert measurement.properties.metod_for_matning == TEST_MEASUREMENT_METOD_FOR_M
-    assert isinstance(measurement.properties.observation_date, datetime)
+    assert measurement.properties.measurement_method == TEST_MEASUREMENT_METOD_FOR_M
+    assert isinstance(measurement.properties.observation_datetime, datetime)
 
 
 @patch.object(SGUClient().levels.observed._client._session, "request")
@@ -108,16 +108,14 @@ def test_stations_to_dataframe(mock_request) -> None:
     assert stations is not None
     df = stations.to_dataframe()
     assert not df.empty
-    assert "platsbeteckning" in df.columns
-    assert "obsplatsnamn" in df.columns
-    assert all(
-        station in df["platsbeteckning"].tolist() for station in ["95_2", "101_1"]
-    )
+    assert "station_id" in df.columns
+    assert "station_name" in df.columns
+    assert all(station in df["station_id"].tolist() for station in ["95_2", "101_1"])
 
 
 @patch.object(SGUClient().levels.observed._client._session, "request")
-def test_station_by_name_platsbeteckning(mock_request) -> None:
-    """Test getting station by platsbeteckning with mocked response."""
+def test_station_by_name_station_id(mock_request) -> None:
+    """Test getting station by station_id with mocked response."""
     mock_response_data = create_mock_multiple_stations_response(
         platsbeteckningar=[TEST_STATION_PLATSBETECKNING], limit=1
     )
@@ -125,16 +123,16 @@ def test_station_by_name_platsbeteckning(mock_request) -> None:
 
     client = SGUClient()
     station = client.levels.observed.get_station_by_name(
-        platsbeteckning=TEST_STATION_PLATSBETECKNING
+        station_id=TEST_STATION_PLATSBETECKNING
     )
     assert station is not None
     assert isinstance(station, GroundwaterStation)
-    assert station.properties.platsbeteckning == TEST_STATION_PLATSBETECKNING
+    assert station.properties.station_id == TEST_STATION_PLATSBETECKNING
 
 
 @patch.object(SGUClient().levels.observed._client._session, "request")
-def test_station_by_name_obsplatsnamn(mock_request) -> None:
-    """Test getting station by obsplatsnamn with mocked response."""
+def test_station_by_name_station_name(mock_request) -> None:
+    """Test getting station by station_name with mocked response."""
     mock_response_data = create_mock_multiple_stations_response(
         platsbeteckningar=[TEST_STATION_PLATSBETECKNING], limit=1
     )
@@ -146,19 +144,19 @@ def test_station_by_name_obsplatsnamn(mock_request) -> None:
 
     client = SGUClient()
     station = client.levels.observed.get_station_by_name(
-        obsplatsnamn=TEST_STATION_OBSPLATSNAMN
+        station_name=TEST_STATION_OBSPLATSNAMN
     )
     assert station is not None
     assert isinstance(station, GroundwaterStation)
-    assert station.properties.platsbeteckning == TEST_STATION_PLATSBETECKNING
-    assert station.properties.obsplatsnamn == TEST_STATION_OBSPLATSNAMN
+    assert station.properties.station_id == TEST_STATION_PLATSBETECKNING
+    assert station.properties.station_name == TEST_STATION_OBSPLATSNAMN
 
 
 def test_station_by_name_no_args() -> None:
     """Test that get_station_by_name raises error when no arguments provided."""
     client = SGUClient()
     with pytest.raises(
-        ValueError, match="Either 'platsbeteckning' or 'obsplatsnamn' must be provided."
+        ValueError, match="Either 'station_id' or 'station_name' must be provided."
     ):
         client.levels.observed.get_station_by_name()
 
@@ -168,17 +166,17 @@ def test_station_by_name_both_args() -> None:
     client = SGUClient()
     with pytest.raises(
         ValueError,
-        match="Only one of 'platsbeteckning' or 'obsplatsnamn' can be provided.",
+        match="Only one of 'station_id' or 'station_name' can be provided.",
     ):
         client.levels.observed.get_station_by_name(
-            platsbeteckning=TEST_STATION_PLATSBETECKNING,
-            obsplatsnamn=TEST_STATION_OBSPLATSNAMN,
+            station_id=TEST_STATION_PLATSBETECKNING,
+            station_name=TEST_STATION_OBSPLATSNAMN,
         )
 
 
 @patch.object(SGUClient().levels.observed._client._session, "request")
-def test_get_stations_by_names_platsbeteckning(mock_request) -> None:
-    """Test getting multiple stations by platsbeteckning with mocked response."""
+def test_get_stations_by_names_station_id(mock_request) -> None:
+    """Test getting multiple stations by station_id with mocked response."""
     mock_response_data = create_mock_multiple_stations_response(
         platsbeteckningar=["95_2", "101_1"], limit=10
     )
@@ -186,20 +184,18 @@ def test_get_stations_by_names_platsbeteckning(mock_request) -> None:
 
     client = SGUClient()
     stations = client.levels.observed.get_stations_by_names(
-        platsbeteckning=["95_2", "101_1"], limit=10
+        station_id=["95_2", "101_1"], limit=10
     )
     assert stations is not None
     assert len(stations.features) >= 2
-    platsbeteckning = [
-        station.properties.platsbeteckning for station in stations.features
-    ]
+    platsbeteckning = [station.properties.station_id for station in stations.features]
     assert "95_2" in platsbeteckning
     assert "101_1" in platsbeteckning
 
 
 @patch.object(SGUClient().levels.observed._client._session, "request")
-def test_get_stations_by_names_obsplatsnamn(mock_request) -> None:
-    """Test getting multiple stations by obsplatsnamn with mocked response."""
+def test_get_stations_by_names_station_name(mock_request) -> None:
+    """Test getting multiple stations by station_name with mocked response."""
     mock_response_data = create_mock_multiple_stations_response(
         platsbeteckningar=[TEST_STATION_PLATSBETECKNING], limit=5
     )
@@ -209,12 +205,12 @@ def test_get_stations_by_names_obsplatsnamn(mock_request) -> None:
 
     client = SGUClient()
     stations = client.levels.observed.get_stations_by_names(
-        obsplatsnamn=["Lagga_2"], limit=5
+        station_name=["Lagga_2"], limit=5
     )
     assert stations is not None
     assert len(stations.features) >= 1
     obsplatsnamn_list = [
-        station.properties.obsplatsnamn for station in stations.features
+        station.properties.station_name for station in stations.features
     ]
     assert "Lagga_2" in obsplatsnamn_list
 
@@ -233,13 +229,13 @@ def test_get_stations_by_names_single_station(mock_request) -> None:
 
     client = SGUClient()
     stations = client.levels.observed.get_stations_by_names(
-        platsbeteckning=[TEST_STATION_PLATSBETECKNING], limit=5
+        station_id=[TEST_STATION_PLATSBETECKNING], limit=5
     )
     assert stations is not None
     assert len(stations.features) == 1
     station = stations.features[0]
-    assert station.properties.platsbeteckning == TEST_STATION_PLATSBETECKNING
-    assert station.properties.obsplatsnamn == TEST_STATION_OBSPLATSNAMN
+    assert station.properties.station_id == TEST_STATION_PLATSBETECKNING
+    assert station.properties.station_name == TEST_STATION_OBSPLATSNAMN
 
 
 def test_get_stations_by_names_no_args() -> None:
@@ -247,7 +243,7 @@ def test_get_stations_by_names_no_args() -> None:
     client = SGUClient()
     with pytest.raises(
         ValueError,
-        match="Either 'platsbeteckningar' or 'obsplatsnamn' must be provided.",
+        match="Either 'station_id' or 'station_name' must be provided.",
     ):
         client.levels.observed.get_stations_by_names()
 
@@ -257,10 +253,10 @@ def test_get_stations_by_names_both_args() -> None:
     client = SGUClient()
     with pytest.raises(
         ValueError,
-        match="Only one of 'platsbeteckningar' or 'obsplatsnamn' can be provided.",
+        match="Only one of 'station_id' or 'station_name' can be provided.",
     ):
         client.levels.observed.get_stations_by_names(
-            platsbeteckning=["95_2"], obsplatsnamn=["Lagga_2"]
+            station_id=["95_2"], station_name=["Lagga_2"]
         )
 
 
@@ -269,9 +265,9 @@ def test_get_stations_by_names_empty_list() -> None:
     client = SGUClient()
     with pytest.raises(
         ValueError,
-        match="Either 'platsbeteckningar' or 'obsplatsnamn' must be provided.",
+        match="Either 'station_id' or 'station_name' must be provided.",
     ):
-        client.levels.observed.get_stations_by_names(platsbeteckning=[])
+        client.levels.observed.get_stations_by_names(station_id=[])
 
 
 @patch.object(SGUClient().levels.observed._client._session, "request")
@@ -284,23 +280,21 @@ def test_get_stations_by_names_to_dataframe(mock_request) -> None:
 
     client = SGUClient()
     stations = client.levels.observed.get_stations_by_names(
-        platsbeteckning=["95_2", "101_1"], limit=10
+        station_id=["95_2", "101_1"], limit=10
     )
     assert stations is not None
     df = stations.to_dataframe()
     assert not df.empty
     assert len(df) >= 2
-    assert "platsbeteckning" in df.columns
-    assert "obsplatsnamn" in df.columns
-    assert all(
-        station in df["platsbeteckning"].tolist() for station in ["95_2", "101_1"]
-    )
+    assert "station_id" in df.columns
+    assert "station_name" in df.columns
+    assert all(station in df["station_id"].tolist() for station in ["95_2", "101_1"])
 
 
 # Tests for get_measurements_by_name() function
 @patch.object(SGUClient().levels.observed._client._session, "request")
-def test_get_measurements_by_name_platsbeteckning(mock_request) -> None:
-    """Test getting measurements by platsbeteckning with mocked response."""
+def test_get_measurements_by_name_station_id(mock_request) -> None:
+    """Test getting measurements by station_id with mocked response."""
     mock_response_data = create_mock_multiple_measurements_response(
         platsbeteckning=TEST_STATION_PLATSBETECKNING, count=5
     )
@@ -308,19 +302,19 @@ def test_get_measurements_by_name_platsbeteckning(mock_request) -> None:
 
     client = SGUClient()
     measurements = client.levels.observed.get_measurements_by_name(
-        platsbeteckning=TEST_STATION_PLATSBETECKNING, limit=10
+        station_id=TEST_STATION_PLATSBETECKNING, limit=10
     )
     assert measurements is not None
     assert isinstance(measurements, GroundwaterMeasurementCollection)
     assert len(measurements.features) > 0
     # All measurements should be from the same station
     for measurement in measurements.features:
-        assert measurement.properties.platsbeteckning == TEST_STATION_PLATSBETECKNING
+        assert measurement.properties.station_id == TEST_STATION_PLATSBETECKNING
 
 
 @patch.object(SGUClient().levels.observed._client._session, "request")
-def test_get_measurements_by_name_obsplatsnamn(mock_request) -> None:
-    """Test getting measurements by obsplatsnamn with mocked response."""
+def test_get_measurements_by_name_station_name(mock_request) -> None:
+    """Test getting measurements by station_name with mocked response."""
     mock_response_data = create_mock_multiple_measurements_response(
         platsbeteckning=TEST_STATION_PLATSBETECKNING, count=5
     )
@@ -328,14 +322,14 @@ def test_get_measurements_by_name_obsplatsnamn(mock_request) -> None:
 
     client = SGUClient()
     measurements = client.levels.observed.get_measurements_by_name(
-        obsplatsnamn=TEST_STATION_OBSPLATSNAMN, limit=10
+        station_name=TEST_STATION_OBSPLATSNAMN, limit=10
     )
     assert measurements is not None
     assert isinstance(measurements, GroundwaterMeasurementCollection)
     assert len(measurements.features) > 0
     # All measurements should be from the same station (platsbeteckning)
     for measurement in measurements.features:
-        assert measurement.properties.platsbeteckning == TEST_STATION_PLATSBETECKNING
+        assert measurement.properties.station_id == TEST_STATION_PLATSBETECKNING
 
 
 @patch.object(SGUClient().levels.observed._client._session, "request")
@@ -354,13 +348,13 @@ def test_get_measurements_by_name_with_time_filter(mock_request) -> None:
 
     client = SGUClient()
     measurements = client.levels.observed.get_measurements_by_name(
-        platsbeteckning=TEST_STATION_PLATSBETECKNING, tmin=tmin, tmax=tmax, limit=10
+        station_id=TEST_STATION_PLATSBETECKNING, tmin=tmin, tmax=tmax, limit=10
     )
     assert measurements is not None
     assert isinstance(measurements, GroundwaterMeasurementCollection)
     # Check that measurements are within the time range
     for measurement in measurements.features:
-        obs_date = measurement.properties.observation_date
+        obs_date = measurement.properties.observation_datetime
         if obs_date:
             assert tmin <= obs_date <= tmax
 
@@ -377,7 +371,7 @@ def test_get_measurements_by_name_with_string_dates(mock_request) -> None:
 
     client = SGUClient()
     measurements = client.levels.observed.get_measurements_by_name(
-        platsbeteckning=TEST_STATION_PLATSBETECKNING,
+        station_id=TEST_STATION_PLATSBETECKNING,
         tmin="2020-01-01T00:00:00Z",
         tmax="2021-01-01T00:00:00Z",
         limit=5,
@@ -390,7 +384,7 @@ def test_get_measurements_by_name_no_args() -> None:
     """Test that get_measurements_by_name raises error when no arguments provided."""
     client = SGUClient()
     with pytest.raises(
-        ValueError, match="Either 'platsbeteckning' or 'obsplatsnamn' must be provided."
+        ValueError, match="Either 'station_id' or 'station_name' must be provided."
     ):
         client.levels.observed.get_measurements_by_name()
 
@@ -400,17 +394,17 @@ def test_get_measurements_by_name_both_args() -> None:
     client = SGUClient()
     with pytest.raises(
         ValueError,
-        match="Only one of 'platsbeteckning' or 'obsplatsnamn' can be provided.",
+        match="Only one of 'station_id' or 'station_name' can be provided.",
     ):
         client.levels.observed.get_measurements_by_name(
-            platsbeteckning=TEST_STATION_PLATSBETECKNING,
-            obsplatsnamn=TEST_STATION_OBSPLATSNAMN,
+            station_id=TEST_STATION_PLATSBETECKNING,
+            station_name=TEST_STATION_OBSPLATSNAMN,
         )
 
 
 # Tests for get_measurements_by_names() function
 @patch.object(SGUClient().levels.observed._client._session, "request")
-def test_get_measurements_by_names_platsbeteckning(mock_request) -> None:
+def test_get_measurements_by_names_station_id(mock_request) -> None:
     """Test getting measurements for multiple stations with mocked response."""
     # Create measurements for both stations
     measurements_95_2 = create_mock_multiple_measurements_response(
@@ -432,21 +426,21 @@ def test_get_measurements_by_names_platsbeteckning(mock_request) -> None:
 
     client = SGUClient()
     measurements = client.levels.observed.get_measurements_by_names(
-        platsbeteckning=["95_2", "101_1"], limit=20
+        station_id=["95_2", "101_1"], limit=20
     )
     assert measurements is not None
     assert isinstance(measurements, GroundwaterMeasurementCollection)
     assert len(measurements.features) > 0
     # Check that we have measurements from the requested stations
-    platsbeteckningar = {
-        measurement.properties.platsbeteckning for measurement in measurements.features
+    station_ids = {
+        measurement.properties.station_id for measurement in measurements.features
     }
-    assert "95_2" in platsbeteckningar or "101_1" in platsbeteckningar
+    assert "95_2" in station_ids or "101_1" in station_ids
 
 
 @patch.object(SGUClient().levels.observed._client._session, "request")
-def test_get_measurements_by_names_obsplatsnamn(mock_request) -> None:
-    """Test getting measurements by obsplatsnamn with mocked response."""
+def test_get_measurements_by_names_station_name(mock_request) -> None:
+    """Test getting measurements by station_name with mocked response."""
     mock_response_data = create_mock_multiple_measurements_response(
         platsbeteckning=TEST_STATION_PLATSBETECKNING, count=5
     )
@@ -454,14 +448,14 @@ def test_get_measurements_by_names_obsplatsnamn(mock_request) -> None:
 
     client = SGUClient()
     measurements = client.levels.observed.get_measurements_by_names(
-        obsplatsnamn=["Lagga_2"], limit=10
+        station_name=["Lagga_2"], limit=10
     )
     assert measurements is not None
     assert isinstance(measurements, GroundwaterMeasurementCollection)
     assert len(measurements.features) > 0
     # All measurements should be from the station with obsplatsnamn "Lagga_2"
     for measurement in measurements.features:
-        assert measurement.properties.platsbeteckning == TEST_STATION_PLATSBETECKNING
+        assert measurement.properties.station_id == TEST_STATION_PLATSBETECKNING
 
 
 @patch.object(SGUClient().levels.observed._client._session, "request")
@@ -477,13 +471,13 @@ def test_get_measurements_by_names_with_time_filter(mock_request) -> None:
 
     client = SGUClient()
     measurements = client.levels.observed.get_measurements_by_names(
-        platsbeteckning=["95_2"], tmin=tmin, tmax=tmax, limit=10
+        station_id=["95_2"], tmin=tmin, tmax=tmax, limit=10
     )
     assert measurements is not None
     assert isinstance(measurements, GroundwaterMeasurementCollection)
     # Check that measurements are within the time range
     for measurement in measurements.features:
-        obs_date = measurement.properties.observation_date
+        obs_date = measurement.properties.observation_datetime
         if obs_date:
             assert tmin <= obs_date <= tmax
 
@@ -492,7 +486,7 @@ def test_get_measurements_by_names_no_args() -> None:
     """Test that get_measurements_by_names raises error when no arguments provided."""
     client = SGUClient()
     with pytest.raises(
-        ValueError, match="Either 'platsbeteckning' or 'obsplatsnamn' must be provided."
+        ValueError, match="Either 'station_id' or 'station_name' must be provided."
     ):
         client.levels.observed.get_measurements_by_names()
 
@@ -502,10 +496,10 @@ def test_get_measurements_by_names_both_args() -> None:
     client = SGUClient()
     with pytest.raises(
         ValueError,
-        match="Only one of 'platsbeteckning' or 'obsplatsnamn' can be provided.",
+        match="Only one of 'station_id' or 'station_name' can be provided.",
     ):
         client.levels.observed.get_measurements_by_names(
-            platsbeteckning=["95_2"], obsplatsnamn=["Lagga_2"]
+            station_id=["95_2"], station_name=["Lagga_2"]
         )
 
 
@@ -559,17 +553,17 @@ def test_measurements_to_dataframe(mock_request) -> None:
 
     client = SGUClient()
     measurements = client.levels.observed.get_measurements_by_name(
-        platsbeteckning=TEST_STATION_PLATSBETECKNING, limit=5
+        station_id=TEST_STATION_PLATSBETECKNING, limit=5
     )
     assert measurements is not None
     df = measurements.to_dataframe()
     assert not df.empty
-    assert "platsbeteckning" in df.columns
+    assert "station_id" in df.columns
     assert "observation_date" in df.columns
-    assert "grundvattenniva_m_o_h" in df.columns
+    assert "water_level_masl_m" in df.columns
     assert all(
-        platsbeteckning == TEST_STATION_PLATSBETECKNING
-        for platsbeteckning in df["platsbeteckning"].tolist()
+        station_id == TEST_STATION_PLATSBETECKNING
+        for station_id in df["station_id"].tolist()
     )
 
     # Assert that it is sorted by 'observation_date'
@@ -587,12 +581,12 @@ def test_measurements_to_series(mock_request) -> None:
 
     client = SGUClient()
     measurements = client.levels.observed.get_measurements_by_name(
-        platsbeteckning=TEST_STATION_PLATSBETECKNING, limit=5
+        station_id=TEST_STATION_PLATSBETECKNING, limit=5
     )
     assert measurements is not None
     series = measurements.to_series()
     assert not series.empty
-    assert series.name == "grundvattenniva_m_o_h"
+    assert series.name == "water_level_masl_m"
     assert is_datetime(series.index)
 
 
@@ -606,18 +600,20 @@ def test_measurements_to_series_custom_index_data(mock_request) -> None:
 
     client = SGUClient()
     measurements = client.levels.observed.get_measurements_by_name(
-        platsbeteckning=TEST_STATION_PLATSBETECKNING, limit=5
+        station_id=TEST_STATION_PLATSBETECKNING, limit=5
     )
     assert measurements is not None
-    series = measurements.to_series(index="obsdatum", data="grundvattenniva_m_urok")
+    series = measurements.to_series(
+        index="observation_date", data="water_level_below_ground_m"
+    )
     assert not series.empty
-    assert series.name == "grundvattenniva_m_urok"
+    assert series.name == "water_level_below_ground_m"
 
     with pytest.raises(ValueError):
-        measurements.to_series(index="invalid_column", data="grundvattenniva_m_o_h")
+        measurements.to_series(index="invalid_column", data="water_level_masl_m")
 
     with pytest.raises(ValueError):
-        measurements.to_series(index="obsdatum", data="invalid_column")
+        measurements.to_series(index="observation_date", data="invalid_column")
 
 
 # Comprehensive error condition tests (enabled by mocking)
@@ -751,6 +747,6 @@ def test_station_with_float_idiam() -> None:
         station = stations.features[0]
 
         # Verify the float idiam value is preserved correctly
-        assert station.properties.idiam == 50.8
-        assert isinstance(station.properties.idiam, float)
-        assert station.properties.stationsanmarkning == "markanvändningspåverkad"
+        assert station.properties.inner_diameter == 50.8
+        assert isinstance(station.properties.inner_diameter, float)
+        assert station.properties.station_remark == "markanvändningspåverkad"

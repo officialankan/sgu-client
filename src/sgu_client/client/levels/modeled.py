@@ -40,7 +40,7 @@ class ModeledGroundwaterLevelClient:
             bbox: Bounding box as [min_lon, min_lat, max_lon, max_lat]
             limit: Maximum number of features to return (automatically paginated if needed)
             filter_expr: CQL filter expression
-            sortby: List of sort expressions (e.g., ['+omrade_id'])
+            sortby: List of sort expressions (e.g., ['+omrade_id'] - use Swedish field names for API)
             **kwargs: Additional query parameters
 
         Returns:
@@ -97,7 +97,7 @@ class ModeledGroundwaterLevelClient:
             datetime: Date/time filter (RFC 3339 format or interval)
             limit: Maximum number of features to return (automatically paginated if needed)
             filter_expr: CQL filter expression
-            sortby: List of sort expressions (e.g., ['+datum', '-omrade_id'])
+            sortby: List of sort expressions (e.g., ['+datum', '-omrade_id'] - use Swedish field names for API)
             **kwargs: Additional query parameters
 
         Returns:
@@ -222,7 +222,7 @@ class ModeledGroundwaterLevelClient:
             )
 
         # Extract area IDs
-        area_ids = [int(area.properties.omrade_id) for area in areas.features]
+        area_ids = [int(area.properties.area_id) for area in areas.features]
 
         # Log warning if multiple areas found (near boundary)
         if len(area_ids) > 1:
