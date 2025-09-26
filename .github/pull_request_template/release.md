@@ -2,6 +2,13 @@
 
 <!-- This PR description will become the GitHub release notes when merged to main -->
 
+## Release Checklist
+- [ ] Version updated in `pyproject.toml`
+- [ ] Version updated in `src/sgu_client/__init__.py` (`__version__`)
+- [ ] `uv.lock` updated with `uv sync`
+- [ ] All files committed to dev branch
+- [ ] Replace `[VERSION]` placeholders in this template
+
 ## Added
 
 ## Fixed
