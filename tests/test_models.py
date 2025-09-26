@@ -259,10 +259,10 @@ def test_link_model():
 def test_modeled_area_properties():
     """Test modeled area properties."""
     props = ModeledAreaProperties(
-        omrade_id=100, url_tidsserie="https://api.sgu.se/timeseries/100"
+        area_id=100, time_series_url="https://api.sgu.se/timeseries/100"
     )
-    assert props.omrade_id == 100
-    assert props.url_tidsserie == "https://api.sgu.se/timeseries/100"
+    assert props.area_id == 100
+    assert props.time_series_url == "https://api.sgu.se/timeseries/100"
 
 
 def test_modeled_area():
@@ -281,46 +281,46 @@ def test_modeled_area():
             ]
         ),
         properties=ModeledAreaProperties(
-            omrade_id=100, url_tidsserie="https://api.sgu.se/timeseries/100"
+            area_id=100, time_series_url="https://api.sgu.se/timeseries/100"
         ),
     )
 
     assert area.type == "Feature"
     assert area.id == "area_100"
-    assert area.properties.omrade_id == 100
+    assert area.properties.area_id == 100
 
 
 def test_modeled_groundwater_level_properties():
     """Test modeled groundwater level properties."""
     props = ModeledGroundwaterLevelProperties(
-        omrade_id=100,
-        objectid=1001,
-        datum="2023-06-15",
-        grundvattensituation_sma=25,
-        grundvattensituation_stora=75,
-        fyllnadsgrad_sma=30,
-        fyllnadsgrad_stora=80,
+        area_id=100,
+        object_id=1001,
+        date="2023-06-15",
+        deviation_small_resources=25,
+        deviation_large_resources=75,
+        relative_level_small_resources=30,
+        relative_level_large_resources=80,
     )
 
-    assert props.omrade_id == 100
-    assert props.objectid == 1001
-    assert props.datum == "2023-06-15"
-    assert props.grundvattensituation_sma == 25
-    assert props.grundvattensituation_stora == 75
+    assert props.area_id == 100
+    assert props.object_id == 1001
+    assert props.date == "2023-06-15"
+    assert props.deviation_small_resources == 25
+    assert props.deviation_large_resources == 75
 
 
 def test_modeled_groundwater_level_properties_percentile_validation():
     """Test percentile validation in modeled properties."""
     props = ModeledGroundwaterLevelProperties(
-        omrade_id=100,
-        objectid=1001,
-        grundvattensituation_sma=0,
-        grundvattensituation_stora=100,
-        fyllnadsgrad_sma=0,
-        fyllnadsgrad_stora=100,
+        area_id=100,
+        object_id=1001,
+        deviation_small_resources=0,
+        deviation_large_resources=100,
+        relative_level_small_resources=0,
+        relative_level_large_resources=100,
     )
-    assert props.grundvattensituation_sma == 0
-    assert props.grundvattensituation_stora == 100
+    assert props.deviation_small_resources == 0
+    assert props.deviation_large_resources == 100
 
 
 def test_modeled_groundwater_level():
@@ -329,18 +329,18 @@ def test_modeled_groundwater_level():
         id="level_100_20230615",
         geometry=Point(coordinates=[15.5, 58.4]),
         properties=ModeledGroundwaterLevelProperties(
-            omrade_id=100,
-            objectid=1001,
-            datum="2023-06-15",
-            grundvattensituation_sma=25,
-            fyllnadsgrad_sma=30,
-            fyllnadsgrad_stora=80,
+            area_id=100,
+            object_id=1001,
+            date="2023-06-15",
+            deviation_small_resources=25,
+            relative_level_small_resources=30,
+            relative_level_large_resources=80,
         ),
     )
 
     assert level.type == "Feature"
     assert level.id == "level_100_20230615"
-    assert level.properties.omrade_id == 100
+    assert level.properties.area_id == 100
 
 
 def test_groundwater_station_collection():
