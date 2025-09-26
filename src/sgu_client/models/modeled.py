@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 class ModeledAreaProperties(SGUBaseModel):
     """Properties for a modeled groundwater area."""
 
-    model_config = {"populate_by_name": True}
+    model_config = {"validate_by_name": True, "validate_by_alias": True}
 
     area_id: int = Field(..., alias="omrade_id", description="Area ID")
     time_series_url: str | None = Field(
@@ -41,7 +41,7 @@ class ModeledArea(SGUBaseModel):
 class ModeledGroundwaterLevelProperties(SGUBaseModel):
     """Properties for a modeled groundwater level."""
 
-    model_config = {"populate_by_name": True}
+    model_config = {"validate_by_name": True, "validate_by_alias": True}
 
     # Date and area identification
     date: str | None = Field(None, alias="datum", description="Date (ISO format)")
