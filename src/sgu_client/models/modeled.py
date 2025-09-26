@@ -1,7 +1,7 @@
 """Pydantic models for modeled groundwater data from SGU API."""
 
 from datetime import datetime
-from typing import TYPE_CHECKING, Any, Literal
+from typing import TYPE_CHECKING, Any, ClassVar, Literal
 
 from pydantic import Field, field_validator
 
@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 class ModeledAreaProperties(SGUBaseModel):
     """Properties for a modeled groundwater area."""
 
-    model_config = {"validate_by_name": True, "validate_by_alias": True}
+    model_config: ClassVar = {"validate_by_name": True, "validate_by_alias": True}
 
     area_id: int = Field(..., alias="omrade_id", description="Area ID")
     time_series_url: str | None = Field(
@@ -41,7 +41,7 @@ class ModeledArea(SGUBaseModel):
 class ModeledGroundwaterLevelProperties(SGUBaseModel):
     """Properties for a modeled groundwater level."""
 
-    model_config = {"validate_by_name": True, "validate_by_alias": True}
+    model_config: ClassVar = {"validate_by_name": True, "validate_by_alias": True}
 
     # Date and area identification
     date: str | None = Field(None, alias="datum", description="Date (ISO format)")
