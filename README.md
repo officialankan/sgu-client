@@ -22,7 +22,7 @@ Get going with your analysis in just a few lines of code:
 from sgu_client import SGUClient
 
 with SGUClient() as client:
-    measurements = client.levels.observed.get_measurements_by_name(platsbeteckning="95_2")
+    measurements = client.levels.observed.get_measurements_by_name(station_id="95_2")
     df = measurements.to_dataframe()
 
 # ... rest of your awesome workflow
@@ -88,23 +88,23 @@ with SGUClient() as client:
         limit=100
     )
     
-    # convenience function to get station by name 
+    # convenience function to get station by name
     station = client.levels.observed.get_station_by_name(
-        platsbeteckning="95_2"  # or obsplatsnamn="95_2"
+        station_id="95_2"  # or station_name="95_2"
     )
     # or multiple stations by names
     stations = client.levels.observed.get_stations_by_names(
-        platsbeteckning=["95_2", "101_1"]  # or obsplatsnamn=["Lagga_2", ...]
+        station_id=["95_2", "101_1"]  # or station_name=["Lagga_2", ...]
     )
 
     # convenience function to get measurements by station name
     measurements = client.levels.observed.get_measurements_by_name(
-        platsbeteckning="95_2",  # or obsplatsnamn="95_2"
+        station_id="95_2",  # or station_name="95_2"
         limit=100
     )
     # or multiple stations by names
     measurements = client.levels.observed.get_measurements_by_names(
-        platsbeteckning=["95_2", "101_1"],  # or obsplatsnamn=["Lagga_2", ...]
+        station_id=["95_2", "101_1"],  # or station_name=["Lagga_2", ...]
         limit=100
     )
 
@@ -112,17 +112,17 @@ with SGUClient() as client:
     tmin = datetime(2020, 1, 1, tzinfo=UTC)
     tmax = datetime(2021, 1, 1, tzinfo=UTC)
     measurements = client.levels.observed.get_measurements_by_names(
-        platsbeteckning=["95_2"], tmin=tmin, tmax=tmax, limit=10
+        station_id=["95_2"], tmin=tmin, tmax=tmax, limit=10
     )
     
     # responses that create lists of features can be converted to pandas DataFrames
     measurements = client.levels.observed.get_measurements_by_names(
-        platsbeteckning=["95_2", "101_1"],  # or obsplatsnamn=["Lagga_2", ...]
+        station_id=["95_2", "101_1"],  # or station_name=["Lagga_2", ...]
         limit=100
     )
     df = measurements.to_dataframe()  
     # or series
-    series = measurements.to_series()  # defaults to 'grundvattenniva_m_o_h' (head) column with datetime index
+    series = measurements.to_series()  # defaults to 'water_level_masl_m' (head) column with datetime index
 ```
 
 ### Modeled groundwater levels
@@ -144,7 +144,7 @@ with SGUClient() as client:
     
     # get a specific area by ID
     area = client.levels.modeled.get_area("omraden.30125")
-    print(f"Area ID: {area.properties.omrade_id}")
+    print(f"Area ID: {area.properties.area_id}")
     print(f"Geometry: {area.geometry.type}")
     
     # convenience function to get levels for a specific area
@@ -169,7 +169,7 @@ with SGUClient() as client:
     )
     df = levels.to_dataframe()
     # or series
-    series = levels.to_series()  # defaults to 'fyllnadsgrad_sma' (relative level, small resources) column with datetime index
+    series = levels.to_series()  # defaults to 'relative_level_small_resources' column with datetime index
 ```
 
 ### Working with Typed Data
@@ -186,16 +186,16 @@ stations = client.levels.observed.get_stations(limit=5)
 
 for station in stations.features:
     # All properties are typed and documented
-    print(f"Station: {station.properties.obsplatsnamn}")
-    print(f"Municipality: {station.properties.kommun}")
+    print(f"Station: {station.properties.station_name}")
+    print(f"Municipality: {station.properties.municipality}")
     print(f"Coordinates: {station.geometry.coordinates}")
 
 # Get measurements with automatic datetime parsing
 measurements = client.levels.observed.get_measurements(limit=5)
 for measurement in measurements.features:
     props = measurement.properties
-    print(f"Date: {props.observation_date}")  # Parsed datetime object
-    print(f"Level: {props.grundvattenniva_m_o_h} m above sea level")
+    print(f"Date: {props.observation_datetime}")  # Parsed datetime object
+    print(f"Level: {props.water_level_masl_m} m above sea level")
 ```
 
 ## API Reference

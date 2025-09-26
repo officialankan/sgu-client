@@ -33,8 +33,8 @@ def test_real_api_integration_get_lagga_station():
     assert station is not None
     assert isinstance(station, GroundwaterStation)
     assert station.id == TEST_STATION_ID
-    assert station.properties.platsbeteckning == TEST_STATION_PLATSBETECKNING
-    assert station.properties.obsplatsnamn == TEST_STATION_OBSPLATSNAMN
+    assert station.properties.station_id == TEST_STATION_PLATSBETECKNING
+    assert station.properties.station_name == TEST_STATION_OBSPLATSNAMN
 
     # Verify geometry is present and valid
     assert station.geometry is not None
@@ -44,8 +44,8 @@ def test_real_api_integration_get_lagga_station():
     assert isinstance(station.geometry.coordinates[1], int | float)
 
     # Verify essential properties are present
-    assert station.properties.kommun is not None
-    assert station.properties.lan is not None
+    assert station.properties.municipality is not None
+    assert station.properties.county is not None
 
 
 def test_real_api_integration_get_recent_measurements():
@@ -59,7 +59,7 @@ def test_real_api_integration_get_recent_measurements():
     # Get recent measurements for our test station (last 2 years)
     tmin = datetime(2022, 1, 1, tzinfo=UTC)
     measurements = client.levels.observed.get_measurements_by_name(
-        platsbeteckning=TEST_STATION_PLATSBETECKNING,
+        station_id=TEST_STATION_PLATSBETECKNING,
         tmin=tmin,
         limit=5,  # Keep small for fast test
     )
@@ -70,8 +70,8 @@ def test_real_api_integration_get_recent_measurements():
 
     # Check first measurement structure
     measurement = measurements.features[0]
-    assert measurement.properties.platsbeteckning == TEST_STATION_PLATSBETECKNING
+    assert measurement.properties.station_id == TEST_STATION_PLATSBETECKNING
     assert measurement.properties.observation_date is not None
-    assert isinstance(measurement.properties.observation_date, datetime)
-    assert measurement.properties.grundvattenniva_m_o_h is not None
-    assert isinstance(measurement.properties.grundvattenniva_m_o_h, int | float)
+    assert isinstance(measurement.properties.observation_datetime, datetime)
+    assert measurement.properties.water_level_masl_m is not None
+    assert isinstance(measurement.properties.water_level_masl_m, int | float)

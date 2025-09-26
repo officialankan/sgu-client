@@ -143,35 +143,35 @@ def test_multipolygon_geometry_valid():
 
 def test_groundwater_station_properties_minimal():
     """Test station properties with minimal required fields."""
-    props = GroundwaterStationProperties(rowid=123)
-    assert props.rowid == 123
-    assert props.platsbeteckning is None
-    assert props.obsplatsnamn is None
+    props = GroundwaterStationProperties(row_id=123)
+    assert props.row_id == 123
+    assert props.station_id is None
+    assert props.station_name is None
 
 
 def test_groundwater_station_properties_full():
     """Test station properties with comprehensive fields."""
     props = GroundwaterStationProperties(
-        rowid=123,
-        platsbeteckning="95_2",
-        obsplatsnamn="Lagga_2",
-        kommun="Linköping",
-        refniva=45.67,
-        akvifer="K",
-        akvifer_tx="Kristallin grundvattenmagasin",
+        row_id=123,
+        station_id="95_2",
+        station_name="Lagga_2",
+        municipality="Linköping",
+        reference_level=45.67,
+        aquifer_code="K",
+        aquifer_description="Kristallin grundvattenmagasin",
     )
 
-    assert props.rowid == 123
-    assert props.platsbeteckning == "95_2"
-    assert props.obsplatsnamn == "Lagga_2"
-    assert props.refniva == 45.67
-    assert props.kommun == "Linköping"
+    assert props.row_id == 123
+    assert props.station_id == "95_2"
+    assert props.station_name == "Lagga_2"
+    assert props.reference_level == 45.67
+    assert props.municipality == "Linköping"
 
 
 def test_groundwater_station_properties_invalid_rowid():
-    """Test station properties with invalid rowid."""
+    """Test station properties with invalid row_id."""
     with pytest.raises(ValidationError):
-        GroundwaterStationProperties(rowid="invalid")
+        GroundwaterStationProperties(row_id="invalid")
 
 
 def test_groundwater_station_valid():
@@ -180,45 +180,45 @@ def test_groundwater_station_valid():
         id="123",
         geometry=Point(coordinates=[15.5, 58.4]),
         properties=GroundwaterStationProperties(
-            rowid=123, platsbeteckning="95_2", obsplatsnamn="Test Station"
+            row_id=123, station_id="95_2", station_name="Test Station"
         ),
     )
 
     assert station.type == "Feature"
     assert station.id == "123"
     assert station.geometry.coordinates == [15.5, 58.4]
-    assert station.properties.platsbeteckning == "95_2"
+    assert station.properties.station_id == "95_2"
 
 
 def test_groundwater_measurement_properties_minimal():
     """Test measurement properties with minimal fields."""
-    props = GroundwaterMeasurementProperties(rowid=456, platsbeteckning="95_2")
-    assert props.rowid == 456
-    assert props.platsbeteckning == "95_2"
-    assert props.observation_date is None
+    props = GroundwaterMeasurementProperties(row_id=456, station_id="95_2")
+    assert props.row_id == 456
+    assert props.station_id == "95_2"
+    assert props.observation_datetime is None
 
 
 def test_groundwater_measurement_properties_with_date():
     """Test measurement properties with date parsing."""
     props = GroundwaterMeasurementProperties(
-        rowid=456,
-        platsbeteckning="95_2",
-        obsdatum="2023-06-15T10:30:00Z",
-        grundvattenniva_m_o_h=45.67,
-        metod_for_matning="Tryckgivare",
+        row_id=456,
+        station_id="95_2",
+        observation_date="2023-06-15T10:30:00Z",
+        water_level_masl_m=45.67,
+        measurement_method="Tryckgivare",
     )
 
-    assert props.rowid == 456
-    assert props.observation_date == datetime(2023, 6, 15, 10, 30, 0, tzinfo=UTC)
-    assert props.grundvattenniva_m_o_h == 45.67
+    assert props.row_id == 456
+    assert props.observation_datetime == datetime(2023, 6, 15, 10, 30, 0, tzinfo=UTC)
+    assert props.water_level_masl_m == 45.67
 
 
 def test_groundwater_measurement_properties_invalid_date():
     """Test measurement properties with invalid date gracefully handled."""
     props = GroundwaterMeasurementProperties(
-        rowid=456, platsbeteckning="95_2", obsdatum="invalid-date"
+        row_id=456, station_id="95_2", observation_date="invalid-date"
     )
-    assert props.observation_date is None
+    assert props.observation_datetime is None
 
 
 def test_groundwater_measurement_valid():
@@ -227,16 +227,16 @@ def test_groundwater_measurement_valid():
         id="456",
         geometry=Point(coordinates=[15.5, 58.4]),
         properties=GroundwaterMeasurementProperties(
-            rowid=456,
-            platsbeteckning="95_2",
-            obsdatum="2023-06-15T10:30:00Z",
-            grundvattenniva_m_o_h=45.67,
+            row_id=456,
+            station_id="95_2",
+            observation_date="2023-06-15T10:30:00Z",
+            water_level_masl_m=45.67,
         ),
     )
 
     assert measurement.type == "Feature"
     assert measurement.id == "456"
-    assert measurement.properties.observation_date.year == 2023
+    assert measurement.properties.observation_datetime.year == 2023
 
 
 def test_crs_model():
@@ -259,10 +259,10 @@ def test_link_model():
 def test_modeled_area_properties():
     """Test modeled area properties."""
     props = ModeledAreaProperties(
-        omrade_id=100, url_tidsserie="https://api.sgu.se/timeseries/100"
+        area_id=100, time_series_url="https://api.sgu.se/timeseries/100"
     )
-    assert props.omrade_id == 100
-    assert props.url_tidsserie == "https://api.sgu.se/timeseries/100"
+    assert props.area_id == 100
+    assert props.time_series_url == "https://api.sgu.se/timeseries/100"
 
 
 def test_modeled_area():
@@ -281,46 +281,46 @@ def test_modeled_area():
             ]
         ),
         properties=ModeledAreaProperties(
-            omrade_id=100, url_tidsserie="https://api.sgu.se/timeseries/100"
+            area_id=100, time_series_url="https://api.sgu.se/timeseries/100"
         ),
     )
 
     assert area.type == "Feature"
     assert area.id == "area_100"
-    assert area.properties.omrade_id == 100
+    assert area.properties.area_id == 100
 
 
 def test_modeled_groundwater_level_properties():
     """Test modeled groundwater level properties."""
     props = ModeledGroundwaterLevelProperties(
-        omrade_id=100,
-        objectid=1001,
-        datum="2023-06-15",
-        grundvattensituation_sma=25,
-        grundvattensituation_stora=75,
-        fyllnadsgrad_sma=30,
-        fyllnadsgrad_stora=80,
+        area_id=100,
+        object_id=1001,
+        date="2023-06-15",
+        deviation_small_resources=25,
+        deviation_large_resources=75,
+        relative_level_small_resources=30,
+        relative_level_large_resources=80,
     )
 
-    assert props.omrade_id == 100
-    assert props.objectid == 1001
-    assert props.datum == "2023-06-15"
-    assert props.grundvattensituation_sma == 25
-    assert props.grundvattensituation_stora == 75
+    assert props.area_id == 100
+    assert props.object_id == 1001
+    assert props.date == "2023-06-15"
+    assert props.deviation_small_resources == 25
+    assert props.deviation_large_resources == 75
 
 
 def test_modeled_groundwater_level_properties_percentile_validation():
     """Test percentile validation in modeled properties."""
     props = ModeledGroundwaterLevelProperties(
-        omrade_id=100,
-        objectid=1001,
-        grundvattensituation_sma=0,
-        grundvattensituation_stora=100,
-        fyllnadsgrad_sma=0,
-        fyllnadsgrad_stora=100,
+        area_id=100,
+        object_id=1001,
+        deviation_small_resources=0,
+        deviation_large_resources=100,
+        relative_level_small_resources=0,
+        relative_level_large_resources=100,
     )
-    assert props.grundvattensituation_sma == 0
-    assert props.grundvattensituation_stora == 100
+    assert props.deviation_small_resources == 0
+    assert props.deviation_large_resources == 100
 
 
 def test_modeled_groundwater_level():
@@ -329,18 +329,18 @@ def test_modeled_groundwater_level():
         id="level_100_20230615",
         geometry=Point(coordinates=[15.5, 58.4]),
         properties=ModeledGroundwaterLevelProperties(
-            omrade_id=100,
-            objectid=1001,
-            datum="2023-06-15",
-            grundvattensituation_sma=25,
-            fyllnadsgrad_sma=30,
-            fyllnadsgrad_stora=80,
+            area_id=100,
+            object_id=1001,
+            date="2023-06-15",
+            deviation_small_resources=25,
+            relative_level_small_resources=30,
+            relative_level_large_resources=80,
         ),
     )
 
     assert level.type == "Feature"
     assert level.id == "level_100_20230615"
-    assert level.properties.omrade_id == 100
+    assert level.properties.area_id == 100
 
 
 def test_groundwater_station_collection():
@@ -348,7 +348,7 @@ def test_groundwater_station_collection():
     station = GroundwaterStation(
         id="123",
         geometry=Point(coordinates=[15.5, 58.4]),
-        properties=GroundwaterStationProperties(rowid=123, platsbeteckning="95_2"),
+        properties=GroundwaterStationProperties(row_id=123, station_id="95_2"),
     )
 
     collection = GroundwaterStationCollection(
@@ -365,7 +365,7 @@ def test_groundwater_station_collection():
     assert collection.type == "FeatureCollection"
     assert len(collection.features) == 1
     assert collection.numberReturned == 1
-    assert collection.features[0].properties.platsbeteckning == "95_2"
+    assert collection.features[0].properties.station_id == "95_2"
 
 
 def test_groundwater_measurement_collection():
@@ -374,7 +374,7 @@ def test_groundwater_measurement_collection():
         id="456",
         geometry=Point(coordinates=[15.5, 58.4]),
         properties=GroundwaterMeasurementProperties(
-            rowid=456, platsbeteckning="95_2", obsdatum="2023-06-15T10:30:00Z"
+            row_id=456, station_id="95_2", observation_date="2023-06-15T10:30:00Z"
         ),
     )
 
@@ -403,11 +403,11 @@ def test_geometry_with_invalid_coordinates():
 def test_station_properties_with_none_values():
     """Test station properties with None values for optional fields."""
     props = GroundwaterStationProperties(
-        rowid=123, platsbeteckning=None, obsplatsnamn=None, refniva=None
+        row_id=123, station_id=None, station_name=None, reference_level=None
     )
-    assert props.rowid == 123
-    assert props.platsbeteckning is None
-    assert props.refniva is None
+    assert props.row_id == 123
+    assert props.station_id is None
+    assert props.reference_level is None
 
 
 def test_collection_with_empty_features():
@@ -426,13 +426,13 @@ def test_collection_with_empty_features():
     assert collection.numberReturned == 0
 
 
-def test_model_dump_preserves_field_names():
-    """Test that model_dump preserves Swedish field names."""
+def test_model_dump_uses_english_field_names():
+    """Test that model_dump uses English field names."""
     props = GroundwaterStationProperties(
-        rowid=123, platsbeteckning="95_2", obsplatsnamn="Test Station"
+        row_id=123, station_id="95_2", station_name="Test Station"
     )
 
     data = props.model_dump()
-    assert "platsbeteckning" in data
-    assert "obsplatsnamn" in data
-    assert data["platsbeteckning"] == "95_2"
+    assert "station_id" in data
+    assert "station_name" in data
+    assert data["station_id"] == "95_2"

@@ -146,15 +146,15 @@ class ObservedGroundwaterLevelClient:
 
     def get_station_by_name(
         self,
-        platsbeteckning: str | None = None,
-        obsplatsnamn: str | None = None,
+        station_id: str | None = None,
+        station_name: str | None = None,
         **kwargs: Any,
     ) -> GroundwaterStation:
-        """Convenience function to get a station by name ('platsbeteckning' or 'obsplatsnamn').
+        """Convenience function to get a station by name ('station_id' or 'station_name').
 
         Args:
-            platsbeteckning: Station 'platsbeteckning' value
-            obsplatsnamn: Station 'obsplatsnamn' value
+            station_id: Station identifier (maps to 'platsbeteckning' in API)
+            station_name: Station name (maps to 'obsplatsnamn' in API)
             **kwargs: Additional query parameters (e.g., limit)
 
         Returns:
@@ -164,17 +164,20 @@ class ObservedGroundwaterLevelClient:
             ValueError: If neither parameter is provided, both are provided,
                        or if multiple stations are found
         """
-        if not platsbeteckning and not obsplatsnamn:
+        if not station_id and not station_name:
+            raise ValueError("Either 'station_id' or 'station_name' must be provided.")
+        if station_id and station_name:
             raise ValueError(
-                "Either 'platsbeteckning' or 'obsplatsnamn' must be provided."
-            )
-        if platsbeteckning and obsplatsnamn:
-            raise ValueError(
-                "Only one of 'platsbeteckning' or 'obsplatsnamn' can be provided."
+                "Only one of 'station_id' or 'station_name' can be provided."
             )
 
-        name_type = "platsbeteckning" if platsbeteckning else "obsplatsnamn"
-        station = platsbeteckning if platsbeteckning else obsplatsnamn
+        # Map English parameter names to Swedish API field names
+        if station_id:
+            name_type = "platsbeteckning"
+            station = station_id
+        else:
+            name_type = "obsplatsnamn"
+            station = station_name
         filter_expr = f"{name_type}='{station}'"
         response = self.get_stations(filter_expr=filter_expr, **kwargs)
         if len(response.features) > 1:
@@ -183,15 +186,15 @@ class ObservedGroundwaterLevelClient:
 
     def get_stations_by_names(
         self,
-        platsbeteckning: list[str] | None = None,
-        obsplatsnamn: list[str] | None = None,
+        station_id: list[str] | None = None,
+        station_name: list[str] | None = None,
         **kwargs: Any,
     ) -> GroundwaterStationCollection:
-        """Convenience function to get multiple stations by name ('platsbeteckning' or 'obsplatsnamn').
+        """Convenience function to get multiple stations by name ('station_id' or 'station_name').
 
         Args:
-            platsbeteckning: List of station 'platsbeteckning' values
-            obsplatsnamn: List of station 'obsplatsnamn' values
+            station_id: List of station identifiers (maps to 'platsbeteckning' in API)
+            station_name: List of station names (maps to 'obsplatsnamn' in API)
             **kwargs: Additional query parameters (e.g., limit)
 
         Returns:
@@ -200,17 +203,20 @@ class ObservedGroundwaterLevelClient:
         Raises:
             ValueError: If neither parameter is provided or both are provided
         """
-        if not platsbeteckning and not obsplatsnamn:
+        if not station_id and not station_name:
+            raise ValueError("Either 'station_id' or 'station_name' must be provided.")
+        if station_id and station_name:
             raise ValueError(
-                "Either 'platsbeteckningar' or 'obsplatsnamn' must be provided."
-            )
-        if platsbeteckning and obsplatsnamn:
-            raise ValueError(
-                "Only one of 'platsbeteckningar' or 'obsplatsnamn' can be provided."
+                "Only one of 'station_id' or 'station_name' can be provided."
             )
 
-        name_type = "platsbeteckning" if platsbeteckning else "obsplatsnamn"
-        stations = platsbeteckning if platsbeteckning else obsplatsnamn
+        # Map English parameter names to Swedish API field names
+        if station_id:
+            name_type = "platsbeteckning"
+            stations = station_id
+        else:
+            name_type = "obsplatsnamn"
+            stations = station_name
 
         # Build filter expression for multiple stations using IN clause
         # stations is guaranteed to not be None by the validation above
@@ -221,8 +227,8 @@ class ObservedGroundwaterLevelClient:
 
     def get_measurements_by_name(
         self,
-        platsbeteckning: str | None = None,
-        obsplatsnamn: str | None = None,
+        station_id: str | None = None,
+        station_name: str | None = None,
         tmin: str | datetime | None = None,
         tmax: str | datetime | None = None,
         limit: int | None = None,
@@ -231,8 +237,8 @@ class ObservedGroundwaterLevelClient:
         """Get measurements for a specific station by name with optional time filtering.
 
         Args:
-            platsbeteckning: Station 'platsbeteckning' value
-            obsplatsnamn: Station 'obsplatsnamn' value
+            station_id: Station identifier (maps to 'platsbeteckning' in API)
+            station_name: Station name (maps to 'obsplatsnamn' in API)
             tmin: Start time (ISO string or datetime object)
             tmax: End time (ISO string or datetime object)
             limit: Maximum number of measurements to return
@@ -245,30 +251,28 @@ class ObservedGroundwaterLevelClient:
             ValueError: If neither or both name parameters are provided,
                        or if station lookup fails
         """
-        if not platsbeteckning and not obsplatsnamn:
+        if not station_id and not station_name:
+            raise ValueError("Either 'station_id' or 'station_name' must be provided.")
+        if station_id and station_name:
             raise ValueError(
-                "Either 'platsbeteckning' or 'obsplatsnamn' must be provided."
-            )
-        if platsbeteckning and obsplatsnamn:
-            raise ValueError(
-                "Only one of 'platsbeteckning' or 'obsplatsnamn' can be provided."
+                "Only one of 'station_id' or 'station_name' can be provided."
             )
 
-        # If obsplatsnamn provided, look up the station to get platsbeteckning
-        if obsplatsnamn:
+        # If station_name provided, look up the station to get station_id
+        if station_name:
             logger.warning(
-                "Using 'obsplatsnamn' requires an additional API request to lookup the station. "
-                "For better performance, use 'platsbeteckning' directly if available."
+                "Using 'station_name' requires an additional API request to lookup the station. "
+                "For better performance, use 'station_id' directly if available."
             )
             # Don't pass kwargs to station lookup as it's a single result operation
-            station = self.get_station_by_name(obsplatsnamn=obsplatsnamn)
-            target_platsbeteckning = station.properties.platsbeteckning
+            station = self.get_station_by_name(station_name=station_name)
+            target_platsbeteckning = station.properties.station_id
             if not target_platsbeteckning:
                 raise ValueError(
-                    f"Station with obsplatsnamn '{obsplatsnamn}' has no platsbeteckning"
+                    f"Station with station_name '{station_name}' has no station_id"
                 )
         else:
-            target_platsbeteckning = platsbeteckning
+            target_platsbeteckning = station_id
 
         # Build filter expressions
         filters = [f"platsbeteckning='{target_platsbeteckning}'"]
@@ -288,8 +292,8 @@ class ObservedGroundwaterLevelClient:
 
     def get_measurements_by_names(
         self,
-        platsbeteckning: list[str] | None = None,
-        obsplatsnamn: list[str] | None = None,
+        station_id: list[str] | None = None,
+        station_name: list[str] | None = None,
         tmin: str | datetime | None = None,
         tmax: str | datetime | None = None,
         limit: int | None = None,
@@ -298,8 +302,8 @@ class ObservedGroundwaterLevelClient:
         """Get measurements for multiple stations by name with optional time filtering.
 
         Args:
-            platsbeteckning: List of station 'platsbeteckning' values
-            obsplatsnamn: List of station 'obsplatsnamn' values
+            station_id: List of station identifiers (maps to 'platsbeteckning' in API)
+            station_name: List of station names (maps to 'obsplatsnamn' in API)
             tmin: Start time (ISO string or datetime object)
             tmax: End time (ISO string or datetime object)
             limit: Maximum number of measurements to return
@@ -312,34 +316,32 @@ class ObservedGroundwaterLevelClient:
             ValueError: If neither or both name parameters are provided,
                        or if station lookup fails
         """
-        if not platsbeteckning and not obsplatsnamn:
+        if not station_id and not station_name:
+            raise ValueError("Either 'station_id' or 'station_name' must be provided.")
+        if station_id and station_name:
             raise ValueError(
-                "Either 'platsbeteckning' or 'obsplatsnamn' must be provided."
-            )
-        if platsbeteckning and obsplatsnamn:
-            raise ValueError(
-                "Only one of 'platsbeteckning' or 'obsplatsnamn' can be provided."
+                "Only one of 'station_id' or 'station_name' can be provided."
             )
 
-        # If obsplatsnamn provided, look up stations to get platsbeteckning values
-        if obsplatsnamn:
+        # If station_name provided, look up stations to get station_id values
+        if station_name:
             logger.warning(
-                "Using 'obsplatsnamn' requires an additional API request to lookup stations. "
-                "For better performance, use 'platsbeteckning' directly if available."
+                "Using 'station_name' requires an additional API request to lookup stations. "
+                "For better performance, use 'station_id' directly if available."
             )
             # Don't pass kwargs to station lookup as it's a separate operation
-            stations = self.get_stations_by_names(obsplatsnamn=obsplatsnamn)
+            stations = self.get_stations_by_names(station_name=station_name)
             target_platsbeteckningar = []
             for station in stations.features:
-                if station.properties.platsbeteckning:
-                    target_platsbeteckningar.append(station.properties.platsbeteckning)
+                if station.properties.station_id:
+                    target_platsbeteckningar.append(station.properties.station_id)
                 else:
                     raise ValueError(
-                        f"Station {station.id} with obsplatsnamn '{station.properties.obsplatsnamn}' "
-                        f"has no platsbeteckning"
+                        f"Station {station.id} with station_name '{station.properties.station_name}' "
+                        f"has no station_id"
                     )
         else:
-            target_platsbeteckningar = platsbeteckning
+            target_platsbeteckningar = station_id
 
         # Build filter expressions
         # target_platsbeteckningar is guaranteed to not be None by validation above
