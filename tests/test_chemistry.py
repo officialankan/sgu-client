@@ -259,3 +259,147 @@ def test_get_results_by_sites():
         assert len(results.features) == 2
         # Verify all results have a station_id
         assert all(r.properties.station_id is not None for r in results.features)
+
+
+def test_sampling_sites_to_dataframe():
+    """Test converting sampling sites collection to pandas DataFrame."""
+    from tests.mock_responses import create_mock_multiple_sampling_sites_response
+
+    client = SGUClient()
+
+    # Create mock response with multiple sites
+    mock_response_data = create_mock_multiple_sampling_sites_response(
+        platsbeteckningar=["10001_1", "10002_1"],
+    )
+
+    with patch.object(client.chemistry._client._session, "request") as mock_request:
+        mock_request.return_value = create_mock_response(mock_response_data)
+
+        sites = client.chemistry.get_sampling_sites(limit=10)
+        df = sites.to_dataframe()
+
+        # Verify DataFrame structure
+        assert df is not None
+        assert not df.empty
+        assert len(df) == 2
+
+        # Verify key columns exist
+        assert "site_id" in df.columns
+        assert "station_id" in df.columns
+        assert "site_name" in df.columns
+        assert "municipality" in df.columns
+        assert "sample_count" in df.columns
+
+        # Verify data
+        assert "10001_1" in df["station_id"].values
+        assert "10002_1" in df["station_id"].values
+
+
+def test_analysis_results_to_dataframe():
+    """Test converting analysis results collection to pandas DataFrame."""
+    from pandas.api.types import is_datetime64_any_dtype as is_datetime
+
+    client = SGUClient()
+
+    # Create mock response with multiple parameters
+    mock_response_data = create_mock_multiple_analysis_results_response(
+        platsbeteckning="10001_1",
+        parameters=[
+            ("pH", "PH", 7.2),
+            ("Nitrat", "NITRATE", 12.5),
+            ("Klorid", "KLORID", 8.3),
+        ],
+    )
+
+    with patch.object(client.chemistry._client._session, "request") as mock_request:
+        mock_request.return_value = create_mock_response(mock_response_data)
+
+        results = client.chemistry.get_analysis_results(limit=10)
+        df = results.to_dataframe()
+
+        # Verify DataFrame structure
+        assert df is not None
+        assert not df.empty
+        assert len(df) == 3
+
+        # Verify key columns exist
+        assert "result_id" in df.columns
+        assert "sampling_date" in df.columns
+        assert "parameter_short_name" in df.columns
+        assert "measurement_value" in df.columns
+        assert "unit" in df.columns
+
+        # Verify datetime column is properly typed
+        assert is_datetime(df["sampling_date"])
+
+        # Verify data
+        assert "PH" in df["parameter_short_name"].values
+        assert "NITRATE" in df["parameter_short_name"].values
+        assert "KLORID" in df["parameter_short_name"].values
+
+
+def test_analysis_results_to_series():
+    """Test converting analysis results to pandas Series."""
+    client = SGUClient()
+
+    # Create mock response with single parameter measurements
+    mock_response_data = create_mock_multiple_analysis_results_response(
+        platsbeteckning="10001_1",
+        parameters=[
+            ("pH", "PH", 7.2),
+            ("pH", "PH", 7.4),
+            ("pH", "PH", 7.1),
+        ],
+    )
+
+    with patch.object(client.chemistry._client._session, "request") as mock_request:
+        mock_request.return_value = create_mock_response(mock_response_data)
+
+        results = client.chemistry.get_analysis_results(limit=10)
+        series = results.to_series()
+
+        # Verify Series structure
+        assert series is not None
+        assert not series.empty
+        assert len(series) == 3
+        assert series.name == "measurement_value"
+
+        # Verify values
+        assert 7.2 in series.values
+        assert 7.4 in series.values
+        assert 7.1 in series.values
+
+
+def test_analysis_results_pivot_by_parameter():
+    """Test pivoting analysis results by parameter for multi-parameter analysis."""
+    client = SGUClient()
+
+    # Create mock response with multiple parameters over time
+    mock_response_data = create_mock_multiple_analysis_results_response(
+        platsbeteckning="10001_1",
+        parameters=[
+            ("pH", "PH", 7.2),
+            ("Nitrat", "NITRATE", 12.5),
+            ("Klorid", "KLORID", 8.3),
+        ],
+    )
+
+    with patch.object(client.chemistry._client._session, "request") as mock_request:
+        mock_request.return_value = create_mock_response(mock_response_data)
+
+        results = client.chemistry.get_analysis_results(limit=10)
+        df_pivot = results.pivot_by_parameter()
+
+        # Verify pivoted DataFrame structure
+        assert df_pivot is not None
+        assert not df_pivot.empty
+
+        # Verify columns are parameter names
+        assert "PH" in df_pivot.columns
+        assert "NITRATE" in df_pivot.columns
+        assert "KLORID" in df_pivot.columns
+
+        # Verify we can access values by parameter
+        assert df_pivot["PH"].notna().any()
+        assert df_pivot["NITRATE"].notna().any()
+        assert df_pivot["KLORID"].notna().any()
