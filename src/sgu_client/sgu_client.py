@@ -1,6 +1,7 @@
 """Main SGU Client class."""
 
 from .client.base import BaseClient
+from .client.chemistry import GroundwaterChemistryClient
 from .client.levels import LevelsClient
 from .config import SGUConfig
 
@@ -30,6 +31,7 @@ class SGUClient:
 
         # Initialize sub-clients
         self.levels = LevelsClient(self._base_client)
+        self.chemistry = GroundwaterChemistryClient(self._base_client)
 
     def __enter__(self):
         """Context manager entry.
