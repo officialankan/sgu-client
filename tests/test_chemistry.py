@@ -166,3 +166,96 @@ def test_get_sampling_sites_by_names():
         assert len(sites.features) == 2
         assert sites.features[0].properties.station_id == "10001_1"
         assert sites.features[1].properties.station_id == "10002_1"
+
+
+def test_get_results_by_site_with_station_id():
+    """Test getting analysis results for a specific site by station_id."""
+    client = SGUClient()
+
+    # Create mock response with analysis results for one site
+    mock_response_data = create_mock_multiple_analysis_results_response(
+        platsbeteckning="10001_1",
+        parameters=[
+            ("pH", "PH", 7.2),
+            ("Nitrat", "NITRATE", 12.5),
+        ],
+    )
+
+    with patch.object(client.chemistry._client._session, "request") as mock_request:
+        mock_request.return_value = create_mock_response(mock_response_data)
+
+        # Call the convenience method
+        results = client.chemistry.get_results_by_site(
+            station_id="10001_1",
+            limit=10
+        )
+
+        # Verify results
+        assert results is not None
+        assert isinstance(results, AnalysisResultCollection)
+        assert len(results.features) == 2
+        # All results should be from the same station
+        assert all(r.properties.station_id == "10001_1" for r in results.features)
+        # Verify we got both parameters
+        params = [r.properties.parameter_short_name for r in results.features]
+        assert "PH" in params
+        assert "NITRATE" in params
+
+
+def test_get_results_by_site_with_time_filtering():
+    """Test getting analysis results for a site with time filtering."""
+    from datetime import UTC, datetime
+
+    client = SGUClient()
+
+    # Create mock response
+    mock_response_data = create_mock_multiple_analysis_results_response(
+        platsbeteckning="10001_1",
+        parameters=[("pH", "PH", 7.2)],
+    )
+
+    with patch.object(client.chemistry._client._session, "request") as mock_request:
+        mock_request.return_value = create_mock_response(mock_response_data)
+
+        # Call with time filtering
+        results = client.chemistry.get_results_by_site(
+            station_id="10001_1",
+            tmin=datetime(2020, 1, 1, tzinfo=UTC),
+            tmax=datetime(2021, 1, 1, tzinfo=UTC),
+            limit=10
+        )
+
+        # Verify results
+        assert results is not None
+        assert isinstance(results, AnalysisResultCollection)
+        assert len(results.features) > 0
+
+
+def test_get_results_by_sites():
+    """Test getting analysis results for multiple sites."""
+    client = SGUClient()
+
+    # Create mock response with results from multiple sites
+    mock_response_data = create_mock_multiple_analysis_results_response(
+        platsbeteckning="10001_1",
+        parameters=[
+            ("pH", "PH", 7.2),
+            ("pH", "PH", 7.4),
+        ],
+    )
+
+    with patch.object(client.chemistry._client._session, "request") as mock_request:
+        mock_request.return_value = create_mock_response(mock_response_data)
+
+        # Call the convenience method for multiple sites
+        results = client.chemistry.get_results_by_sites(
+            station_id=["10001_1", "10002_1"],
+            limit=10
+        )
+
+        # Verify results
+        assert results is not None
+        assert isinstance(results, AnalysisResultCollection)
+        assert len(results.features) == 2
+        # Verify all results have a station_id
+        assert all(r.properties.station_id is not None for r in results.features)
