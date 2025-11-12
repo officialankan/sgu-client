@@ -172,6 +172,74 @@ with SGUClient() as client:
     series = levels.to_series()  # defaults to 'relative_level_small_resources' column with datetime index
 ```
 
+### Groundwater Chemistry
+
+Access groundwater chemistry data including sampling sites and chemical analysis results.
+
+```python
+from sgu_client import SGUClient
+from datetime import UTC, datetime
+
+with SGUClient() as client:
+    # basic API endpoint usage
+    sites = client.chemistry.get_sampling_sites(limit=50)
+
+    # with OGC API filters, like bbox of southern Sweden
+    sites = client.chemistry.get_sampling_sites(
+        bbox=[12.0, 55.0, 16.0, 58.0],
+        limit=100
+    )
+
+    # convenience function to get site by name
+    site = client.chemistry.get_sampling_site_by_name(
+        station_id="10001_1"  # or site_name="Västra Kärrstorp"
+    )
+    # or multiple sites by names
+    sites = client.chemistry.get_sampling_sites_by_names(
+        station_id=["10001_1", "10002_1"]  # or site_name=["Västra Kärrstorp", ...]
+    )
+
+    # get chemical analysis results
+    results = client.chemistry.get_analysis_results(limit=100)
+
+    # convenience function to get results for a specific site
+    results = client.chemistry.get_results_by_site(
+        station_id="1000_1",  # or site_name="Ringarum_1"
+        limit=100
+    )
+    # or multiple sites by names
+    results = client.chemistry.get_results_by_sites(
+        station_id=["1000_1", "1001_2"],  # or site_name=["Ringarum_1", ...]
+        limit=100
+    )
+
+    # filter by datetime for faster responses
+    tmin = datetime(2020, 1, 1, tzinfo=UTC)
+    tmax = datetime(2021, 1, 1, tzinfo=UTC)
+    results = client.chemistry.get_results_by_site(
+        station_id="1000_1", tmin=tmin, tmax=tmax, limit=500
+    )
+
+    # filter by chemical parameter
+    ph_results = client.chemistry.get_results_by_parameter(
+        parameter="PH",
+        station_id="1000_1",
+        tmin=tmin,
+        tmax=tmax
+    )
+
+    # responses that create lists of features can be converted to pandas DataFrames
+    results = client.chemistry.get_results_by_site(
+        station_id="1000_1",
+        limit=1000
+    )
+    df = results.to_dataframe()
+    # or series
+    series = results.to_series()  # defaults to 'measurement_value' column with sampling_date index
+    # or pivot by parameter for multi-parameter analysis
+    df_pivot = results.pivot_by_parameter()  # creates columns like 'PH', 'NITRATE', 'KLORID', etc.
+```
+
 ### Working with Typed Data
 
 All responses are fully typed with Pydantic models:
@@ -206,6 +274,7 @@ The main client class providing access to all SGU APIs.
 
 - `levels.observed` - Observed groundwater level measurements
 - `levels.modeled` - Modeled groundwater levels from SGU-HYPE
+- `chemistry` - Groundwater chemistry sampling sites and analysis results
 
 ### Configuration
 
@@ -255,7 +324,7 @@ Contributions are welcome! Please feel free to submit a Pull Request. For major 
 
 - [x] Initial release with observed and modeled groundwater levels
 - [ ] Add example notebooks and tutorials
-- [x] Add support for groundwater quality API
+- [x] Add support for groundwater chemistry API
 - [ ] Add support for geological data API
 
 ## License
