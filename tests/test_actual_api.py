@@ -75,3 +75,50 @@ def test_real_api_integration_get_recent_measurements():
     assert isinstance(measurement.properties.observation_datetime, datetime)
     assert measurement.properties.water_level_masl_m is not None
     assert isinstance(measurement.properties.water_level_masl_m, int | float)
+
+
+def test_real_api_chemistry_sampling_sites():
+    """INTEGRATION TEST: Verify chemistry API sampling sites endpoint works.
+
+    This canary test ensures the chemistry API is accessible and returns
+    expected data structures.
+    """
+    client = SGUClient()
+
+    # Get a small number of sampling sites
+    sites = client.chemistry.get_sampling_sites(limit=5)
+
+    # Basic validation
+    assert sites is not None
+    assert len(sites.features) > 0
+    assert sites.numberReturned is not None
+
+    # Check first site structure
+    site = sites.features[0]
+    assert site.properties.station_id is not None
+    assert site.properties.national_site_id is not None
+    assert site.properties.municipality is not None
+
+
+def test_real_api_chemistry_analysis_results():
+    """INTEGRATION TEST: Verify chemistry API analysis results endpoint works.
+
+    Tests that we can retrieve chemical analysis results with expected structure.
+    """
+    client = SGUClient()
+
+    # Get a small number of analysis results
+    results = client.chemistry.get_analysis_results(limit=5)
+
+    # Basic validation
+    assert results is not None
+    assert len(results.features) > 0
+
+    # Check first result structure
+    result = results.features[0]
+    assert result.properties.station_id is not None
+    assert result.properties.parameter_name is not None
+    assert result.properties.parameter_short_name is not None
+    # measurement_value can be None for some results
+    assert result.properties.sampling_date is not None
+    assert isinstance(result.properties.sampling_datetime, datetime)

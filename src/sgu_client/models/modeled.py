@@ -6,8 +6,7 @@ from typing import TYPE_CHECKING, Any, ClassVar, Literal
 from pydantic import Field, field_validator
 
 from sgu_client.models.base import SGUBaseModel, SGUResponse
-from sgu_client.models.observed import CRS, Link
-from sgu_client.models.shared import Geometry
+from sgu_client.models.shared import CRS, Geometry, Link
 from sgu_client.utils.pandas_helpers import get_pandas, optional_pandas_method
 
 if TYPE_CHECKING:
