@@ -1,6 +1,6 @@
 [project]
 name = "sgu-client"
-version = "0.3.0"
+version = "0.4.0"
 description = "A modern Python client library for accessing Geological Survey of Sweden groundwater data APIs with type safety and pandas integration"
 readme = "README.md"
 authors = [{ name = "Anders Retzner", email = "anders.retzner@gmail.com" }]
