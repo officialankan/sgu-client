@@ -1,6 +1,14 @@
 """Models module for SGU Client."""
 
 from .base import SGUBaseModel, SGUResponse
+from .chemistry import (
+    AnalysisResult,
+    AnalysisResultCollection,
+    AnalysisResultProperties,
+    SamplingSite,
+    SamplingSiteCollection,
+    SamplingSiteProperties,
+)
 from .modeled import (
     ModeledArea,
     ModeledAreaCollection,
@@ -19,6 +27,9 @@ from .observed import (
 )
 
 __all__ = [
+    "AnalysisResult",
+    "AnalysisResultCollection",
+    "AnalysisResultProperties",
     "GroundwaterMeasurement",
     "GroundwaterMeasurementCollection",
     "GroundwaterMeasurementProperties",
@@ -33,4 +44,7 @@ __all__ = [
     "ModeledGroundwaterLevelProperties",
     "SGUBaseModel",
     "SGUResponse",
+    "SamplingSite",
+    "SamplingSiteCollection",
+    "SamplingSiteProperties",
 ]

@@ -1,12 +1,12 @@
 """Pydantic models for groundwater data from SGU API."""
 
 from datetime import datetime
-from typing import TYPE_CHECKING, Any, Literal
+from typing import TYPE_CHECKING, Literal
 
 from pydantic import Field
 
 from sgu_client.models.base import SGUBaseModel, SGUResponse
-from sgu_client.models.shared import Geometry
+from sgu_client.models.shared import CRS, Geometry, Link
 from sgu_client.utils.pandas_helpers import get_pandas, optional_pandas_method
 
 if TYPE_CHECKING:
@@ -224,22 +224,6 @@ class GroundwaterMeasurement(SGUBaseModel):
 
 
 # Collection response models
-class Link(SGUBaseModel):
-    """A link in a GeoJSON response."""
-
-    href: str = Field(..., description="Link URL")
-    rel: str | None = Field(None, description="Link relation")
-    type: str | None = Field(None, description="Link media type")
-    title: str | None = Field(None, description="Link title")
-
-
-class CRS(SGUBaseModel):
-    """Coordinate Reference System."""
-
-    type: str = Field(..., description="CRS type")
-    properties: dict[str, Any] = Field(..., description="CRS properties")
-
-
 class GroundwaterStationCollection(SGUResponse):
     """Collection of groundwater monitoring stations (GeoJSON FeatureCollection)."""
 
