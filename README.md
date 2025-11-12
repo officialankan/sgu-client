@@ -90,7 +90,7 @@ with SGUClient() as client:
     
     # convenience function to get station by name
     station = client.levels.observed.get_station_by_name(
-        station_id="95_2"  # or station_name="95_2"
+        station_id="95_2"  # or station_name="Lagga_2"
     )
     # or multiple stations by names
     stations = client.levels.observed.get_stations_by_names(
@@ -99,7 +99,7 @@ with SGUClient() as client:
 
     # convenience function to get measurements by station name
     measurements = client.levels.observed.get_measurements_by_name(
-        station_id="95_2",  # or station_name="95_2"
+        station_id="95_2",  # or station_name="Lagga_2"
         limit=100
     )
     # or multiple stations by names
@@ -255,7 +255,7 @@ Contributions are welcome! Please feel free to submit a Pull Request. For major 
 
 - [x] Initial release with observed and modeled groundwater levels
 - [ ] Add example notebooks and tutorials
-- [ ] Add support for groundwater quality API
+- [x] Add support for groundwater quality API
 - [ ] Add support for geological data API
 
 ## License
