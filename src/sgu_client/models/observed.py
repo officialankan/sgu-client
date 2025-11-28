@@ -88,7 +88,7 @@ class GroundwaterStationProperties(SGUBaseModel):
     well_material_description: str | None = Field(
         None, alias="brunnsmtrl_tx", description="Well material description"
     )
-    borehole_completion: str | None = Field(
+    borehole_completion: float | None = Field(
         None, alias="borrhalslutning", description="Borehole closure/completion"
     )
     screen_length: float | None = Field(
