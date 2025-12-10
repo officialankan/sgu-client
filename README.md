@@ -87,6 +87,13 @@ with SGUClient() as client:
         bbox=[12.0, 55.0, 16.0, 58.0],
         limit=100
     )
+
+    # or filter expressions
+    stations = client.levels.observed.get_stations(
+        bbox=[12.0, 55.0, 16.0, 58.0],
+        filter_expr="akvifer='JS'",
+        limit=100
+    )
     
     # convenience function to get station by name
     station = client.levels.observed.get_station_by_name(
@@ -190,13 +197,20 @@ with SGUClient() as client:
         limit=100
     )
 
+    # and filter expressions
+    sites = client.chemistry.get_sampling_sites(
+        bbox=[12.0, 55.0, 16.0, 58.0],
+        filter_expr="provplatstyp='jordbrunn'",
+        limit=100
+    )
+
     # convenience function to get site by name
     site = client.chemistry.get_sampling_site_by_name(
-        station_id="10001_1"  # or site_name="Västra Kärrstorp"
+        site_id="10001_1"  # or site_name="Ringarum_1"
     )
     # or multiple sites by names
     sites = client.chemistry.get_sampling_sites_by_names(
-        station_id=["10001_1", "10002_1"]  # or site_name=["Västra Kärrstorp", ...]
+        site_id=["10001_1", "10002_1"]  # or site_name=["Ringarum_1", ...]
     )
 
     # get chemical analysis results
@@ -204,12 +218,12 @@ with SGUClient() as client:
 
     # convenience function to get results for a specific site
     results = client.chemistry.get_results_by_site(
-        station_id="1000_1",  # or site_name="Ringarum_1"
+        site_id="1000_1",  # or site_name="Ringarum_1"
         limit=100
     )
     # or multiple sites by names
     results = client.chemistry.get_results_by_sites(
-        station_id=["1000_1", "1001_2"],  # or site_name=["Ringarum_1", ...]
+        site_id=["1000_1", "1001_2"],  # or site_name=["Ringarum_1", ...]
         limit=100
     )
 
@@ -237,7 +251,7 @@ with SGUClient() as client:
     # or series
     series = results.to_series()  # defaults to 'measurement_value' column with sampling_date index
     # or pivot by parameter for multi-parameter analysis
-    df_pivot = results.pivot_by_parameter()  # creates columns like 'PH', 'NITRATE', 'KLORID', etc.
+    df_pivot = results.pivot_by_parameter()  # creates columns like 'PH', 'NITRAT', 'KLORID', etc.
 ```
 
 ### Working with Typed Data

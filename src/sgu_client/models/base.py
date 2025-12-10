@@ -39,6 +39,18 @@ class SGUResponse(SGUBaseModel):
 
         Returns:
             DataFrame with the data
+
+        Examples:
+            TODO: review this
+
+            This is an abstract method that must be implemented by subclasses.
+            Use concrete collection classes instead:
+
+            >>> from sgu_client import SGUClient
+            >>> client = SGUClient()
+            >>> # Use specific collection types like GroundwaterStationCollection
+            >>> stations = client.levels.observed.get_stations(limit=5)
+            >>> df = stations.to_dataframe()  # This works!
         """
         # This will be implemented by subclasses
         raise NotImplementedError("Subclasses must implement to_dataframe()")

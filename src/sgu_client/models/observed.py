@@ -248,7 +248,22 @@ class GroundwaterStationCollection(SGUResponse):
     def to_dataframe(
         self,
     ) -> "pd.DataFrame":
-        """Convert to pandas DataFrame with flattened station properties."""
+        """Convert to pandas DataFrame with flattened station properties.
+
+        Returns:
+            DataFrame containing station data with geometry columns.
+
+        Examples:
+            TODO: review this
+
+            >>> from sgu_client import SGUClient
+            >>> client = SGUClient()
+            >>> stations = client.levels.observed.get_stations(limit=10)
+            >>> df = stations.to_dataframe()
+            >>> # DataFrame includes flattened properties and geometry coordinates
+            >>> print(df.columns)  # station_id, longitude, latitude, station_name, municipality, etc.
+            >>> print(df[['station_id', 'station_name', 'municipality', 'longitude', 'latitude']].head())
+        """
 
         data = []
         for feature in self.features:
@@ -299,6 +314,19 @@ class GroundwaterMeasurementCollection(SGUResponse):
 
         Returns
             DataFrame containing measurement data.
+
+        Examples:
+            TODO: review this
+
+            >>> from sgu_client import SGUClient
+            >>> client = SGUClient()
+            >>> measurements = client.levels.observed.get_measurements(limit=100)
+            >>> df = measurements.to_dataframe()
+            >>> # DataFrame is sorted by observation_date by default
+            >>> print(df[['observation_date', 'water_level_masl_m', 'station_id']].head())
+            >>>
+            >>> # Disable sorting for faster conversion
+            >>> df_unsorted = measurements.to_dataframe(sort_by_date=False)
         """
 
         data = []
@@ -355,6 +383,24 @@ class GroundwaterMeasurementCollection(SGUResponse):
 
         Returns:
             Series containing measurement data.
+
+        Examples:
+            TODO: review this
+
+            >>> from sgu_client import SGUClient
+            >>> client = SGUClient()
+            >>> measurements = client.levels.observed.get_measurements_by_name(
+            ...     platsbeteckning="95_2", limit=100
+            ... )
+            >>> # Create time series with default columns (observation_date, water_level_masl_m)
+            >>> series = measurements.to_series()
+            >>> print(series.head())
+            >>>
+            >>> # Use custom columns for index and data
+            >>> series_custom = measurements.to_series(
+            ...     index="observation_date",
+            ...     data="water_level_below_ground_m"
+            ... )
         """
         df = self.to_dataframe(sort_by_date=sort_by_date)
         pd = get_pandas()
