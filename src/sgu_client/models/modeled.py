@@ -142,13 +142,13 @@ class ModeledAreaCollection(SGUResponse):
             DataFrame containing area data with centroid coordinates.
 
         Examples:
-            TODO: review this
 
             >>> from sgu_client import SGUClient
             >>> client = SGUClient()
             >>> areas = client.levels.modeled.get_areas(limit=10)
             >>> df = areas.to_dataframe()
-            >>> # DataFrame includes area properties and centroid coordinates
+            >>>
+            >>> # dataFrame includes area properties and centroid coordinates
             >>> print(df.columns)  # feature_id, centroid_longitude, centroid_latitude, area_id, time_series_url
             >>> print(df[['area_id', 'centroid_longitude', 'centroid_latitude']].head())
         """
@@ -228,17 +228,14 @@ class ModeledGroundwaterLevelCollection(SGUResponse):
             DataFrame containing modeled level data.
 
         Examples:
-            TODO: review this
 
             >>> from sgu_client import SGUClient
             >>> client = SGUClient()
             >>> levels = client.levels.modeled.get_levels(limit=100)
             >>> df = levels.to_dataframe()
-            >>> # DataFrame includes modeled percentile data sorted by date
+
+            >>> # dataFrame includes modeled percentile data sorted by date
             >>> print(df[['date', 'area_id', 'relative_level_small_resources', 'deviation_small_resources']].head())
-            >>>
-            >>> # Disable sorting for faster conversion
-            >>> df_unsorted = levels.to_dataframe(sort_by_date=False)
         """
 
         data = []
@@ -279,16 +276,16 @@ class ModeledGroundwaterLevelCollection(SGUResponse):
             Series containing modeled data.
 
         Examples:
-            TODO: review this
 
             >>> from sgu_client import SGUClient
             >>> client = SGUClient()
             >>> levels = client.levels.modeled.get_levels(limit=100)
-            >>> # Create time series with default columns (date, relative_level_small_resources)
+            >>>
+            >>> # create time series with default columns (date, relative_level_small_resources)
             >>> series = levels.to_series()
             >>> print(series.head())
             >>>
-            >>> # Use custom columns - compare small vs large resources
+            >>> # use custom columns - compare small vs large resources
             >>> series_large = levels.to_series(
             ...     index="date",
             ...     data="relative_level_large_resources"

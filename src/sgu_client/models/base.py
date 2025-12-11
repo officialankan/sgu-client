@@ -41,7 +41,6 @@ class SGUResponse(SGUBaseModel):
             DataFrame with the data
 
         Examples:
-            TODO: review this
 
             This is an abstract method that must be implemented by subclasses.
             Use concrete collection classes instead:

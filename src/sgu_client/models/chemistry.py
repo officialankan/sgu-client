@@ -378,13 +378,14 @@ class SamplingSiteCollection(SGUResponse):
             DataFrame containing sampling site data with parsed datetime columns.
 
         Examples:
-            TODO: review this
 
             >>> from sgu_client import SGUClient
             >>> client = SGUClient()
-            >>> sites = client.chemistry.get_sites(limit=10)
+            >>>
+            >>> sites = client.chemistry.get_sampling_sites(limit=10)
             >>> df = sites.to_dataframe()
-            >>> # DataFrame includes site properties with datetime parsing
+            >>>
+            >>> # dataFrame includes site properties with datetime parsing
             >>> print(df[['station_id', 'site_name', 'municipality', 'established_date', 'sample_count']].head())
             >>> # established_date and decommissioned_date are parsed as datetime objects
         """
@@ -459,13 +460,14 @@ class AnalysisResultCollection(SGUResponse):
             DataFrame containing analysis result data.
 
         Examples:
-            TODO: review this
 
             >>> from sgu_client import SGUClient
             >>> client = SGUClient()
-            >>> results = client.chemistry.get_results_by_site(station_id="10001_1", limit=100)
+            >>>
+            >>> results = client.chemistry.get_results_by_site(site_id="10001_1", limit=100)
             >>> df = results.to_dataframe()
-            >>> # DataFrame includes chemical analysis results with multiple datetime columns
+            >>>
+            >>> # dataFrame includes chemical analysis results with multiple datetime columns
             >>> print(df[['sampling_date', 'parameter_short_name', 'measurement_value', 'unit']].head())
             >>> # sampling_date, submission_date, and last_update are all parsed as datetime objects
         """
@@ -531,16 +533,16 @@ class AnalysisResultCollection(SGUResponse):
             Series containing analysis result data.
 
         Examples:
-            TODO: review this
 
             >>> from sgu_client import SGUClient
             >>> client = SGUClient()
-            >>> results = client.chemistry.get_results_by_site(station_id="10001_1", limit=100)
-            >>> # Create time series with default columns (sampling_date, measurement_value)
+            >>> results = client.chemistry.get_results_by_site(site_id="10001_1", limit=100)
+            >>>
+            >>> # create time series with default columns (sampling_date, measurement_value)
             >>> series = results.to_series()
             >>> print(series.head())
             >>>
-            >>> # Use custom columns - e.g., parameter names as data
+            >>> # use custom columns - e.g., parameter names as data
             >>> series_params = results.to_series(
             ...     index="sampling_date",
             ...     data="parameter_short_name"
@@ -591,7 +593,11 @@ class AnalysisResultCollection(SGUResponse):
             Pivoted DataFrame with parameters as columns.
 
         Example:
-            >>> results = client.chemistry.get_results_by_site(station_id="10001_1")
+
+            >>> from sgu_client import SGUClient()
+            >>> client = SGUClient()
+            >>>
+            >>> results = client.chemistry.get_results_by_site(site_id="10001_1")
             >>> df_pivot = results.pivot_by_parameter()
             >>> # now df_pivot has columns like 'PH', 'NITRATE', 'CHLORIDE', etc.
         """
