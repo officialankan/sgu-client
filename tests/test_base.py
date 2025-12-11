@@ -13,8 +13,8 @@ from sgu_client.exceptions import SGUAPIError, SGUConnectionError, SGUTimeoutErr
 
 @pytest.fixture
 def debug_config():
-    """Create a config with debug enabled."""
-    return SGUConfig(debug=True)
+    """Create a config with DEBUG log level."""
+    return SGUConfig(log_level="DEBUG")
 
 
 @pytest.fixture
@@ -25,7 +25,7 @@ def base_client():
 
 @pytest.fixture
 def debug_client(debug_config):
-    """Create a base client with debug enabled."""
+    """Create a base client with DEBUG log level."""
     return BaseClient(config=debug_config)
 
 

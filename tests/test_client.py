@@ -30,7 +30,7 @@ def test_create_basic_client():
 
 def test_create_client_with_config():
     """Test that we can create a SGUClient with custom configuration."""
-    config = SGUConfig(timeout=30, debug=True)
+    config = SGUConfig(timeout=30, log_level="DEBUG")
     client = SGUClient(config=config)
     assert client is not None
 
@@ -51,7 +51,7 @@ def test_request_with_kwargs(mock_request) -> None:
     )
     mock_request.return_value = create_mock_response(mock_response_data)
 
-    client = SGUClient(config=SGUConfig(debug=True))
+    client = SGUClient(config=SGUConfig(log_level="DEBUG"))
     _ = client.levels.observed.get_stations(
         limit=1, params={"key": "value"}, data={"key": "value"}
     )
@@ -66,6 +66,6 @@ def test_http_error() -> None:
         mock_response.json.return_value = {"error": "Not Found"}
         mock_request.return_value = mock_response
 
-        client = SGUClient(config=SGUConfig(debug=True))
+        client = SGUClient(config=SGUConfig(log_level="DEBUG"))
         with pytest.raises(SGUAPIError):
             _ = client.levels.observed.get_stations(limit=1)

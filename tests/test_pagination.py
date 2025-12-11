@@ -12,7 +12,7 @@ from sgu_client.config import SGUConfig
 @pytest.fixture
 def client():
     """Create a base client for testing."""
-    config = SGUConfig(debug=False)  # Disable debug to avoid log noise in tests
+    config = SGUConfig()  # Default config (no debug logging)
     return BaseClient(config)
 
 
