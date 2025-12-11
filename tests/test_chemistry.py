@@ -97,10 +97,10 @@ def test_get_analysis_results_with_mock():
 
 
 def test_get_sampling_site_by_name_station_id():
-    """Test getting a single sampling site by station_id with mocked response."""
+    """Test getting a single sampling site by site_id with mocked response."""
     client = SGUClient()
 
-    # Create mock response with one site matching the station_id
+    # Create mock response with one site matching the site_id
     mock_response_data = create_mock_single_sampling_site_response(
         site_id="provplatser.3",
         platsbeteckning="10001_1",
@@ -111,7 +111,7 @@ def test_get_sampling_site_by_name_station_id():
         mock_request.return_value = create_mock_response(mock_response_data)
 
         # Call the convenience method
-        site = client.chemistry.get_sampling_site_by_name(station_id="10001_1")
+        site = client.chemistry.get_sampling_site_by_name(site_id="10001_1")
 
         # Verify results
         assert site is not None
@@ -161,7 +161,7 @@ def test_get_sampling_sites_by_names():
 
         # Call the convenience method for multiple sites
         sites = client.chemistry.get_sampling_sites_by_names(
-            station_id=["10001_1", "10002_1"]
+            site_id=["10001_1", "10002_1"]
         )
 
         # Verify results
@@ -173,7 +173,7 @@ def test_get_sampling_sites_by_names():
 
 
 def test_get_results_by_site_with_station_id():
-    """Test getting analysis results for a specific site by station_id."""
+    """Test getting analysis results for a specific site by site_id."""
     client = SGUClient()
 
     # Create mock response with analysis results for one site
@@ -189,7 +189,7 @@ def test_get_results_by_site_with_station_id():
         mock_request.return_value = create_mock_response(mock_response_data)
 
         # Call the convenience method
-        results = client.chemistry.get_results_by_site(station_id="10001_1", limit=10)
+        results = client.chemistry.get_results_by_site(site_id="10001_1", limit=10)
 
         # Verify results
         assert results is not None
@@ -220,7 +220,7 @@ def test_get_results_by_site_with_time_filtering():
 
         # Call with time filtering
         results = client.chemistry.get_results_by_site(
-            station_id="10001_1",
+            site_id="10001_1",
             tmin=datetime(2020, 1, 1, tzinfo=UTC),
             tmax=datetime(2021, 1, 1, tzinfo=UTC),
             limit=10,
@@ -250,7 +250,7 @@ def test_get_results_by_sites():
 
         # Call the convenience method for multiple sites
         results = client.chemistry.get_results_by_sites(
-            station_id=["10001_1", "10002_1"], limit=10
+            site_id=["10001_1", "10002_1"], limit=10
         )
 
         # Verify results
@@ -410,7 +410,7 @@ def test_get_sampling_site_by_name_no_args():
     """Test that get_sampling_site_by_name raises error when no arguments provided."""
     client = SGUClient()
     with pytest.raises(
-        ValueError, match="Either 'station_id' or 'site_name' must be provided."
+        ValueError, match="Either 'site_id' or 'site_name' must be provided."
     ):
         client.chemistry.get_sampling_site_by_name()
 
@@ -420,10 +420,10 @@ def test_get_sampling_site_by_name_both_args():
     client = SGUClient()
     with pytest.raises(
         ValueError,
-        match="Only one of 'station_id' or 'site_name' can be provided.",
+        match="Only one of 'site_id' or 'site_name' can be provided.",
     ):
         client.chemistry.get_sampling_site_by_name(
-            station_id="10001_1", site_name="Test_Site"
+            site_id="10001_1", site_name="Test_Site"
         )
 
 
@@ -432,7 +432,7 @@ def test_get_sampling_sites_by_names_no_args():
     client = SGUClient()
     with pytest.raises(
         ValueError,
-        match="Either 'station_id' or 'site_name' must be provided.",
+        match="Either 'site_id' or 'site_name' must be provided.",
     ):
         client.chemistry.get_sampling_sites_by_names()
 
@@ -442,10 +442,10 @@ def test_get_sampling_sites_by_names_both_args():
     client = SGUClient()
     with pytest.raises(
         ValueError,
-        match="Only one of 'station_id' or 'site_name' can be provided.",
+        match="Only one of 'site_id' or 'site_name' can be provided.",
     ):
         client.chemistry.get_sampling_sites_by_names(
-            station_id=["10001_1"], site_name=["Test_Site"]
+            site_id=["10001_1"], site_name=["Test_Site"]
         )
 
 
@@ -454,16 +454,16 @@ def test_get_sampling_sites_by_names_empty_list():
     client = SGUClient()
     with pytest.raises(
         ValueError,
-        match="Either 'station_id' or 'site_name' must be provided.",
+        match="Either 'site_id' or 'site_name' must be provided.",
     ):
-        client.chemistry.get_sampling_sites_by_names(station_id=[])
+        client.chemistry.get_sampling_sites_by_names(site_id=[])
 
 
 def test_get_results_by_site_no_args():
     """Test that get_results_by_site raises error when no arguments provided."""
     client = SGUClient()
     with pytest.raises(
-        ValueError, match="Either 'station_id' or 'site_name' must be provided."
+        ValueError, match="Either 'site_id' or 'site_name' must be provided."
     ):
         client.chemistry.get_results_by_site()
 
@@ -473,18 +473,16 @@ def test_get_results_by_site_both_args():
     client = SGUClient()
     with pytest.raises(
         ValueError,
-        match="Only one of 'station_id' or 'site_name' can be provided.",
+        match="Only one of 'site_id' or 'site_name' can be provided.",
     ):
-        client.chemistry.get_results_by_site(
-            station_id="10001_1", site_name="Test_Site"
-        )
+        client.chemistry.get_results_by_site(site_id="10001_1", site_name="Test_Site")
 
 
 def test_get_results_by_sites_no_args():
     """Test that get_results_by_sites raises error when no arguments provided."""
     client = SGUClient()
     with pytest.raises(
-        ValueError, match="Either 'station_id' or 'site_name' must be provided."
+        ValueError, match="Either 'site_id' or 'site_name' must be provided."
     ):
         client.chemistry.get_results_by_sites()
 
@@ -494,10 +492,10 @@ def test_get_results_by_sites_both_args():
     client = SGUClient()
     with pytest.raises(
         ValueError,
-        match="Only one of 'station_id' or 'station_name' can be provided.",
+        match="Only one of 'site_id' or 'site_name' can be provided.",
     ):
         client.chemistry.get_results_by_sites(
-            station_id=["10001_1"], site_name=["Test_Site"]
+            site_id=["10001_1"], site_name=["Test_Site"]
         )
 
 
@@ -506,9 +504,9 @@ def test_get_results_by_sites_empty_list():
     client = SGUClient()
     with pytest.raises(
         ValueError,
-        match="Either 'station_id' or 'site_name' must be provided.",
+        match="Either 'site_id' or 'site_name' must be provided.",
     ):
-        client.chemistry.get_results_by_sites(station_id=[])
+        client.chemistry.get_results_by_sites(site_id=[])
 
 
 def test_get_results_by_parameter_no_parameter():

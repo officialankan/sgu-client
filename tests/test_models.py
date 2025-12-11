@@ -436,3 +436,130 @@ def test_model_dump_uses_english_field_names():
     assert "station_id" in data
     assert "station_name" in data
     assert data["station_id"] == "95_2"
+
+
+def test_last_updated_datetime_invalid_format():
+    """Test that last_updated_datetime returns None for invalid datetime formats."""
+    # Test with invalid datetime string using measurement (which has last_updated_datetime property)
+    measurement_data = {
+        "type": "Feature",
+        "id": "nivaer.1",
+        "geometry": {"type": "Point", "coordinates": [16.0, 58.0]},
+        "properties": {
+            "row_id": 1,
+            "station_id": "test_1",
+            "observation_date": "2023-01-01T00:00:00Z",
+            "water_level_masl_m": 10.5,
+            "measurement_method": "automatic",
+            "last_updated": "not-a-valid-datetime",  # Invalid format
+        },
+    }
+
+    measurement = GroundwaterMeasurement(**measurement_data)
+
+    # Should return None instead of raising an exception
+    assert measurement.properties.last_updated_datetime is None
+    assert measurement.properties.last_updated == "not-a-valid-datetime"
+
+
+def test_last_updated_datetime_with_none():
+    """Test that last_updated_datetime returns None when last_updated is None."""
+    measurement_data = {
+        "type": "Feature",
+        "id": "nivaer.1",
+        "geometry": {"type": "Point", "coordinates": [16.0, 58.0]},
+        "properties": {
+            "row_id": 1,
+            "station_id": "test_1",
+            "observation_date": "2023-01-01T00:00:00Z",
+            "water_level_masl_m": 10.5,
+            "measurement_method": "automatic",
+            "last_updated": None,
+        },
+    }
+
+    measurement = GroundwaterMeasurement(**measurement_data)
+    assert measurement.properties.last_updated_datetime is None
+
+
+def test_to_series_empty_dataframe():
+    """Test to_series() with empty GroundwaterMeasurementCollection."""
+    # Create empty collection
+    empty_collection = GroundwaterMeasurementCollection(
+        type="FeatureCollection",
+        features=[],
+        numberMatched=0,
+        numberReturned=0,
+        timeStamp=datetime.now(UTC).isoformat(),
+    )
+
+    # Should return empty pandas Series without error
+    series = empty_collection.to_series(sort_by_date=False)  # Don't sort empty DF
+    assert len(series) == 0
+    assert series.dtype == float  # Empty series should have float dtype
+
+
+def test_to_series_invalid_index_column():
+    """Test to_series() raises ValueError for invalid index column."""
+    # Create a simple measurement collection
+    measurement_data = {
+        "type": "FeatureCollection",
+        "features": [
+            {
+                "type": "Feature",
+                "id": "nivaer.1",
+                "geometry": {"type": "Point", "coordinates": [16.0, 58.0]},
+                "properties": {
+                    "row_id": 1,
+                    "station_id": "95_2",
+                    "observation_date": "2023-01-01T00:00:00Z",
+                    "water_level_masl_m": 10.5,
+                    "measurement_method": "automatic",
+                },
+            }
+        ],
+        "numberMatched": 1,
+        "numberReturned": 1,
+        "timeStamp": datetime.now(UTC).isoformat(),
+    }
+
+    collection = GroundwaterMeasurementCollection(**measurement_data)
+
+    # Should raise ValueError for non-existent index column
+    with pytest.raises(ValueError) as exc_info:
+        collection.to_series(index="nonexistent_column")
+
+    assert "not found in DataFrame" in str(exc_info.value)
+
+
+def test_to_series_invalid_data_column():
+    """Test to_series() raises ValueError for invalid data column."""
+    # Create a simple measurement collection
+    measurement_data = {
+        "type": "FeatureCollection",
+        "features": [
+            {
+                "type": "Feature",
+                "id": "nivaer.1",
+                "geometry": {"type": "Point", "coordinates": [16.0, 58.0]},
+                "properties": {
+                    "row_id": 1,
+                    "station_id": "95_2",
+                    "observation_date": "2023-01-01T00:00:00Z",
+                    "water_level_masl_m": 10.5,
+                    "measurement_method": "automatic",
+                },
+            }
+        ],
+        "numberMatched": 1,
+        "numberReturned": 1,
+        "timeStamp": datetime.now(UTC).isoformat(),
+    }
+
+    collection = GroundwaterMeasurementCollection(**measurement_data)
+
+    # Should raise ValueError for non-existent data column
+    with pytest.raises(ValueError) as exc_info:
+        collection.to_series(data="nonexistent_column")
+
+    assert "not found in DataFrame" in str(exc_info.value)

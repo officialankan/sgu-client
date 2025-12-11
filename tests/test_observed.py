@@ -750,3 +750,49 @@ def test_station_with_float_idiam() -> None:
         assert station.properties.inner_diameter == 50.8
         assert isinstance(station.properties.inner_diameter, float)
         assert station.properties.station_remark == "markanvändningspåverkad"
+
+
+def test_get_measurement_by_id_not_found():
+    """Test that get_measurement returns ValueError when measurement not found."""
+    with patch("sgu_client.client.base.BaseClient._make_request") as mock_request:
+        # Mock empty response (no features found)
+        mock_request.return_value = create_mock_empty_collection_response()
+
+        client = SGUClient()
+
+        with pytest.raises(ValueError) as exc_info:
+            client.levels.observed.get_measurement("nonexistent_id")
+
+        assert "not found" in str(exc_info.value).lower()
+
+
+def test_get_measurement_by_id_multiple_results():
+    """Test that get_measurement returns ValueError when multiple measurements found."""
+    with patch("sgu_client.client.base.BaseClient._make_request") as mock_request:
+        # Mock response with multiple measurements (should never happen in practice)
+        mock_request.return_value = create_mock_multiple_measurements_response(
+            count=2  # No start_id parameter
+        )
+
+        client = SGUClient()
+
+        with pytest.raises(ValueError) as exc_info:
+            client.levels.observed.get_measurement("duplicate_id")
+
+        assert "multiple" in str(exc_info.value).lower()
+
+
+def test_get_station_by_name_multiple_results():
+    """Test that get_station_by_name returns ValueError when multiple stations found."""
+    with patch("sgu_client.client.base.BaseClient._make_request") as mock_request:
+        # Mock response with multiple stations having the same obsplatsnamn
+        mock_request.return_value = create_mock_multiple_stations_response(
+            platsbeteckningar=["Station1", "Station2"]
+        )
+
+        client = SGUClient()
+
+        with pytest.raises(ValueError) as exc_info:
+            client.levels.observed.get_station_by_name(station_name="DuplicateName")
+
+        assert "multiple" in str(exc_info.value).lower()
