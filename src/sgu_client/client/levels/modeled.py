@@ -11,6 +11,8 @@ from sgu_client.models.modeled import (
     ModeledGroundwaterLevelCollection,
 )
 
+logger = logging.getLogger(__name__)
+
 
 class ModeledGroundwaterLevelClient:
     """Client for modeled groundwater level-related SGU API endpoints."""
@@ -281,8 +283,6 @@ class ModeledGroundwaterLevelClient:
             ...     datetime="2023-01-01/2024-01-01"
             ... )
         """
-        logger = logging.getLogger(__name__)
-
         # Create bounding box around the point
         bbox = [
             lon - buffer,  # min_lon

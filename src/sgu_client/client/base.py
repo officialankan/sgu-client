@@ -8,7 +8,7 @@ import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
-from sgu_client.config import SGUConfig
+from sgu_client.config import SGUConfig, setup_logging
 from sgu_client.exceptions import SGUAPIError, SGUConnectionError, SGUTimeoutError
 
 logger = logging.getLogger(__name__)
@@ -26,8 +26,8 @@ class BaseClient:
         self.config = config or SGUConfig()
         self._session = self._create_session()
 
-        if self.config.debug:
-            logging.basicConfig(level=logging.DEBUG)
+        # Configure logging based on config
+        setup_logging(self.config.log_level)
 
     def _create_session(self) -> requests.Session:
         """Create and configure a requests session."""
@@ -89,12 +89,11 @@ class BaseClient:
         params = params or {}
 
         try:
-            if self.config.debug:
-                logger.debug(f"Making {method} request to {url}")
-                if params:
-                    logger.debug(f"Query params: {params}")
-                if data:
-                    logger.debug(f"Request data: {data}")
+            logger.debug(f"Making {method} request to {url}")
+            if params:
+                logger.debug(f"Query params: {params}")
+            if data:
+                logger.debug(f"Request data: {data}")
 
             # Make initial request
             response = self._session.request(
@@ -106,8 +105,7 @@ class BaseClient:
                 **kwargs,
             )
 
-            if self.config.debug:
-                logger.debug(f"Response status: {response.status_code}")
+            logger.debug(f"Response status: {response.status_code}")
 
             # Check for HTTP errors
             if not response.ok:
@@ -200,11 +198,10 @@ class BaseClient:
             # Already have enough features
             return initial_response
 
-        if self.config.debug:
-            logger.debug(
-                f"Pagination needed: {number_returned}/{number_matched} features matched, "
-                f"will fetch up to {max_features} features total"
-            )
+        logger.debug(
+            f"Pagination needed: {number_returned}/{number_matched} features matched, "
+            f"will fetch up to {max_features} features total"
+        )
 
         # Collect all features
         all_features = initial_response["features"].copy()
@@ -226,8 +223,7 @@ class BaseClient:
             if remaining < next_params["limit"]:
                 next_params["limit"] = remaining
 
-            if self.config.debug:
-                logger.debug(f"Fetching page starting at index {current_start_index}")
+            logger.debug(f"Fetching page starting at index {current_start_index}")
 
             # Make request for next page
             response = self._session.request(
@@ -260,20 +256,18 @@ class BaseClient:
             all_features.extend(page_features)
             current_start_index += len(page_features)
 
-            if self.config.debug:
-                logger.debug(
-                    f"Fetched {len(page_features)} features, total: {len(all_features)}"
-                )
+            logger.debug(
+                f"Fetched {len(page_features)} features, total: {len(all_features)}"
+            )
 
         # Update the response with all collected features
         final_response = initial_response.copy()
         final_response["features"] = all_features
         final_response["numberReturned"] = len(all_features)
 
-        if self.config.debug:
-            logger.debug(
-                f"Pagination complete: {len(all_features)} total features collected"
-            )
+        logger.debug(
+            f"Pagination complete: {len(all_features)} total features collected"
+        )
 
         return final_response
 
