@@ -37,11 +37,20 @@ exclude_patterns = []
 html_theme = "pydata_sphinx_theme"
 html_static_path = ["_static"]
 
+# Use a shorter title for the HTML pages
+html_title = "sgu-client"
+
 html_theme_options = {
     "github_url": "https://github.com/officialankan/sgu-client",
     "show_nav_level": 2,
-    "navigation_depth": 2,
+    "navigation_depth": 3,
     "show_toc_level": 2,
+    "collapse_navigation": False,
+    "navigation_with_keys": True,
+    # Add navigation links to the header
+    "navbar_end": ["navbar-icon-links"],
+    # Keep the primary sidebar showing the main toctree
+    "primary_sidebar_end": [],
 }
 
 # -- Extension configuration -------------------------------------------------

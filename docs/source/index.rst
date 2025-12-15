@@ -25,39 +25,35 @@ Quick Example
 
     .. tab-item:: Python
 
-        In this example we fetch groundwater station data and measurements in just a few lines of Python code.
-
         .. code-block:: python
 
-            # Import the SGU Client
+            # import the SGU Client
             from sgu_client import SGUClient
 
-            # Initialize the client
+            # initialize the client
             client = SGUClient()
 
-            # Get groundwater monitoring stations in southern Sweden
+            # get groundwater monitoring stations in southern Sweden
             stations = client.levels.observed.get_stations(
                 bbox=[12.0, 55.0, 16.0, 58.0],
                 limit=50
             )
 
-            # Get recent measurements with date filtering
-            measurements = client.levels.observed.get_measurements(
-                datetime="2023-01-01/2024-01-01",
-                limit=1000
+            # get recent measurements with date filtering
+            measurements = client.levels.observed.get_measurements_by_name(
+                "95_2",
+                datetime="2024-10-01/2025-09-31",
             )
 
-            # Convert to pandas DataFrame (requires pandas)
-            df = measurements.to_dataframe()
-            print(df[['observation_date', 'grundvattenniva_m_o_h']].head())
+            # convert to pandas Series (requires pandas)
+            s = measurements.to_series()
+            s.plot()
 
     .. tab-item:: Result
 
-        .. figure:: _static/example_output.svg
+        .. figure:: _static/lagga2.svg
             :width: 100%
             :align: center
-
-            Example output showing groundwater measurements converted to a pandas DataFrame
 
 Features
 --------
@@ -76,17 +72,4 @@ Documentation
    :caption: Contents:
 
    api
-
-Links
------
-
-* `GitHub Repository <https://github.com/officialankan/sgu-client>`_
-* `PyPI Package <https://pypi.org/project/sgu-client/>`_
-* `Issue Tracker <https://github.com/officialankan/sgu-client/issues>`_
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+   about
