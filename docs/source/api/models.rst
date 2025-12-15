@@ -1,29 +1,10 @@
 Data Models
 ===========
 
-The sgu-client library uses Pydantic models to provide type-safe, validated data structures for all API responses. This page documents the base model infrastructure and shared types used across all data domains.
-
-Overview
---------
-
-All data models in sgu-client inherit from base classes that provide:
-
-- **Type validation**: Automatic validation of API response data
-- **Type hints**: Full IDE autocomplete support
-- **pandas integration**: Optional DataFrame conversion via ``to_dataframe()``
-- **Flexible parsing**: Handle extra fields from API responses gracefully
-
 Base Model Classes
 ------------------
 
 The :class:`~sgu_client.models.base.SGUBaseModel` and :class:`~sgu_client.models.base.SGUResponse` classes provide the foundation for all data models.
-
-**Key Features:**
-
-- Pydantic v2 integration with modern validation
-- Optional field handling for API flexibility
-- Configurable validation behavior
-- pandas integration decorator support
 
 .. automodule:: sgu_client.models.base
    :members:
@@ -76,7 +57,7 @@ Working with Models
    client = SGUClient()
    stations = client.levels.observed.get_stations(limit=5)
 
-   # Full type hints for IDE autocomplete
+   # full type hints for IDE autocomplete
    for station in stations.features:
        print(f"Station: {station.properties.station_name}")
        print(f"Municipality: {station.properties.municipality}")
@@ -86,10 +67,10 @@ Working with Models
 
 .. code-block:: python
 
-   # Convert to pandas DataFrame (requires pandas)
+   # convert to pandas DataFrame (requires pandas)
    df = stations.to_dataframe()
 
-   # Geometry and properties are automatically flattened
+   # geometry and properties are automatically flattened
    print(df.columns)  # station_id, longitude, latitude, municipality, etc.
 
 See Also

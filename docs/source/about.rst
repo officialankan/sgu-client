@@ -11,7 +11,7 @@ Project Links
 License
 -------
 
-This project is maintained by Anders Retzner and is available under an open-source license.
+This project is maintained by Anders Retzner (https://github.com/officialankan) and is available under an open-source license.
 
 Indices and Tables
 ------------------

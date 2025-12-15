@@ -8,8 +8,8 @@ Overview
 
 The levels API is accessed through ``client.levels`` and provides two main sub-clients:
 
-- **Observed**: Real measurements from groundwater monitoring stations
-- **Modeled**: Predicted groundwater levels from the SGU-HYPE model
+- :ref:`Observed <observed-groundwater-levels>`: Real measurements from groundwater monitoring stations
+- :ref:`Modeled <modeled-groundwater-levels>`: Predicted groundwater levels from the SGU-HYPE model
 
 **Quick Example:**
 
@@ -41,6 +41,8 @@ The levels API is accessed through ``client.levels`` and provides two main sub-c
       limit=100
    )
    df_pred = predictions.to_dataframe()
+
+.. _observed-groundwater-levels:
 
 Observed Groundwater Levels
 ----------------------------
@@ -77,6 +79,8 @@ Data Models
    :members:
    :undoc-members:
    :show-inheritance:
+
+.. _modeled-groundwater-levels:
 
 Modeled Groundwater Levels
 ---------------------------

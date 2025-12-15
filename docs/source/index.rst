@@ -55,15 +55,6 @@ Quick Example
             :width: 100%
             :align: center
 
-Features
---------
-
-- **Type-safe**: Full Pydantic validation for all API responses
-- **Pandas integration**: Convert data to DataFrames with `to_dataframe()`
-- **Comprehensive API coverage**: Observed/modeled groundwater levels, chemistry data
-- **Error handling**: Robust exception handling with automatic retries
-- **Modern Python**: Requires Python 3.11+
-
 Documentation
 -------------
 
