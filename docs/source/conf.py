@@ -5,6 +5,7 @@
 
 import os
 import sys
+from datetime import datetime
 
 # Add the project root to sys.path for importing the package
 sys.path.insert(0, os.path.abspath("../../src"))
@@ -13,7 +14,7 @@ sys.path.insert(0, os.path.abspath("../../src"))
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = "sgu-client"
-copyright = "2024, Anders Retzner"
+copyright = f"{datetime.now().year}, Anders Retzner"
 author = "Anders Retzner"
 release = "0.4.1"
 
@@ -51,6 +52,11 @@ html_theme_options = {
     "navbar_end": ["navbar-icon-links"],
     # Keep the primary sidebar showing the main toctree
     "primary_sidebar_end": [],
+}
+
+# Configure which pages should not show sidebars
+html_sidebars = {
+    "about": [],  # No sidebars on the about page
 }
 
 # -- Extension configuration -------------------------------------------------
