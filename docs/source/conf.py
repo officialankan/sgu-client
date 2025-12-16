@@ -16,7 +16,7 @@ sys.path.insert(0, os.path.abspath("../../src"))
 project = "sgu-client"
 copyright = f"{datetime.now().year}, Anders Retzner"
 author = "Anders Retzner"
-release = "0.4.1"
+release = "0.4.2"
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
