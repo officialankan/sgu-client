@@ -1,6 +1,6 @@
 [project]
 name = "sgu-client"
-version = "0.4.1"
+version = "0.4.2"
 description = "A modern Python client library for accessing Geological Survey of Sweden groundwater data APIs with type safety and pandas integration"
 readme = "README.md"
 authors = [{ name = "Anders Retzner", email = "anders.retzner@gmail.com" }]
@@ -20,6 +20,11 @@ dev = [
     "pytest-cov>=6.0.0",
     "pytest>=8.4.1",
     "ruff>=0.12.11",
+    "sphinx>=7.0",
+    "pydata-sphinx-theme>=0.15",
+    "sphinx-autodoc-typehints>=1.25",
+    "sphinx-autobuild>=2025.8.25",
+    "sphinx-design>=0.5",
 ]
 
 [tool.ruff]

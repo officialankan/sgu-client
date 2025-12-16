@@ -11,6 +11,8 @@ from sgu_client.models.modeled import (
     ModeledGroundwaterLevelCollection,
 )
 
+logger = logging.getLogger(__name__)
+
 
 class ModeledGroundwaterLevelClient:
     """Client for modeled groundwater level-related SGU API endpoints."""
@@ -45,6 +47,21 @@ class ModeledGroundwaterLevelClient:
 
         Returns:
             Typed collection of modeled groundwater areas
+
+        Example:
+
+            >>> from sgu_client import SGUClient
+            >>> client = SGUClient()
+            >>>
+            >>> # get all modeled areas
+            >>> areas = client.levels.modeled.get_areas(limit=100)
+            >>>
+            >>> # get areas in a specific region
+            >>> areas = client.levels.modeled.get_areas(
+            ...     bbox=[15.0, 58.0, 17.0, 60.0]
+            ... )
+            >>> for area in areas.features:
+            ...     print(f"area: {area.properties.area_id}")
         """
         endpoint = f"{self.BASE_PATH}/omraden/items"
         params = self._build_query_params(
@@ -58,7 +75,8 @@ class ModeledGroundwaterLevelClient:
         return ModeledAreaCollection(**response)
 
     def get_area(self, area_id: str) -> ModeledArea:
-        """Get a specific modeled groundwater area by ID.
+        """Get a specific modeled groundwater area by ID. This endpoint is provided by OGC API
+        but not likely used by any user.
 
         Args:
             area_id: Area identifier
@@ -68,6 +86,7 @@ class ModeledGroundwaterLevelClient:
 
         Raises:
             ValueError: If area not found or multiple areas returned
+
         """
         endpoint = f"{self.BASE_PATH}/omraden/items/{area_id}"
         response = self._make_request(endpoint, {})
@@ -102,6 +121,20 @@ class ModeledGroundwaterLevelClient:
 
         Returns:
             Typed collection of modeled groundwater levels
+
+        Example:
+
+            >>> from sgu_client import SGUClient
+            >>> client = SGUClient()
+            >>>
+            >>> # get modeled levels
+            >>> levels = client.levels.modeled.get_levels(limit=100)
+            >>>
+            >>> # get levels for a specific time period
+            >>> levels = client.levels.modeled.get_levels(
+            ...     datetime="2023-01-01/2024-01-01",
+            ...     limit=1000
+            ... )
         """
         endpoint = f"{self.BASE_PATH}/grundvattennivaer-tidigare/items"
         params = self._build_query_params(
@@ -116,7 +149,8 @@ class ModeledGroundwaterLevelClient:
         return ModeledGroundwaterLevelCollection(**response)
 
     def get_level(self, level_id: str) -> ModeledGroundwaterLevel:
-        """Get a specific modeled groundwater level by ID.
+        """Get a specific modeled groundwater level by ID. This endpoint is provided by the OGC API
+        but not likely used by any user.
 
         Args:
             level_id: Level identifier
@@ -150,6 +184,23 @@ class ModeledGroundwaterLevelClient:
 
         Returns:
             Typed collection of modeled groundwater levels for the specified area
+
+        Example:
+
+            >>> from sgu_client import SGUClient
+            >>> client = SGUClient()
+            >>>
+            >>> # get all modeled levels for a specific area
+            >>> levels = client.levels.modeled.get_levels_by_area(
+            ...     area_id=30125,
+            ...     limit=500
+            ... )
+            >>>
+            >>> # with time filtering
+            >>> levels = client.levels.modeled.get_levels_by_area(
+            ...     area_id=30125,
+            ...     datetime="2023-01-01/2024-01-01"
+            ... )
         """
         filter_expr = f"omrade_id = {area_id}"
         return self.get_levels(filter_expr=filter_expr, **kwargs)
@@ -165,6 +216,16 @@ class ModeledGroundwaterLevelClient:
 
         Returns:
             Typed collection of modeled groundwater levels for the specified areas
+
+        Example:
+
+            >>> from sgu_client import SGUClient
+            >>> client = SGUClient()
+            >>> levels = client.levels.modeled.get_levels_by_areas(
+            ...     area_ids=[30125, 30126],
+            ...     datetime="2024-09-31/2025-10-01"
+            ... )
+            >>> print(f"Found {len(levels.features)} modeled levels")
         """
         if not area_ids:
             raise ValueError("At least one area ID must be provided")
@@ -201,9 +262,27 @@ class ModeledGroundwaterLevelClient:
 
         Raises:
             ValueError: If no areas found near the specified coordinates
-        """
-        logger = logging.getLogger(__name__)
 
+        Example:
+
+            >>> from sgu_client import SGUClient
+            >>> client = SGUClient()
+            >>>
+            >>> # get modeled levels for a specific location (Stockholm)
+            >>> levels = client.levels.modeled.get_levels_by_coords(
+            ...     lat=59.33,
+            ...     lon=18.07,
+            ...     limit=100
+            ... )
+            >>>
+            >>> # increase buffer for larger search area
+            >>> levels = client.levels.modeled.get_levels_by_coords(
+            ...     lat=59.33,
+            ...     lon=18.07,
+            ...     buffer=0.05,  # ~5km radius
+            ...     datetime="2023-01-01/2024-01-01"
+            ... )
+        """
         # Create bounding box around the point
         bbox = [
             lon - buffer,  # min_lon
@@ -226,10 +305,18 @@ class ModeledGroundwaterLevelClient:
 
         # Log warning if multiple areas found (near boundary)
         if len(area_ids) > 1:
+            # Show subset of area_ids if list is long
+            if len(area_ids) > 10:
+                area_ids_display = (
+                    f"{area_ids[:5]} ... {area_ids[-5:]} ({len(area_ids)} total)"
+                )
+            else:
+                area_ids_display = str(area_ids)
             logger.warning(
                 f"Found {len(area_ids)} modeled areas near coordinates "
-                f"({lat}, {lon}). This suggests the point is close to an area boundary. "
-                f"Area IDs: {area_ids}. All areas will be included in the results."
+                f"({lat}, {lon}). This suggests the point is close to an area boundary "
+                f"or that you have a large buffer. "
+                f"Area IDs: {area_ids_display}. All areas will be included in the results."
             )
 
         # Get levels for all found areas
