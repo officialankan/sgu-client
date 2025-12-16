@@ -157,3 +157,40 @@ jobs:
           ```bash
           pip install --upgrade sgu-client
           ```', steps.get_version.outputs.version) }}
+
+  build-docs:
+    needs: publish-and-release
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main'
+
+    permissions:
+      contents: write  # For pushing to gh-pages branch
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        ref: main  # Checkout the main branch after merge
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v3
+
+    - name: Set up Python
+      run: uv python install 3.11
+
+    - name: Install dependencies
+      run: uv sync --all-groups
+
+    - name: Build documentation
+      run: |
+        cd docs
+        mkdir -p source/_static
+        uv run sphinx-build -a -b html source build
+
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v4
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./docs/build
+        publish_branch: gh-pages
+        user_name: 'github-actions[bot]'
+        user_email: 'github-actions[bot]@users.noreply.github.com'

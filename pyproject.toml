@@ -20,6 +20,11 @@ dev = [
     "pytest-cov>=6.0.0",
     "pytest>=8.4.1",
     "ruff>=0.12.11",
+    "sphinx>=7.0",
+    "pydata-sphinx-theme>=0.15",
+    "sphinx-autodoc-typehints>=1.25",
+    "sphinx-autobuild>=2025.8.25",
+    "sphinx-design>=0.5",
 ]
 
 [tool.ruff]
