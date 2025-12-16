@@ -184,7 +184,7 @@ jobs:
       run: |
         cd docs
         mkdir -p source/_static
-        uv run sphinx-build -b html source build
+        uv run sphinx-build -a -b html source build
 
     - name: Deploy to GitHub Pages
       uses: peaceiris/actions-gh-pages@v4
