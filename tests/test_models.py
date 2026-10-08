@@ -190,6 +190,46 @@ def test_groundwater_station_valid():
     assert station.properties.station_id == "95_2"
 
 
+def test_groundwater_station_null_geometry():
+    """Test that stations without a location (geometry: null) are accepted."""
+    station = GroundwaterStation.model_validate(
+        {
+            "type": "Feature",
+            "id": "stationer.115",
+            "geometry": None,
+            "properties": {"rowid": 115, "platsbeteckning": "11_63"},
+        }
+    )
+
+    assert station.geometry is None
+    assert station.properties.station_id == "11_63"
+
+
+def test_groundwater_station_collection_to_dataframe_null_geometry():
+    """Test that stations without geometry get null coordinates in the DataFrame."""
+    pytest.importorskip("pandas")
+    collection = GroundwaterStationCollection(
+        features=[
+            GroundwaterStation(
+                id="1",
+                geometry=Point(coordinates=[15.5, 58.4]),
+                properties=GroundwaterStationProperties(row_id=1, station_id="95_2"),
+            ),
+            GroundwaterStation(
+                id="2",
+                geometry=None,
+                properties=GroundwaterStationProperties(row_id=2, station_id="11_63"),
+            ),
+        ],
+    )
+
+    df = collection.to_dataframe()
+
+    assert len(df) == 2
+    assert df.loc[0, "longitude"] == 15.5
+    assert df.loc[1, ["geometry_type", "longitude", "latitude"]].isna().all()
+
+
 def test_groundwater_measurement_properties_minimal():
     """Test measurement properties with minimal fields."""
     props = GroundwaterMeasurementProperties(row_id=456, station_id="95_2")
