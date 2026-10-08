@@ -54,7 +54,7 @@ def test_create_basic_client() -> None:
     assert hasattr(client.levels, "observed")
 
 
-@patch.object(SGUClient().levels.observed._client._session, "request")
+@patch("requests.Session.request")
 def test_get_lagga_station_by_id(mock_request) -> None:
     """Test getting a specific station by ID with mocked response."""
     mock_response_data = create_mock_single_station_response(
@@ -74,7 +74,7 @@ def test_get_lagga_station_by_id(mock_request) -> None:
     assert station.properties.station_name == TEST_STATION_OBSPLATSNAMN
 
 
-@patch.object(SGUClient().levels.observed._client._session, "request")
+@patch("requests.Session.request")
 def test_get_measurement_by_id(mock_request) -> None:
     """Test getting a specific measurement by ID with mocked response."""
     mock_response_data = create_mock_single_measurement_response(
@@ -93,7 +93,7 @@ def test_get_measurement_by_id(mock_request) -> None:
     assert isinstance(measurement.properties.observation_datetime, datetime)
 
 
-@patch.object(SGUClient().levels.observed._client._session, "request")
+@patch("requests.Session.request")
 def test_stations_to_dataframe(mock_request) -> None:
     """Test converting stations collection to DataFrame with mocked response."""
     mock_response_data = create_mock_multiple_stations_response(
@@ -113,7 +113,7 @@ def test_stations_to_dataframe(mock_request) -> None:
     assert all(station in df["station_id"].tolist() for station in ["95_2", "101_1"])
 
 
-@patch.object(SGUClient().levels.observed._client._session, "request")
+@patch("requests.Session.request")
 def test_station_by_name_station_id(mock_request) -> None:
     """Test getting station by station_id with mocked response."""
     mock_response_data = create_mock_multiple_stations_response(
@@ -130,7 +130,7 @@ def test_station_by_name_station_id(mock_request) -> None:
     assert station.properties.station_id == TEST_STATION_PLATSBETECKNING
 
 
-@patch.object(SGUClient().levels.observed._client._session, "request")
+@patch("requests.Session.request")
 def test_station_by_name_station_name(mock_request) -> None:
     """Test getting station by station_name with mocked response."""
     mock_response_data = create_mock_multiple_stations_response(
@@ -174,7 +174,7 @@ def test_station_by_name_both_args() -> None:
         )
 
 
-@patch.object(SGUClient().levels.observed._client._session, "request")
+@patch("requests.Session.request")
 def test_get_stations_by_names_station_id(mock_request) -> None:
     """Test getting multiple stations by station_id with mocked response."""
     mock_response_data = create_mock_multiple_stations_response(
@@ -193,7 +193,7 @@ def test_get_stations_by_names_station_id(mock_request) -> None:
     assert "101_1" in platsbeteckning
 
 
-@patch.object(SGUClient().levels.observed._client._session, "request")
+@patch("requests.Session.request")
 def test_get_stations_by_names_station_name(mock_request) -> None:
     """Test getting multiple stations by station_name with mocked response."""
     mock_response_data = create_mock_multiple_stations_response(
@@ -215,7 +215,7 @@ def test_get_stations_by_names_station_name(mock_request) -> None:
     assert "Lagga_2" in obsplatsnamn_list
 
 
-@patch.object(SGUClient().levels.observed._client._session, "request")
+@patch("requests.Session.request")
 def test_get_stations_by_names_single_station(mock_request) -> None:
     """Test getting single station by platsbeteckning list with mocked response."""
     mock_response_data = create_mock_multiple_stations_response(
@@ -270,7 +270,7 @@ def test_get_stations_by_names_empty_list() -> None:
         client.levels.observed.get_stations_by_names(station_id=[])
 
 
-@patch.object(SGUClient().levels.observed._client._session, "request")
+@patch("requests.Session.request")
 def test_get_stations_by_names_to_dataframe(mock_request) -> None:
     """Test converting multiple stations to DataFrame with mocked response."""
     mock_response_data = create_mock_multiple_stations_response(
@@ -292,7 +292,7 @@ def test_get_stations_by_names_to_dataframe(mock_request) -> None:
 
 
 # Tests for get_measurements_by_name() function
-@patch.object(SGUClient().levels.observed._client._session, "request")
+@patch("requests.Session.request")
 def test_get_measurements_by_name_station_id(mock_request) -> None:
     """Test getting measurements by station_id with mocked response."""
     mock_response_data = create_mock_multiple_measurements_response(
@@ -312,13 +312,18 @@ def test_get_measurements_by_name_station_id(mock_request) -> None:
         assert measurement.properties.station_id == TEST_STATION_PLATSBETECKNING
 
 
-@patch.object(SGUClient().levels.observed._client._session, "request")
+@patch("requests.Session.request")
 def test_get_measurements_by_name_station_name(mock_request) -> None:
     """Test getting measurements by station_name with mocked response."""
-    mock_response_data = create_mock_multiple_measurements_response(
-        platsbeteckning=TEST_STATION_PLATSBETECKNING, count=5
-    )
-    mock_request.return_value = create_mock_response(mock_response_data)
+    # station_name lookup resolves the station first, then fetches measurements
+    mock_request.side_effect = [
+        create_mock_response(create_mock_single_station_response()),
+        create_mock_response(
+            create_mock_multiple_measurements_response(
+                platsbeteckning=TEST_STATION_PLATSBETECKNING, count=5
+            )
+        ),
+    ]
 
     client = SGUClient()
     measurements = client.levels.observed.get_measurements_by_name(
@@ -332,7 +337,7 @@ def test_get_measurements_by_name_station_name(mock_request) -> None:
         assert measurement.properties.station_id == TEST_STATION_PLATSBETECKNING
 
 
-@patch.object(SGUClient().levels.observed._client._session, "request")
+@patch("requests.Session.request")
 def test_get_measurements_by_name_with_time_filter(mock_request) -> None:
     """Test getting measurements with time filter using mocked response."""
     tmin = datetime(2020, 1, 1, tzinfo=UTC)
@@ -359,7 +364,7 @@ def test_get_measurements_by_name_with_time_filter(mock_request) -> None:
             assert tmin <= obs_date <= tmax
 
 
-@patch.object(SGUClient().levels.observed._client._session, "request")
+@patch("requests.Session.request")
 def test_get_measurements_by_name_with_string_dates(mock_request) -> None:
     """Test getting measurements with string date filters using mocked response."""
     mock_response_data = create_mock_multiple_measurements_response(
@@ -403,7 +408,7 @@ def test_get_measurements_by_name_both_args() -> None:
 
 
 # Tests for get_measurements_by_names() function
-@patch.object(SGUClient().levels.observed._client._session, "request")
+@patch("requests.Session.request")
 def test_get_measurements_by_names_station_id(mock_request) -> None:
     """Test getting measurements for multiple stations with mocked response."""
     # Create measurements for both stations
@@ -438,7 +443,7 @@ def test_get_measurements_by_names_station_id(mock_request) -> None:
     assert "95_2" in station_ids or "101_1" in station_ids
 
 
-@patch.object(SGUClient().levels.observed._client._session, "request")
+@patch("requests.Session.request")
 def test_get_measurements_by_names_station_name(mock_request) -> None:
     """Test getting measurements by station_name with mocked response."""
     mock_response_data = create_mock_multiple_measurements_response(
@@ -458,7 +463,7 @@ def test_get_measurements_by_names_station_name(mock_request) -> None:
         assert measurement.properties.station_id == TEST_STATION_PLATSBETECKNING
 
 
-@patch.object(SGUClient().levels.observed._client._session, "request")
+@patch("requests.Session.request")
 def test_get_measurements_by_names_with_time_filter(mock_request) -> None:
     """Test getting measurements for multiple stations with time filter using mocked response."""
     tmin = datetime(2020, 1, 1, tzinfo=UTC)
@@ -543,7 +548,7 @@ def test_build_datetime_filters_helper() -> None:
     assert filters == []
 
 
-@patch.object(SGUClient().levels.observed._client._session, "request")
+@patch("requests.Session.request")
 def test_measurements_to_dataframe(mock_request) -> None:
     """Test converting measurements to DataFrame with mocked response."""
     mock_response_data = create_mock_multiple_measurements_response(
@@ -571,7 +576,7 @@ def test_measurements_to_dataframe(mock_request) -> None:
     assert df["observation_date"].is_monotonic_increasing
 
 
-@patch.object(SGUClient().levels.observed._client._session, "request")
+@patch("requests.Session.request")
 def test_measurements_to_series(mock_request) -> None:
     """Test converting measurements to pandas Series with mocked response."""
     mock_response_data = create_mock_multiple_measurements_response(
@@ -590,7 +595,7 @@ def test_measurements_to_series(mock_request) -> None:
     assert is_datetime(series.index)
 
 
-@patch.object(SGUClient().levels.observed._client._session, "request")
+@patch("requests.Session.request")
 def test_measurements_to_series_custom_index_data(mock_request) -> None:
     """Test converting measurements to Series with custom index/data columns using mocked response."""
     mock_response_data = create_mock_multiple_measurements_response(

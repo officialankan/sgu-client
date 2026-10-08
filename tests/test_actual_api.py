@@ -7,13 +7,23 @@ API rate limiting, but comprehensive enough to catch breaking changes.
 
 from datetime import UTC, datetime
 
+import pytest
+
 from sgu_client import SGUClient
+from sgu_client.exceptions import SGUAPIError
 from sgu_client.models.observed import GroundwaterStation
 
 # Test constants - same as in test_observed.py
 TEST_STATION_ID = "stationer.4086"
 TEST_STATION_PLATSBETECKNING = "95_2"
 TEST_STATION_OBSPLATSNAMN = "Lagga_2"
+
+# the chemistry API currently responds 404; only that error is expected
+chemistry_api_404 = pytest.mark.xfail(
+    raises=SGUAPIError,
+    reason="SGU chemistry API returns 404, see #42",
+    strict=False,
+)
 
 
 def test_real_api_integration_get_lagga_station():
@@ -77,6 +87,7 @@ def test_real_api_integration_get_recent_measurements():
     assert isinstance(measurement.properties.water_level_masl_m, int | float)
 
 
+@chemistry_api_404
 def test_real_api_chemistry_sampling_sites():
     """INTEGRATION TEST: Verify chemistry API sampling sites endpoint works.
 
@@ -100,6 +111,7 @@ def test_real_api_chemistry_sampling_sites():
     assert site.properties.municipality is not None
 
 
+@chemistry_api_404
 def test_real_api_chemistry_analysis_results():
     """INTEGRATION TEST: Verify chemistry API analysis results endpoint works.
 
