@@ -21,7 +21,7 @@ TEST_STATION_OBSPLATSNAMN = "Lagga_2"
 # the chemistry API currently responds 404; only that error is expected
 chemistry_api_404 = pytest.mark.xfail(
     raises=SGUAPIError,
-    reason="SGU chemistry API returns 404, under investigation",
+    reason="SGU chemistry API returns 404, see #42",
     strict=False,
 )
 
