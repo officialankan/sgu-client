@@ -140,7 +140,9 @@ class GroundwaterStation(SGUBaseModel):
 
     type: Literal["Feature"] = "Feature"
     id: str = Field(..., description="Station ID")
-    geometry: Geometry = Field(..., description="Station geometry")
+    geometry: Geometry | None = Field(
+        None, description="Station geometry (null for stations without location)"
+    )
     properties: GroundwaterStationProperties = Field(
         ..., description="Station properties"
     )
@@ -267,15 +269,14 @@ class GroundwaterStationCollection(SGUResponse):
 
         data = []
         for feature in self.features:
+            geometry = feature.geometry
+            coordinates = geometry.coordinates if geometry else []
+            # stations without geometry keep the columns, with null values
             row = {
                 "station_id": feature.id,
-                "geometry_type": feature.geometry.type,
-                "longitude": feature.geometry.coordinates[0]
-                if feature.geometry.coordinates
-                else None,
-                "latitude": feature.geometry.coordinates[1]
-                if len(feature.geometry.coordinates) > 1
-                else None,
+                "geometry_type": geometry.type if geometry else None,
+                "longitude": coordinates[0] if coordinates else None,
+                "latitude": coordinates[1] if len(coordinates) > 1 else None,
             }
             # Add all properties
             row.update(feature.properties.model_dump())

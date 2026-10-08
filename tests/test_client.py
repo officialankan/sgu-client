@@ -41,7 +41,7 @@ def test_client_context_manager():
         assert client is not None
 
 
-@patch.object(SGUClient().levels.observed._client._session, "request")
+@patch("requests.Session.request")
 def test_request_with_kwargs(mock_request) -> None:
     """Test that we can pass additional kwargs to the request method."""
     mock_response_data = create_mock_single_station_response(
