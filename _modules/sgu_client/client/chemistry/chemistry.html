@@ -38,7 +38,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../../_static/documentation_options.js?v=dca52136"></script>
+    <script src="../../../../_static/documentation_options.js?v=70f82a29"></script>
     <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/design-tabs.js?v=f930bc37"></script>
@@ -311,6 +311,7 @@
 <span></span><span class="sd">&quot;&quot;&quot;Groundwater chemistry client endpoints.&quot;&quot;&quot;</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Sequence</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span>
 
@@ -324,6 +325,16 @@
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
+<span class="c1"># A single site identifier value, or a list of them</span>
+<span class="n">SiteIdentifier</span> <span class="o">=</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span>
+
+<span class="c1"># Site identifier argument -&gt; (API field, SamplingSiteProperties attribute)</span>
+<span class="n">SITE_IDENTIFIERS</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;national_site_id&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;nationellt_provplatsid&quot;</span><span class="p">,</span> <span class="s2">&quot;national_site_id&quot;</span><span class="p">),</span>
+    <span class="s2">&quot;site_id&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;platsbeteckning&quot;</span><span class="p">,</span> <span class="s2">&quot;station_id&quot;</span><span class="p">),</span>
+    <span class="s2">&quot;site_name&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;provplatsnamn&quot;</span><span class="p">,</span> <span class="s2">&quot;site_name&quot;</span><span class="p">),</span>
+<span class="p">}</span>
+
 
 <div class="viewcode-block" id="GroundwaterChemistryClient">
 <a class="viewcode-back" href="../../../../api/chemistry.html#sgu_client.client.chemistry.chemistry.GroundwaterChemistryClient">[docs]</a>
@@ -331,7 +342,7 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Client for groundwater chemistry-related SGU API endpoints.&quot;&quot;&quot;</span>
 
     <span class="n">BASE_PATH</span> <span class="o">=</span> <span class="s2">&quot;collections&quot;</span>
-    <span class="n">CHEMISTRY_BASE_URL</span> <span class="o">=</span> <span class="s2">&quot;https://api.sgu.se/oppnadata/grundvattenkvalitet-analysresultat-provplatser/ogc/features/v1/&quot;</span>
+    <span class="n">CHEMISTRY_BASE_URL</span> <span class="o">=</span> <span class="s2">&quot;https://api.sgu.se/oppnadata/grundvattenkvalitet-analysresultat-provplatser-v2/ogc/features/v1/&quot;</span>
 
 <div class="viewcode-block" id="GroundwaterChemistryClient.__init__">
 <a class="viewcode-back" href="../../../../api/chemistry.html#sgu_client.client.chemistry.chemistry.GroundwaterChemistryClient.__init__">[docs]</a>
@@ -357,16 +368,21 @@
         <span class="n">sortby</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SamplingSiteCollection</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get groundwater chemistry sampling sites. This method is used internally by convenience functions like</span>
-<span class="sd">        `get_sampling_site_by_name() by constructing filter expressions. A user may also do this, but readability</span>
-<span class="sd">        is greater when using the built-in convenience functions.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get groundwater chemistry sampling sites.</span>
+
+<span class="sd">        This method is used internally by convenience functions like</span>
+<span class="sd">        `get_sampling_site_by_name()` by constructing filter expressions. A user may</span>
+<span class="sd">        also do this, but readability is greater when using the built-in convenience</span>
+<span class="sd">        functions.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            bbox: Bounding box as [min_lon, min_lat, max_lon, max_lat]</span>
 <span class="sd">            datetime: Date/time filter (RFC 3339 format or interval)</span>
-<span class="sd">            limit: Maximum number of features to return (automatically paginated if needed)</span>
+<span class="sd">            limit: Maximum number of features to return (paginated automatically)</span>
 <span class="sd">            filter_expr: CQL filter expression</span>
 <span class="sd">            sortby: List of sort expressions (e.g., [&#39;+name&#39;, &#39;-date&#39;])</span>
+<span class="sd">                Note: the SGU v2 chemistry API currently ignores sortby;</span>
+<span class="sd">                features are returned in the server&#39;s default order.</span>
 <span class="sd">            **kwargs: Additional query parameters</span>
 
 <span class="sd">        Returns:</span>
@@ -388,8 +404,9 @@
 <div class="viewcode-block" id="GroundwaterChemistryClient.get_sampling_site">
 <a class="viewcode-back" href="../../../../api/chemistry.html#sgu_client.client.chemistry.chemistry.GroundwaterChemistryClient.get_sampling_site">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_sampling_site</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">site_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SamplingSite</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get a specific groundwater chemistry sampling site by ID. This endpoint is provided by the OGC API</span>
-<span class="sd">        but likely not used by any user.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get a specific groundwater chemistry sampling site by ID.</span>
+
+<span class="sd">        This endpoint is provided by the OGC API but likely not used by any user.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            site_id: Site identifier</span>
@@ -419,21 +436,24 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">site_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">site_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">national_site_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SamplingSite</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convenience function to get a sampling site by name (&#39;site_id&#39; or &#39;site_name&#39;).</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convenience function to get a sampling site by any site identifier.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            site_id: Site identifier (maps to &#39;platsbeteckning&#39; in API)</span>
 <span class="sd">            site_name: Site name (maps to &#39;provplatsnamn&#39; in API)</span>
+<span class="sd">            national_site_id: National sampling site ID</span>
+<span class="sd">                (maps to &#39;nationellt_provplatsid&#39; in API)</span>
 <span class="sd">            **kwargs: Additional query parameters (e.g., limit)</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Typed groundwater chemistry sampling site</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            ValueError: If neither parameter is provided, both are provided,</span>
-<span class="sd">                       or if multiple sites are found</span>
+<span class="sd">            ValueError: If not exactly one identifier is provided,</span>
+<span class="sd">                       or if no site or multiple sites are found</span>
 
 <span class="sd">        Example:</span>
 
@@ -441,28 +461,21 @@
 <span class="sd">            &gt;&gt;&gt; client = SGUClient()</span>
 <span class="sd">            &gt;&gt;&gt;</span>
 <span class="sd">            &gt;&gt;&gt; # find site by id</span>
-<span class="sd">            &gt;&gt;&gt; site = client.chemistry.get_sampling_site_by_name(site_id=&quot;10001_1&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; site = client.chemistry.get_sampling_site_by_name(site_id=&quot;TTK-442-M&quot;)</span>
 <span class="sd">            &gt;&gt;&gt;</span>
 <span class="sd">            &gt;&gt;&gt; # find site by name</span>
+<span class="sd">            &gt;&gt;&gt; site = client.chemistry.get_sampling_site_by_name(site_name=&quot;Lena&quot;)</span>
+<span class="sd">            &gt;&gt;&gt;</span>
+<span class="sd">            &gt;&gt;&gt; # find site by national site id</span>
 <span class="sd">            &gt;&gt;&gt; site = client.chemistry.get_sampling_site_by_name(</span>
-<span class="sd">            ...     site_name=&quot;Ringarum_1&quot;</span>
+<span class="sd">            ...     national_site_id=359366</span>
 <span class="sd">            ... )</span>
 <span class="sd">            &gt;&gt;&gt; print(site.properties.municipality)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">site_id</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">site_name</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Either &#39;site_id&#39; or &#39;site_name&#39; must be provided.&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">site_id</span> <span class="ow">and</span> <span class="n">site_name</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Only one of &#39;site_id&#39; or &#39;site_name&#39; can be provided.&quot;</span><span class="p">)</span>
-
-        <span class="c1"># Map English parameter names to Swedish API field names</span>
-        <span class="k">if</span> <span class="n">site_id</span><span class="p">:</span>
-            <span class="n">name_type</span> <span class="o">=</span> <span class="s2">&quot;platsbeteckning&quot;</span>
-            <span class="n">site</span> <span class="o">=</span> <span class="n">site_id</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">name_type</span> <span class="o">=</span> <span class="s2">&quot;provplatsnamn&quot;</span>
-            <span class="n">site</span> <span class="o">=</span> <span class="n">site_name</span>
-
-        <span class="n">filter_expr</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name_type</span><span class="si">}</span><span class="s2">=&#39;</span><span class="si">{</span><span class="n">site</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
+        <span class="n">identifier</span><span class="p">,</span> <span class="n">values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_select_site_identifier</span><span class="p">(</span>
+            <span class="n">national_site_id</span><span class="p">,</span> <span class="n">site_id</span><span class="p">,</span> <span class="n">site_name</span>
+        <span class="p">)</span>
+        <span class="n">filter_expr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_site_filter</span><span class="p">(</span><span class="n">identifier</span><span class="p">,</span> <span class="n">values</span><span class="p">)</span>
         <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_sampling_sites</span><span class="p">(</span><span class="n">filter_expr</span><span class="o">=</span><span class="n">filter_expr</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">response</span><span class="o">.</span><span class="n">features</span><span class="p">:</span>
@@ -479,20 +492,24 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">site_id</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">site_name</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">national_site_id</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SamplingSiteCollection</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convenience function to get multiple sampling sites by name (&#39;site_id&#39; or &#39;site_name&#39;).</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convenience function to get multiple sampling sites by any site identifier.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            site_id: List of site identifiers (maps to &#39;platsbeteckning&#39; in API)</span>
 <span class="sd">            site_name: List of site names (maps to &#39;provplatsnamn&#39; in API)</span>
+<span class="sd">            national_site_id: List of national sampling site IDs</span>
+<span class="sd">                (maps to &#39;nationellt_provplatsid&#39; in API)</span>
 <span class="sd">            **kwargs: Additional query parameters (e.g., limit)</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Typed collection of groundwater chemistry sampling sites</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            ValueError: If neither parameter is provided or both are provided</span>
+<span class="sd">            ValueError: If not exactly one identifier is provided,</span>
+<span class="sd">                       or if any of the requested sites is not found</span>
 
 <span class="sd">        Example:</span>
 
@@ -501,30 +518,16 @@
 <span class="sd">            &gt;&gt;&gt;</span>
 <span class="sd">            &gt;&gt;&gt; # get multiple sampling sites by their IDs</span>
 <span class="sd">            &gt;&gt;&gt; sites = client.chemistry.get_sampling_sites_by_names(</span>
-<span class="sd">            ...     site_id=[&quot;10001_1&quot;, &quot;10002_1&quot;, &quot;10003_1&quot;]</span>
+<span class="sd">            ...     site_id=[&quot;TTK-442-M&quot;, &quot;SYD-681-C&quot;]</span>
 <span class="sd">            ... )</span>
 <span class="sd">            &gt;&gt;&gt; for site in sites.features:</span>
-<span class="sd">            ...     print(f&quot;{site.properties.station_id}: {site.properties.municipality}&quot;)</span>
+<span class="sd">            ...     props = site.properties</span>
+<span class="sd">            ...     print(f&quot;{props.station_id}: {props.national_site_id}&quot;)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">site_id</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">site_name</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Either &#39;site_id&#39; or &#39;site_name&#39; must be provided.&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">site_id</span> <span class="ow">and</span> <span class="n">site_name</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Only one of &#39;site_id&#39; or &#39;site_name&#39; can be provided.&quot;</span><span class="p">)</span>
-
-        <span class="c1"># Map English parameter names to Swedish API field names</span>
-        <span class="k">if</span> <span class="n">site_id</span><span class="p">:</span>
-            <span class="n">name_type</span> <span class="o">=</span> <span class="s2">&quot;platsbeteckning&quot;</span>
-            <span class="n">sites</span> <span class="o">=</span> <span class="n">site_id</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">name_type</span> <span class="o">=</span> <span class="s2">&quot;provplatsnamn&quot;</span>
-            <span class="n">sites</span> <span class="o">=</span> <span class="n">site_name</span>
-
-        <span class="c1"># Build filter expression for multiple sites using IN clause</span>
-        <span class="c1"># sites is guaranteed to not be None by the validation above</span>
-        <span class="n">quoted_sites</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="n">site</span><span class="si">}</span><span class="s2">&#39;&quot;</span> <span class="k">for</span> <span class="n">site</span> <span class="ow">in</span> <span class="n">sites</span><span class="p">]</span>  <span class="c1"># type: ignore[union-attr]</span>
-        <span class="n">filter_expr</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name_type</span><span class="si">}</span><span class="s2"> in (</span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">quoted_sites</span><span class="p">)</span><span class="si">}</span><span class="s2">)&quot;</span>
-
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_sampling_sites</span><span class="p">(</span><span class="n">filter_expr</span><span class="o">=</span><span class="n">filter_expr</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+        <span class="n">identifier</span><span class="p">,</span> <span class="n">values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_select_site_identifier</span><span class="p">(</span>
+            <span class="n">national_site_id</span><span class="p">,</span> <span class="n">site_id</span><span class="p">,</span> <span class="n">site_name</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_all_sampling_sites</span><span class="p">(</span><span class="n">identifier</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
     <span class="c1"># ===== Analysis Results Methods =====</span>
@@ -540,16 +543,21 @@
         <span class="n">sortby</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AnalysisResultCollection</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get groundwater chemistry analysis results. This method is used internally by convenience functions like</span>
-<span class="sd">        `get_results_by_site() by constructing filter expressions. A user may also do this, but readability</span>
-<span class="sd">        is greater when using the built-in convenience functions.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get groundwater chemistry analysis results.</span>
+
+<span class="sd">        This method is used internally by convenience functions like</span>
+<span class="sd">        `get_results_by_site()` by constructing filter expressions. A user may also</span>
+<span class="sd">        do this, but readability is greater when using the built-in convenience</span>
+<span class="sd">        functions.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            bbox: Bounding box as [min_lon, min_lat, max_lon, max_lat]</span>
 <span class="sd">            datetime: Date/time filter (RFC 3339 format or interval)</span>
-<span class="sd">            limit: Maximum number of features to return (automatically paginated if needed)</span>
+<span class="sd">            limit: Maximum number of features to return (paginated automatically)</span>
 <span class="sd">            filter_expr: CQL filter expression</span>
 <span class="sd">            sortby: List of sort expressions (e.g., [&#39;+date&#39;, &#39;-value&#39;])</span>
+<span class="sd">                Note: the SGU v2 chemistry API currently ignores sortby;</span>
+<span class="sd">                features are returned in the server&#39;s default order.</span>
 <span class="sd">            **kwargs: Additional query parameters</span>
 
 <span class="sd">        Returns:</span>
@@ -571,8 +579,9 @@
 <div class="viewcode-block" id="GroundwaterChemistryClient.get_analysis_result">
 <a class="viewcode-back" href="../../../../api/chemistry.html#sgu_client.client.chemistry.chemistry.GroundwaterChemistryClient.get_analysis_result">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_analysis_result</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">result_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AnalysisResult</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get a specific groundwater chemistry analysis result by ID. This endpoint is provided by the OGC API</span>
-<span class="sd">        but likely not used by any user.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get a specific groundwater chemistry analysis result by ID.</span>
+
+<span class="sd">        This endpoint is provided by the OGC API but likely not used by any user.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            result_id: Result identifier</span>
@@ -600,6 +609,7 @@
 <a class="viewcode-back" href="../../../../api/chemistry.html#sgu_client.client.chemistry.chemistry.GroundwaterChemistryClient.get_results_by_site">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_results_by_site</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
+        <span class="n">national_site_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">site_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">site_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">tmin</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">datetime</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -607,9 +617,15 @@
         <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AnalysisResultCollection</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get analysis results for a specific site by name with optional time filtering.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get analysis results for a specific site with optional time filtering.</span>
+
+<span class="sd">        Analysis results are linked to sampling sites by `national_site_id`, which is</span>
+<span class="sd">        the recommended (and fastest) way to identify a site. Using `site_id` or</span>
+<span class="sd">        `site_name` requires an additional API request to look up the site.</span>
 
 <span class="sd">        Args:</span>
+<span class="sd">            national_site_id: National sampling site ID</span>
+<span class="sd">                (maps to &#39;nationellt_provplatsid&#39; in API)</span>
 <span class="sd">            site_id: Site identifier (maps to &#39;platsbeteckning&#39; in API)</span>
 <span class="sd">            site_name: Site name (maps to &#39;provplatsnamn&#39; in API)</span>
 <span class="sd">            tmin: Start time (ISO string or datetime object)</span>
@@ -621,7 +637,7 @@
 <span class="sd">            Typed collection of groundwater chemistry analysis results</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            ValueError: If neither or both name parameters are provided,</span>
+<span class="sd">            ValueError: If not exactly one site identifier is provided,</span>
 <span class="sd">                       or if site lookup fails</span>
 
 <span class="sd">        Example:</span>
@@ -631,49 +647,25 @@
 <span class="sd">            &gt;&gt;&gt; client = SGUClient()</span>
 <span class="sd">            &gt;&gt;&gt;</span>
 <span class="sd">            &gt;&gt;&gt; # get all results for a site</span>
-<span class="sd">            &gt;&gt;&gt; results = client.chemistry.get_results_by_site(</span>
-<span class="sd">            ...     site_id=&quot;10001_1&quot;,</span>
-<span class="sd">            ...     limit=100</span>
-<span class="sd">            ... )</span>
+<span class="sd">            &gt;&gt;&gt; results = client.chemistry.get_results_by_site(359366, limit=100)</span>
 <span class="sd">            &gt;&gt;&gt;</span>
 <span class="sd">            &gt;&gt;&gt; # get results with time filtering</span>
 <span class="sd">            &gt;&gt;&gt; results = client.chemistry.get_results_by_site(</span>
-<span class="sd">            ...     site_id=&quot;10001_1&quot;,</span>
+<span class="sd">            ...     359366,</span>
 <span class="sd">            ...     tmin=datetime(2020, 1, 1, tzinfo=timezone.utc),</span>
 <span class="sd">            ...     tmax=datetime(2021, 1, 1, tzinfo=timezone.utc)</span>
 <span class="sd">            ... )</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">site_id</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">site_name</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Either &#39;site_id&#39; or &#39;site_name&#39; must be provided.&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">site_id</span> <span class="ow">and</span> <span class="n">site_name</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Only one of &#39;site_id&#39; or &#39;site_name&#39; can be provided.&quot;</span><span class="p">)</span>
+        <span class="n">national_site_ids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_national_site_ids</span><span class="p">(</span>
+            <span class="n">national_site_id</span><span class="p">,</span> <span class="n">site_id</span><span class="p">,</span> <span class="n">site_name</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">national_site_ids</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Multiple sites found for </span><span class="si">{</span><span class="n">site_id</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="n">site_name</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
 
-        <span class="c1"># If site_name provided, look up the site to get station_id</span>
-        <span class="k">if</span> <span class="n">site_name</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
-                <span class="s2">&quot;Using &#39;site_name&#39; requires an additional API request to lookup the site. &quot;</span>
-                <span class="s2">&quot;For better performance, use &#39;station_id&#39; directly if available.&quot;</span>
-            <span class="p">)</span>
-            <span class="c1"># Don&#39;t pass kwargs to site lookup as it&#39;s a single result operation</span>
-            <span class="n">site</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_sampling_site_by_name</span><span class="p">(</span><span class="n">site_name</span><span class="o">=</span><span class="n">site_name</span><span class="p">)</span>
-            <span class="n">target_platsbeteckning</span> <span class="o">=</span> <span class="n">site</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">station_id</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">target_platsbeteckning</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Site with site_name &#39;</span><span class="si">{</span><span class="n">site_name</span><span class="si">}</span><span class="s2">&#39; has no station_id&quot;</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">target_platsbeteckning</span> <span class="o">=</span> <span class="n">site_id</span>
-
-        <span class="c1"># Build filter expressions</span>
-        <span class="n">filters</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;platsbeteckning=&#39;</span><span class="si">{</span><span class="n">target_platsbeteckning</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">]</span>
-
-        <span class="c1"># Add datetime filters if tmin/tmax provided</span>
-        <span class="n">datetime_filters</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_datetime_filters</span><span class="p">(</span><span class="n">tmin</span><span class="p">,</span> <span class="n">tmax</span><span class="p">)</span>
-        <span class="n">filters</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">datetime_filters</span><span class="p">)</span>
-
-        <span class="c1"># Combine all filters with AND</span>
-        <span class="n">combined_filter</span> <span class="o">=</span> <span class="s2">&quot; AND &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">filters</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_analysis_results</span><span class="p">(</span>
-            <span class="n">filter_expr</span><span class="o">=</span><span class="n">combined_filter</span><span class="p">,</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_results_for_filters</span><span class="p">(</span>
+            <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_build_site_filter</span><span class="p">(</span><span class="s2">&quot;national_site_id&quot;</span><span class="p">,</span> <span class="n">national_site_ids</span><span class="p">)],</span>
+            <span class="n">tmin</span><span class="o">=</span><span class="n">tmin</span><span class="p">,</span>
+            <span class="n">tmax</span><span class="o">=</span><span class="n">tmax</span><span class="p">,</span>
             <span class="n">limit</span><span class="o">=</span><span class="n">limit</span><span class="p">,</span>
             <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
         <span class="p">)</span></div>
@@ -683,6 +675,7 @@
 <a class="viewcode-back" href="../../../../api/chemistry.html#sgu_client.client.chemistry.chemistry.GroundwaterChemistryClient.get_results_by_sites">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_results_by_sites</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
+        <span class="n">national_site_id</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">site_id</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">site_name</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">tmin</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">datetime</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -690,10 +683,16 @@
         <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AnalysisResultCollection</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get analysis results for multiple sites by name with optional time filtering.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get analysis results for multiple sites with optional time filtering.</span>
+
+<span class="sd">        Analysis results are linked to sampling sites by `national_site_id`, which is</span>
+<span class="sd">        the recommended (and fastest) way to identify sites. Using `site_id` or</span>
+<span class="sd">        `site_name` requires an additional API request to look up the sites.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            site_id: List of station identifiers (maps to &#39;platsbeteckning&#39; in API)</span>
+<span class="sd">            national_site_id: List of national sampling site IDs</span>
+<span class="sd">                (maps to &#39;nationellt_provplatsid&#39; in API)</span>
+<span class="sd">            site_id: List of site identifiers (maps to &#39;platsbeteckning&#39; in API)</span>
 <span class="sd">            site_name: List of site names (maps to &#39;provplatsnamn&#39; in API)</span>
 <span class="sd">            tmin: Start time (ISO string or datetime object)</span>
 <span class="sd">            tmax: End time (ISO string or datetime object)</span>
@@ -704,8 +703,8 @@
 <span class="sd">            Typed collection of groundwater chemistry analysis results</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            ValueError: If neither or both name parameters are provided,</span>
-<span class="sd">                       or if site lookup fails</span>
+<span class="sd">            ValueError: If not exactly one site identifier is provided,</span>
+<span class="sd">                       or if any site is not found in the lookup</span>
 
 <span class="sd">        Example:</span>
 
@@ -714,52 +713,21 @@
 <span class="sd">            &gt;&gt;&gt;</span>
 <span class="sd">            &gt;&gt;&gt; # get results for multiple sites</span>
 <span class="sd">            &gt;&gt;&gt; results = client.chemistry.get_results_by_sites(</span>
-<span class="sd">            ...     station_id=[&quot;10001_1&quot;, &quot;10002_1&quot;],</span>
+<span class="sd">            ...     [359366, 378865],</span>
 <span class="sd">            ...     tmin=&quot;2020-01-01T00:00:00Z&quot;,</span>
 <span class="sd">            ...     tmax=&quot;2021-01-01T00:00:00Z&quot;,</span>
 <span class="sd">            ...     limit=1000</span>
 <span class="sd">            ... )</span>
 <span class="sd">            &gt;&gt;&gt; print(f&quot;Found {len(results.features)} analysis results&quot;)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">site_id</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">site_name</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Either &#39;site_id&#39; or &#39;site_name&#39; must be provided.&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">site_id</span> <span class="ow">and</span> <span class="n">site_name</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Only one of &#39;site_id&#39; or &#39;site_name&#39; can be provided.&quot;</span><span class="p">)</span>
+        <span class="n">national_site_ids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_national_site_ids</span><span class="p">(</span>
+            <span class="n">national_site_id</span><span class="p">,</span> <span class="n">site_id</span><span class="p">,</span> <span class="n">site_name</span>
+        <span class="p">)</span>
 
-        <span class="c1"># If site_name provided, look up sites to get station_id values</span>
-        <span class="k">if</span> <span class="n">site_name</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
-                <span class="s2">&quot;Using &#39;site_name&#39; requires an additional API request to lookup sites. &quot;</span>
-                <span class="s2">&quot;For better performance, use &#39;station_id&#39; directly if available.&quot;</span>
-            <span class="p">)</span>
-            <span class="c1"># Don&#39;t pass kwargs to site lookup as it&#39;s a separate operation</span>
-            <span class="n">sites</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_sampling_sites_by_names</span><span class="p">(</span><span class="n">site_name</span><span class="o">=</span><span class="n">site_name</span><span class="p">)</span>
-            <span class="n">target_platsbeteckningar</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="k">for</span> <span class="n">site</span> <span class="ow">in</span> <span class="n">sites</span><span class="o">.</span><span class="n">features</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">site</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">station_id</span><span class="p">:</span>
-                    <span class="n">target_platsbeteckningar</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">site</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">station_id</span><span class="p">)</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                        <span class="sa">f</span><span class="s2">&quot;Site </span><span class="si">{</span><span class="n">site</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2"> with site_name &#39;</span><span class="si">{</span><span class="n">site</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">site_name</span><span class="si">}</span><span class="s2">&#39; &quot;</span>
-                        <span class="sa">f</span><span class="s2">&quot;has no station_id&quot;</span>
-                    <span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">target_platsbeteckningar</span> <span class="o">=</span> <span class="n">site_id</span>
-
-        <span class="c1"># Build filter expressions</span>
-        <span class="c1"># target_platsbeteckningar is guaranteed to not be None by validation above</span>
-        <span class="n">quoted_sites</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="n">site</span><span class="si">}</span><span class="s2">&#39;&quot;</span> <span class="k">for</span> <span class="n">site</span> <span class="ow">in</span> <span class="n">target_platsbeteckningar</span><span class="p">]</span>  <span class="c1"># type: ignore[union-attr]</span>
-        <span class="n">filters</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;platsbeteckning in (</span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">quoted_sites</span><span class="p">)</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">]</span>
-
-        <span class="c1"># Add datetime filters if tmin/tmax provided</span>
-        <span class="n">datetime_filters</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_datetime_filters</span><span class="p">(</span><span class="n">tmin</span><span class="p">,</span> <span class="n">tmax</span><span class="p">)</span>
-        <span class="n">filters</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">datetime_filters</span><span class="p">)</span>
-
-        <span class="c1"># Combine all filters with AND</span>
-        <span class="n">combined_filter</span> <span class="o">=</span> <span class="s2">&quot; AND &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">filters</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_analysis_results</span><span class="p">(</span>
-            <span class="n">filter_expr</span><span class="o">=</span><span class="n">combined_filter</span><span class="p">,</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_results_for_filters</span><span class="p">(</span>
+            <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_build_site_filter</span><span class="p">(</span><span class="s2">&quot;national_site_id&quot;</span><span class="p">,</span> <span class="n">national_site_ids</span><span class="p">)],</span>
+            <span class="n">tmin</span><span class="o">=</span><span class="n">tmin</span><span class="p">,</span>
+            <span class="n">tmax</span><span class="o">=</span><span class="n">tmax</span><span class="p">,</span>
             <span class="n">limit</span><span class="o">=</span><span class="n">limit</span><span class="p">,</span>
             <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
         <span class="p">)</span></div>
@@ -770,7 +738,9 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">get_results_by_parameter</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">parameter</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">national_site_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">site_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">site_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">tmin</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">datetime</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">tmax</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">datetime</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -778,12 +748,18 @@
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AnalysisResultCollection</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get analysis results filtered by chemical parameter (e.g., pH, nitrate).</span>
 
-<span class="sd">        This convenience method makes it easy to retrieve all measurements for a specific</span>
-<span class="sd">        chemical parameter, optionally filtered by site and time range.</span>
+<span class="sd">        This convenience method makes it easy to retrieve all measurements for a</span>
+<span class="sd">        specific chemical parameter, optionally filtered by site(s) and time range.</span>
+<span class="sd">        Sites are identified the same way as in `get_results_by_site()`:</span>
+<span class="sd">        `national_site_id` is recommended, while `site_id` or `site_name` require an</span>
+<span class="sd">        additional API request.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            parameter: Parameter short name (e.g., &#39;PH&#39;, &#39;NITRATE&#39;, &#39;KLORID&#39;)</span>
-<span class="sd">            site_id: Optional station identifier(s) to filter by</span>
+<span class="sd">            parameter: Parameter name as used by SGU (maps to &#39;parameternamn&#39; in API),</span>
+<span class="sd">                e.g. &#39;pH&#39;, &#39;Bly&#39;, &#39;Nitratkväve&#39;, &#39;Klorid&#39;</span>
+<span class="sd">            national_site_id: Optional national sampling site ID(s) to filter by</span>
+<span class="sd">            site_id: Optional site identifier(s) to filter by</span>
+<span class="sd">            site_name: Optional site name(s) to filter by</span>
 <span class="sd">            tmin: Start time (ISO string or datetime object)</span>
 <span class="sd">            tmax: End time (ISO string or datetime object)</span>
 <span class="sd">            limit: Maximum number of results to return</span>
@@ -792,57 +768,161 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            Typed collection of groundwater chemistry analysis results</span>
 
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If more than one site identifier is provided,</span>
+<span class="sd">                       or if any site is not found in the lookup</span>
+
 <span class="sd">        Example:</span>
 
 <span class="sd">            &gt;&gt;&gt; from sgu_client import SGUClient</span>
 <span class="sd">            &gt;&gt;&gt; client = SGUClient()</span>
 <span class="sd">            &gt;&gt;&gt;</span>
-<span class="sd">            &gt;&gt;&gt; # get all pH measurements</span>
+<span class="sd">            &gt;&gt;&gt; # get all lead measurements since 2020</span>
 <span class="sd">            &gt;&gt;&gt; results = client.chemistry.get_results_by_parameter(</span>
-<span class="sd">            ...     parameter=&quot;PH&quot;,</span>
-<span class="sd">            ...     limit=1000</span>
+<span class="sd">            ...     parameter=&quot;Bly&quot;,</span>
+<span class="sd">            ...     tmin=&quot;2020-01-01&quot;,</span>
 <span class="sd">            ... )</span>
 <span class="sd">            &gt;&gt;&gt;</span>
 <span class="sd">            &gt;&gt;&gt; # get pH measurements for a specific site</span>
 <span class="sd">            &gt;&gt;&gt; results = client.chemistry.get_results_by_parameter(</span>
-<span class="sd">            ...     parameter=&quot;PH&quot;,</span>
-<span class="sd">            ...     site_id=&quot;10001_1&quot;,</span>
+<span class="sd">            ...     parameter=&quot;pH&quot;,</span>
+<span class="sd">            ...     national_site_id=359366,</span>
 <span class="sd">            ...     tmin=&quot;2020-01-01&quot;,</span>
 <span class="sd">            ...     tmax=&quot;2021-01-01&quot;</span>
 <span class="sd">            ... )</span>
 <span class="sd">            &gt;&gt;&gt;</span>
 <span class="sd">            &gt;&gt;&gt; # ... or multiple sites</span>
 <span class="sd">            &gt;&gt;&gt; results = client.chemistry.get_results_by_parameter(</span>
-<span class="sd">            ...     parameter=&quot;PH&quot;,</span>
-<span class="sd">            ...     site_id=[&quot;10001_1&quot;, &quot;10002_1&quot;]</span>
+<span class="sd">            ...     parameter=&quot;pH&quot;,</span>
+<span class="sd">            ...     national_site_id=[359366, 378865]</span>
 <span class="sd">            ... )</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># Build filter expressions</span>
-        <span class="n">filters</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;param_kort=&#39;</span><span class="si">{</span><span class="n">parameter</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">]</span>
+        <span class="n">filters</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;parameternamn=&#39;</span><span class="si">{</span><span class="n">parameter</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">]</span>
 
-        <span class="c1"># Add station filter if provided</span>
-        <span class="k">if</span> <span class="n">site_id</span><span class="p">:</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">site_id</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
-                <span class="n">quoted_sites</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="n">site</span><span class="si">}</span><span class="s2">&#39;&quot;</span> <span class="k">for</span> <span class="n">site</span> <span class="ow">in</span> <span class="n">site_id</span><span class="p">]</span>
-                <span class="n">filters</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;platsbeteckning in (</span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">quoted_sites</span><span class="p">)</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">filters</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;platsbeteckning=&#39;</span><span class="si">{</span><span class="n">site_id</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">national_site_id</span> <span class="ow">or</span> <span class="n">site_id</span> <span class="ow">or</span> <span class="n">site_name</span><span class="p">:</span>
+            <span class="n">national_site_ids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_national_site_ids</span><span class="p">(</span>
+                <span class="n">national_site_id</span><span class="p">,</span> <span class="n">site_id</span><span class="p">,</span> <span class="n">site_name</span>
+            <span class="p">)</span>
+            <span class="n">filters</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_build_site_filter</span><span class="p">(</span><span class="s2">&quot;national_site_id&quot;</span><span class="p">,</span> <span class="n">national_site_ids</span><span class="p">)</span>
+            <span class="p">)</span>
 
-        <span class="c1"># Add datetime filters if tmin/tmax provided</span>
-        <span class="n">datetime_filters</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_datetime_filters</span><span class="p">(</span><span class="n">tmin</span><span class="p">,</span> <span class="n">tmax</span><span class="p">)</span>
-        <span class="n">filters</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">datetime_filters</span><span class="p">)</span>
-
-        <span class="c1"># Combine all filters with AND</span>
-        <span class="n">combined_filter</span> <span class="o">=</span> <span class="s2">&quot; AND &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">filters</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_analysis_results</span><span class="p">(</span>
-            <span class="n">filter_expr</span><span class="o">=</span><span class="n">combined_filter</span><span class="p">,</span>
-            <span class="n">limit</span><span class="o">=</span><span class="n">limit</span><span class="p">,</span>
-            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_results_for_filters</span><span class="p">(</span>
+            <span class="n">filters</span><span class="p">,</span> <span class="n">tmin</span><span class="o">=</span><span class="n">tmin</span><span class="p">,</span> <span class="n">tmax</span><span class="o">=</span><span class="n">tmax</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="n">limit</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
         <span class="p">)</span></div>
 
 
     <span class="c1"># ===== Internal Helper Methods =====</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_select_site_identifier</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">national_site_id</span><span class="p">:</span> <span class="n">SiteIdentifier</span><span class="p">,</span>
+        <span class="n">site_id</span><span class="p">:</span> <span class="n">SiteIdentifier</span><span class="p">,</span>
+        <span class="n">site_name</span><span class="p">:</span> <span class="n">SiteIdentifier</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Pick the single site identifier provided and return its values as a list.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tuple of the identifier argument name and its value(s) as a list</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If none or more than one identifier is provided</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">provided</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">identifier</span><span class="p">:</span> <span class="n">value</span>
+            <span class="k">for</span> <span class="n">identifier</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="p">(</span>
+                <span class="p">(</span><span class="s2">&quot;national_site_id&quot;</span><span class="p">,</span> <span class="n">national_site_id</span><span class="p">),</span>
+                <span class="p">(</span><span class="s2">&quot;site_id&quot;</span><span class="p">,</span> <span class="n">site_id</span><span class="p">),</span>
+                <span class="p">(</span><span class="s2">&quot;site_name&quot;</span><span class="p">,</span> <span class="n">site_name</span><span class="p">),</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">value</span>
+        <span class="p">}</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">provided</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Exactly one of &#39;national_site_id&#39;, &#39;site_id&#39; or &#39;site_name&#39; &quot;</span>
+                <span class="s2">&quot;must be provided.&quot;</span>
+            <span class="p">)</span>
+        <span class="p">((</span><span class="n">identifier</span><span class="p">,</span> <span class="n">value</span><span class="p">),)</span> <span class="o">=</span> <span class="n">provided</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">identifier</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="k">else</span> <span class="p">[</span><span class="n">value</span><span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_resolve_national_site_ids</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">national_site_id</span><span class="p">:</span> <span class="n">SiteIdentifier</span><span class="p">,</span>
+        <span class="n">site_id</span><span class="p">:</span> <span class="n">SiteIdentifier</span><span class="p">,</span>
+        <span class="n">site_name</span><span class="p">:</span> <span class="n">SiteIdentifier</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Resolve any site identifier to the national site IDs results reference.</span>
+
+<span class="sd">        Analysis results only reference sampling sites by national site ID, so</span>
+<span class="sd">        `site_id` or `site_name` cost one additional API request to look up.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If not exactly one identifier is provided, if any site is</span>
+<span class="sd">                not found, or if a site has no national site ID</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">identifier</span><span class="p">,</span> <span class="n">values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_select_site_identifier</span><span class="p">(</span>
+            <span class="n">national_site_id</span><span class="p">,</span> <span class="n">site_id</span><span class="p">,</span> <span class="n">site_name</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">identifier</span> <span class="o">==</span> <span class="s2">&quot;national_site_id&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">values</span><span class="p">]</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Using &#39;</span><span class="si">{</span><span class="n">identifier</span><span class="si">}</span><span class="s2">&#39; requires an additional API request to look up &quot;</span>
+            <span class="s2">&quot;the sampling site(s). For better performance, use &#39;national_site_id&#39; &quot;</span>
+            <span class="s2">&quot;directly if available.&quot;</span>
+        <span class="p">)</span>
+        <span class="n">sites</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_all_sampling_sites</span><span class="p">(</span><span class="n">identifier</span><span class="p">,</span> <span class="n">values</span><span class="p">)</span>
+
+        <span class="n">national_site_ids</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">site</span> <span class="ow">in</span> <span class="n">sites</span><span class="o">.</span><span class="n">features</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">site</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">national_site_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Sampling site </span><span class="si">{</span><span class="n">site</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2"> has no national_site_id&quot;</span><span class="p">)</span>
+            <span class="n">national_site_ids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">site</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">national_site_id</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">national_site_ids</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_all_sampling_sites</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">identifier</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">values</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SamplingSiteCollection</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the sampling sites matching the identifier values, requiring all of them.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If any of the requested sites is not found</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">sites</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_sampling_sites</span><span class="p">(</span>
+            <span class="n">filter_expr</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_build_site_filter</span><span class="p">(</span><span class="n">identifier</span><span class="p">,</span> <span class="n">values</span><span class="p">),</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span>
+
+        <span class="n">_</span><span class="p">,</span> <span class="n">attribute</span> <span class="o">=</span> <span class="n">SITE_IDENTIFIERS</span><span class="p">[</span><span class="n">identifier</span><span class="p">]</span>
+        <span class="n">found</span> <span class="o">=</span> <span class="p">{</span><span class="nb">getattr</span><span class="p">(</span><span class="n">site</span><span class="o">.</span><span class="n">properties</span><span class="p">,</span> <span class="n">attribute</span><span class="p">)</span> <span class="k">for</span> <span class="n">site</span> <span class="ow">in</span> <span class="n">sites</span><span class="o">.</span><span class="n">features</span><span class="p">}</span>
+        <span class="n">missing</span> <span class="o">=</span> <span class="p">[</span><span class="n">value</span> <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">values</span> <span class="k">if</span> <span class="n">value</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">found</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">missing</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No sampling sites found for </span><span class="si">{</span><span class="n">identifier</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">missing</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">sites</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_build_site_filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">identifier</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">values</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Build a CQL filter matching any of the given site identifier values.&quot;&quot;&quot;</span>
+        <span class="n">field</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">SITE_IDENTIFIERS</span><span class="p">[</span><span class="n">identifier</span><span class="p">]</span>
+        <span class="n">literals</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">&#39;&quot;</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">values</span>
+        <span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">literals</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">field</span><span class="si">}</span><span class="s2">=</span><span class="si">{</span><span class="n">literals</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">field</span><span class="si">}</span><span class="s2"> in (</span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">literals</span><span class="p">)</span><span class="si">}</span><span class="s2">)&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_results_for_filters</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">filters</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="n">tmin</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">datetime</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">tmax</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">datetime</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AnalysisResultCollection</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get analysis results matching all filters and the optional time range.&quot;&quot;&quot;</span>
+        <span class="n">filters</span> <span class="o">=</span> <span class="p">[</span><span class="o">*</span><span class="n">filters</span><span class="p">,</span> <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_build_datetime_filters</span><span class="p">(</span><span class="n">tmin</span><span class="p">,</span> <span class="n">tmax</span><span class="p">)]</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_analysis_results</span><span class="p">(</span>
+            <span class="n">filter_expr</span><span class="o">=</span><span class="s2">&quot; AND &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">filters</span><span class="p">),</span> <span class="n">limit</span><span class="o">=</span><span class="n">limit</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_build_query_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Build query parameters for API requests.</span>
@@ -892,11 +972,11 @@
 
         <span class="k">if</span> <span class="n">tmin</span><span class="p">:</span>
             <span class="n">tmin_str</span> <span class="o">=</span> <span class="n">to_iso_string</span><span class="p">(</span><span class="n">tmin</span><span class="p">)</span>
-            <span class="n">filters</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;provtagningsdat &gt;= &#39;</span><span class="si">{</span><span class="n">tmin_str</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+            <span class="n">filters</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;provtagningsdatum &gt;= &#39;</span><span class="si">{</span><span class="n">tmin_str</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">tmax</span><span class="p">:</span>
             <span class="n">tmax_str</span> <span class="o">=</span> <span class="n">to_iso_string</span><span class="p">(</span><span class="n">tmax</span><span class="p">)</span>
-            <span class="n">filters</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;provtagningsdat &lt;= &#39;</span><span class="si">{</span><span class="n">tmax_str</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+            <span class="n">filters</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;provtagningsdatum &lt;= &#39;</span><span class="si">{</span><span class="n">tmax_str</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">filters</span>
 
