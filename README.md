@@ -183,7 +183,11 @@ with SGUClient() as client:
 
 ### Groundwater Chemistry
 
-Access groundwater chemistry data including sampling sites and chemical analysis results.
+Access groundwater chemistry (groundwater quality) data including sampling sites and chemical analysis results.
+
+Analysis results are linked to sampling sites by their national site ID (`national_site_id`), which is the
+recommended and fastest way to identify a site. Using `site_id` (platsbeteckning) or `site_name` works too, but
+costs an additional API request to look up the site.
 
 ```python
 from sgu_client import SGUClient
@@ -202,58 +206,52 @@ with SGUClient() as client:
     # and filter expressions
     sites = client.chemistry.get_sampling_sites(
         bbox=[12.0, 55.0, 16.0, 58.0],
-        filter_expr="provplatstyp='jordbrunn'",
+        filter_expr="provplatstyp='brunn_ror'",
         limit=100
     )
 
-    # convenience function to get site by name
+    # convenience function to get a site by id, name or national site id
     site = client.chemistry.get_sampling_site_by_name(
-        site_id="10001_1"  # or site_name="Ringarum_1"
+        site_id="TTK-442-M"  # or site_name="Lena", or national_site_id=359366
     )
-    # or multiple sites by names
+    print(site.properties.national_site_id)  # 359366
+    # or multiple sites
     sites = client.chemistry.get_sampling_sites_by_names(
-        site_id=["10001_1", "10002_1"]  # or site_name=["Ringarum_1", ...]
+        site_id=["TTK-442-M", "SYD-681-C"]  # or site_name=[...], or national_site_id=[...]
     )
 
     # get chemical analysis results
     results = client.chemistry.get_analysis_results(limit=100)
 
-    # convenience function to get results for a specific site
-    results = client.chemistry.get_results_by_site(
-        site_id="1000_1",  # or site_name="Ringarum_1"
-        limit=100
-    )
-    # or multiple sites by names
-    results = client.chemistry.get_results_by_sites(
-        site_id=["1000_1", "1001_2"],  # or site_name=["Ringarum_1", ...]
-        limit=100
-    )
+    # convenience function to get results for a specific site (by national site id)
+    results = client.chemistry.get_results_by_site(359366, limit=100)
+    # site_id or site_name also work, but require an extra request (and log a warning)
+    results = client.chemistry.get_results_by_site(site_id="TTK-442-M", limit=100)
+    # or multiple sites
+    results = client.chemistry.get_results_by_sites([359366, 378865], limit=100)
 
     # filter by datetime for faster responses
     tmin = datetime(2020, 1, 1, tzinfo=UTC)
     tmax = datetime(2021, 1, 1, tzinfo=UTC)
     results = client.chemistry.get_results_by_site(
-        station_id="1000_1", tmin=tmin, tmax=tmax, limit=500
+        359366, tmin=tmin, tmax=tmax, limit=500
     )
 
-    # filter by chemical parameter
-    ph_results = client.chemistry.get_results_by_parameter(
-        parameter="PH",
-        station_id="1000_1",
+    # filter by chemical parameter, using SGU's parameter names (parameternamn)
+    lead_results = client.chemistry.get_results_by_parameter(
+        parameter="Bly",
+        national_site_id=359366,  # optional, also accepts a list, site_id or site_name
         tmin=tmin,
         tmax=tmax
     )
 
     # responses that create lists of features can be converted to pandas DataFrames
-    results = client.chemistry.get_results_by_site(
-        station_id="1000_1",
-        limit=1000
-    )
+    results = client.chemistry.get_results_by_site(359366, limit=1000)
     df = results.to_dataframe()
     # or series
     series = results.to_series()  # defaults to 'measurement_value' column with sampling_date index
     # or pivot by parameter for multi-parameter analysis
-    df_pivot = results.pivot_by_parameter()  # creates columns like 'PH', 'NITRAT', 'KLORID', etc.
+    df_pivot = results.pivot_by_parameter()  # creates columns like 'pH', 'Nitratkväve', 'Klorid', etc.
 ```
 
 ### Working with Typed Data

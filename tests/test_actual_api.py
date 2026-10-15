@@ -7,23 +7,15 @@ API rate limiting, but comprehensive enough to catch breaking changes.
 
 from datetime import UTC, datetime
 
-import pytest
-
 from sgu_client import SGUClient
-from sgu_client.exceptions import SGUAPIError
 from sgu_client.models.observed import GroundwaterStation
 
 # Test constants - same as in test_observed.py
 TEST_STATION_ID = "stationer.4086"
 TEST_STATION_PLATSBETECKNING = "95_2"
 TEST_STATION_OBSPLATSNAMN = "Lagga_2"
-
-# the chemistry API currently responds 404; only that error is expected
-chemistry_api_404 = pytest.mark.xfail(
-    raises=SGUAPIError,
-    reason="SGU chemistry API returns 404, see #42",
-    strict=False,
-)
+TEST_CHEMISTRY_SITE_ID = "TTK-442-M"
+TEST_CHEMISTRY_NATIONAL_SITE_ID = 359366
 
 
 def test_real_api_integration_get_lagga_station():
@@ -87,7 +79,6 @@ def test_real_api_integration_get_recent_measurements():
     assert isinstance(measurement.properties.water_level_masl_m, int | float)
 
 
-@chemistry_api_404
 def test_real_api_chemistry_sampling_sites():
     """INTEGRATION TEST: Verify chemistry API sampling sites endpoint works.
 
@@ -111,7 +102,6 @@ def test_real_api_chemistry_sampling_sites():
     assert site.properties.municipality is not None
 
 
-@chemistry_api_404
 def test_real_api_chemistry_analysis_results():
     """INTEGRATION TEST: Verify chemistry API analysis results endpoint works.
 
@@ -128,9 +118,32 @@ def test_real_api_chemistry_analysis_results():
 
     # Check first result structure
     result = results.features[0]
-    assert result.properties.station_id is not None
+    assert result.properties.national_site_id is not None
     assert result.properties.parameter_name is not None
-    assert result.properties.parameter_short_name is not None
     # measurement_value can be None for some results
     assert result.properties.sampling_date is not None
     assert isinstance(result.properties.sampling_datetime, datetime)
+
+
+def test_real_api_chemistry_results_by_site_id():
+    """INTEGRATION TEST: Verify results can be fetched by platsbeteckning.
+
+    Analysis results no longer carry platsbeteckning in the v2 API, so this
+    exercises the lookup from site_id to national_site_id end to end.
+    """
+    client = SGUClient()
+
+    results = client.chemistry.get_results_by_site(
+        site_id=TEST_CHEMISTRY_SITE_ID,
+        tmin=datetime(2021, 1, 1, tzinfo=UTC),
+        tmax=datetime(2022, 1, 1, tzinfo=UTC),
+    )
+
+    assert len(results.features) > 0
+    for result in results.features:
+        assert result.properties.national_site_id == TEST_CHEMISTRY_NATIONAL_SITE_ID
+        assert (
+            datetime(2021, 1, 1, tzinfo=UTC)
+            <= result.properties.sampling_datetime
+            <= datetime(2022, 1, 1, tzinfo=UTC)
+        )
