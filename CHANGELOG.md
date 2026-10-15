@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-10-15
+
 ### Changed
 
 - **Groundwater chemistry API v2**: `client.chemistry` now uses SGU's `grundvattenkvalitet-analysresultat-provplatser-v2` dataset; the previous dataset no longer publishes any collections (#42)
