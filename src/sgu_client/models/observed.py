@@ -310,10 +310,10 @@ class GroundwaterMeasurementCollection(SGUResponse):
     def to_dataframe(self, sort_by_date: bool = True) -> "pd.DataFrame":
         """Convert to pandas DataFrame with measurement data.
 
-        Args
+        Args:
             sort_by_date: Whether to sort the DataFrame by observation date.
 
-        Returns
+        Returns:
             DataFrame containing measurement data.
 
         Examples:
@@ -387,7 +387,7 @@ class GroundwaterMeasurementCollection(SGUResponse):
             >>> from sgu_client import SGUClient
             >>> client = SGUClient()
             >>> measurements = client.levels.observed.get_measurements_by_name(
-            ...     platsbeteckning="95_2", limit=100
+            ...     station_id="95_2", limit=100
             ... )
             >>>
             >>> # create time series with default columns (observation_date, water_level_masl_m)

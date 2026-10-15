@@ -63,7 +63,7 @@ client = SGUClient()
 
 # with custom configuration
 from sgu_client import SGUConfig
-config = SGUConfig(timeout=60, debug=True, max_retries=5)
+config = SGUConfig(timeout=60, log_level="DEBUG", max_retries=5)
 client = SGUClient(config=config)
 
 # as a context manager
@@ -298,7 +298,7 @@ from sgu_client import SGUConfig
 config = SGUConfig(
     timeout=30,        # Request timeout in seconds
     max_retries=3,     # Maximum retry attempts
-    debug=False        # Enable debug logging
+    log_level="WARNING"  # Logging level, or None to manage logging yourself
 )
 ```
 

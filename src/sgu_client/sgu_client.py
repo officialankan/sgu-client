@@ -17,7 +17,7 @@ class SGUClient:
         >>> measurements = client.levels.observed.get_measurements()
 
         >>> # With custom config
-        >>> config = SGUConfig(timeout=60, debug=True)
+        >>> config = SGUConfig(timeout=60, log_level="DEBUG")
         >>> client = SGUClient(config=config)
     """
 

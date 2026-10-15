@@ -223,7 +223,7 @@ class ModeledGroundwaterLevelClient:
             >>> client = SGUClient()
             >>> levels = client.levels.modeled.get_levels_by_areas(
             ...     area_ids=[30125, 30126],
-            ...     datetime="2024-09-31/2025-10-01"
+            ...     datetime="2024-09-30/2025-10-01"
             ... )
             >>> print(f"Found {len(levels.features)} modeled levels")
         """
