@@ -480,253 +480,326 @@ def create_mock_empty_modeled_collection_response() -> dict[str, Any]:
     )
 
 
-# Groundwater chemistry mock responses
+# Groundwater chemistry mock responses (SGU grundvattenkvalitet v2 API)
+
+CHEMISTRY_V2_BASE_URL = "https://api.sgu.se/oppnadata/grundvattenkvalitet-analysresultat-provplatser-v2/ogc/features/v1/"
 
 
 def create_mock_sampling_site_feature(
-    site_id: str = "provplatser.3",
-    platsbeteckning: str = "10001_1",
-    provplatsnamn: str = "Site_10001_1",
-    nationellt_provplatsid: int = 308471,
+    site_id: str = "provplatser.1560",
+    platsbeteckning: str = "TTK-442-M",
+    provplatsnamn: str = "Lena",
+    nationellt_provplatsid: int = 359366,
+    lanskod: str = "04",
     coordinates: list[float] | None = None,
 ) -> dict[str, Any]:
-    """Create a single mock groundwater chemistry sampling site feature."""
+    """Create a single mock sampling site feature, based on a real v2 response."""
     if coordinates is None:
-        coordinates = [13.5, 56.0]
+        coordinates = [16.68629857, 58.90889813]
 
+    analyses_url = (
+        f"{CHEMISTRY_V2_BASE_URL}collections/analysresultat/items"
+        f"?filter=nationellt_provplatsid%20%3D%20'{nationellt_provplatsid}'"
+    )
     return {
         "type": "Feature",
         "id": site_id,
-        "geometry": None,  # Many sites have null geometry
-        "geometry_name": "geom",
+        "geometry": {"type": "Point", "coordinates": coordinates},
         "properties": {
+            "objectid": 1560,
+            "nationellt_provplatsid": nationellt_provplatsid,
+            "provplatsuuid": "c8942ea7-9708-4ba3-85c3-be4f84cd5e4b",
+            "overvakningsstation": 362247,
             "platsbeteckning": platsbeteckning,
             "provplatsnamn": provplatsnamn,
-            "nationellt_provplatsid": nationellt_provplatsid,
-            "provplatstyp": "jordbrunn",
-            "provplatstyp_tx": "okänd brunnstyp i jord",
-            "lanskod": "12",
-            "lan": "Skåne län",
-            "kommunkod": "1265",
-            "kommun": "SJÖBO",
-            "vattendistrikt": "SE4",
-            "vattendistrikt_tx": "vattendistrikt 4, Södra Östersjön",
-            "akvifer": "JÖ",
-            "akvifer_tx": "jord, öppet magasin",
-            "genes_jord": "isalvssediment",
-            "genes_jord_tx": "isälvssediment",
-            "etabldatum": "2000-04-06T00:00:00Z",
-            "antal_prov": 68,
-            "programkoppl": "Reg.MÖ - referensstationer/Nat.MÖ - trendstn. finansierat av HaV",
+            "dold_koordinat": "Nej",
+            "e": 597131,
+            "n": 6531132,
+            "antal_prov": 3,
+            "antal_provtillf": 2,
+            "forstaprov": "2021-10-06Z",
+            "senasteprov": "2021-10-06Z",
+            "provtyper": "Grundvatten",
+            "media": "Vatten",
+            "lanskod": lanskod,
+            "lan": "SÖDERMANLANDS LÄN",
+            "kommunkod": "0482",
+            "kommun": "FLEN",
+            "vattendistrikt": "SE3",
+            "vattendistrikt_tx": "Norra Östersjöns vattendistrikt",
+            "eu_cd": "",
+            "andra_beteckningar": None,
+            "delaro_namn": "Utloppet av Långhalsen",
+            "delaro_ms_cd": "WA33343004",
+            "delaro_uuid": "1ED96C52-74DE-43F0-98FA-8C82D8A9E020",
+            "vattenforekomst_aro_id": "SE79C9CECD-D622-4C7A-8BA1-5BE01E5F0B72",
+            "huvudavrinningsomrade_id": 65000,
+            "eucd_gwb": None,
+            "positioneringsmetod": "GPS",
+            "positioneringsmetod_tx": "koordinat från GPS",
+            "positionskvalitet": None,
+            "positionskvalitet_tx": None,
+            "provplatstyp": "schaktbrunn",
+            "provplatstyp_tx": "Grävd brunn",
+            "provplatskat_bedgr": None,
+            "provplatskat_bedgr_tx": None,
+            "region_bdgr": "E",
+            "region_bdgr_tx": "Mellansvenska sänkan",
+            "refniva": None,
+            "hojdsystem": None,
+            "hojdsystem_tx": None,
+            "hojdmetod": None,
+            "hojdmetod_tx": None,
+            "rorhojd": 0.35,
+            "rorlangd": None,
+            "borrhalslutning": None,
+            "sillangd": None,
+            "innerdiam": 1500,
+            "material": "cement",
+            "material_tx": "betong",
+            "tecken_jorddjup": None,
+            "jorddjup": None,
+            "jordart": "SA",
+            "jordart_tx": "sand",
+            "jord_ovan_jord": None,
+            "jord_ovan_jord_tx": None,
+            "genes_jord": None,
+            "genes_jord_tx": None,
+            "bergart": None,
+            "bergart_tx": None,
+            "akvifer": "Ö",
+            "akvifer_tx": "öppet magasin",
+            "gvmiljo_bedgr": "4",
+            "gvmiljo_bedgr_tx": "grundvattenmiljö 4: isälvsavlagringar",
+            "geohylag": "M",
+            "geohylag_tx": "intermediärt område",
+            "etabldatum": "2021-10-06Z",
+            "provtagningssyfte": "NMO_PMO",
+            "provtagningssyften_tx": "Nat.MÖ -  Påverkade områden",
             "nationell": "ja",
-            "regional": "ja",
-            "symbol": "trend",
-            "analyser_csv": f"https://api.sgu.se/oppnadata/grundvattenkvalitet-analysresultat-provplatser/ogc/features/v1/collections/analysresultat/items?platsbeteckning={platsbeteckning}&f=csv",
-            "analyser_json": f"https://api.sgu.se/oppnadata/grundvattenkvalitet-analysresultat-provplatser/ogc/features/v1/collections/analysresultat/items?platsbeteckning={platsbeteckning}&f=json",
+            "regional": None,
+            "symbol": "ovr",
+            "analysdata_json": f"{analyses_url}&f=application/json",
+            "analysdata_csv": f"{analyses_url}&f=text/csv",
         },
     }
 
 
 def create_mock_analysis_result_feature(
-    result_id: str = "analysresultat.1",
-    platsbeteckning: str = "3_102",
-    nationellt_provplatsid: int = 166611,
-    provid: str = "3_102_19800801",
+    result_id: str = "analysresultat.1757",
+    nationellt_provplatsid: int = 359366,
+    provplatsnamn: str = "Lena",
     sampling_date: datetime | None = None,
-    param: str = "pH",
-    param_kort: str = "PH",
-    matvardetal: float = 7.2,
+    parameternamn: str = "Nitratkväve",
+    ntlkemiparameterid: str = "CH02/102",
+    matvardetal: float | None = 2.99,
+    enhet: str = "mg.l-1",
+    lanskod: int = 4,
 ) -> dict[str, Any]:
-    """Create a single mock groundwater chemistry analysis result feature."""
+    """Create a single mock analysis result feature, based on a real v2 response."""
     if sampling_date is None:
-        sampling_date = datetime(1980, 8, 1, tzinfo=UTC)
+        sampling_date = datetime(2021, 10, 6, tzinfo=UTC)
 
     return {
         "type": "Feature",
         "id": result_id,
-        "geometry": None,  # Many results have null geometry
+        "geometry": None,
         "properties": {
-            "platsbeteckning": platsbeteckning,
+            "objectid": 1757,
+            "resultatid": 5865282,
+            "leveransid": "F68864C5-A58F-4B3A-BDB6-B4FD4EFA8BB0",
+            "ursprung": "db_grundvatten",
+            "bestallare": "HaV",
+            "bestallare_tx": "Havs- och vattenmyndigheten",
+            "undersokningstyp": None,
+            "bestalld_undersokning": None,
+            "utfor_org": "Sveriges geologiska undersökning",
+            "utfor_org_typ": None,
+            "rapportnamn": None,
+            "rapportnamn_diva": None,
+            "diva_url": None,
             "nationellt_provplatsid": nationellt_provplatsid,
-            "lan": "12",
-            "provid": provid,
-            "provtyp": "stickprov",
-            "programnamn": "Nat.MÖ - ospecificierad",
-            "provtagningsdat": sampling_date.isoformat(),
-            "param": param,
-            "param_kort": param_kort,
+            "overvakningsstation": 362247,
+            "provplatsuuid": "c8942ea7-9708-4ba3-85c3-be4f84cd5e4b",
+            "provplatsnamn": provplatsnamn,
+            "provplatstyp": "schaktbrunn",
+            "lanskod": lanskod,
+            "lan": "SÖDERMANLANDS LÄN",
+            "kommunkod": "0482",
+            "kommun": "FLEN",
+            "e": 597131,
+            "n": 6531132,
+            "fkt_provpunkt_e": None,
+            "fkt_provpunkt_n": None,
+            "provtag_org": "Sveriges geologiska undersökning",
+            "provtag_org_tx": None,
+            "provtagningsdatum": sampling_date.strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "provtagning_slutdatum": None,
+            "provtagningssyfte": "NMO_PMO",
+            "provtagningssyfte_tx": "Nat.MÖ -  Påverkade områden",
+            "provtagningsmetod": None,
+            "provtagningsmetod_url": None,
+            "provdatatyp": "Grundvatten",
+            "provplatsmiljo": "SJO-SOTV-RINN",
+            "media": "vatten",
+            "ackrediteradprovtagare": None,
+            "direktbehandling": None,
+            "direktbehandling_url": None,
+            "filtrerat": None,
+            "filterstorlek": None,
+            "omsattningstid": None,
+            "omsattningsvolym": None,
+            "omsatt_tid_till_prov": None,
+            "kommentar_prov": "",
+            "laboratorium": None,
+            "laboratorium_tx": None,
+            "utforarlabbid": None,
+            "utforarlabbid_tx": None,
+            "provkodoriginal": "2021-13109",
+            "rapportkodlabb": None,
+            "registreringsdatum": None,
+            "analysdatum": None,
+            "provberedning": None,
+            "provberedning_url": None,
+            "provkarl": None,
+            "provkarl_tx": None,
+            "provlagring": None,
+            "provlagring_tx": None,
+            "ntlkemiparameterid": ntlkemiparameterid,
+            "parameternamn": parameternamn,
+            "parameter_anm": None,
+            "parametergrupp": "Närsalter~Joner",
+            "cas_kod": None,
+            "matvardetext": None,
             "matvardetal": matvardetal,
-            "enhet": "mg/l" if param_kort != "PH" else "",
-            "labb": "SGU laboratorium",
-            "metod": "standardmetod",
-            "lastupdate": "2024-01-02T00:00:00Z",
-            "radnummer": 1,
+            "matvardetal_anm": None,
+            "enhet": enhet,
+            "enhet_tx": "mg/l",
+            "matvstd": None,
+            "matvstd_tx": None,
+            "loq": None,
+            "lod": None,
+            "matosakerhet": None,
+            "matosakerhetenhet": None,
+            "matosakerhetenhet_tx": None,
+            "matosakerhettyp": None,
+            "matosakerhettyp_tx": None,
+            "matvardespar": None,
+            "analysmetod": "Beräknad från NO3",
+            "analysmetod_url": None,
+            "ackrediteradmetod": None,
+            "analysinstrument": None,
+            "analysinstrument_url": None,
+            "kommentar_matvarde": None,
+            "vattentyp": "grundvatten",
+            "vattentyp_tx": None,
+            "kvalitetsflagga": None,
+            "granskningskommentar": None,
         },
+    }
+
+
+def _create_mock_chemistry_collection_response(
+    collection: str, features: list[dict[str, Any]]
+) -> dict[str, Any]:
+    return {
+        "type": "FeatureCollection",
+        "features": features,
+        "numberReturned": len(features),
+        "numberMatched": len(features),
+        "timeStamp": "2026-10-15T08:39:25.927Z",
+        "links": [
+            {
+                "href": f"{CHEMISTRY_V2_BASE_URL}collections/{collection}/items",
+                "rel": "self",
+                "type": "application/geo+json",
+                "title": "This document",
+            }
+        ],
     }
 
 
 def create_mock_sampling_site_collection_response(
     sites: list[dict[str, Any]] | None = None,
-    number_returned: int | None = None,
-    number_matched: int | None = None,
 ) -> dict[str, Any]:
     """Create a mock SamplingSiteCollection response."""
     if sites is None:
         sites = [create_mock_sampling_site_feature()]
-
-    if number_returned is None:
-        number_returned = len(sites)
-
-    if number_matched is None:
-        number_matched = number_returned
-
-    return {
-        "type": "FeatureCollection",
-        "features": sites,
-        "numberReturned": number_returned,
-        "numberMatched": number_matched,
-        "timeStamp": "2024-09-21T10:30:00Z",
-        "links": [
-            {
-                "href": "https://api.sgu.se/oppnadata/grundvattenkvalitet-analysresultat-provplatser/ogc/features/v1/collections/provplatser/items",
-                "rel": "self",
-                "type": "application/geo+json",
-                "title": "This document",
-            }
-        ],
-    }
+    return _create_mock_chemistry_collection_response("provplatser", sites)
 
 
 def create_mock_analysis_result_collection_response(
     results: list[dict[str, Any]] | None = None,
-    number_returned: int | None = None,
-    number_matched: int | None = None,
 ) -> dict[str, Any]:
     """Create a mock AnalysisResultCollection response."""
     if results is None:
         results = [create_mock_analysis_result_feature()]
-
-    if number_returned is None:
-        number_returned = len(results)
-
-    if number_matched is None:
-        number_matched = number_returned
-
-    return {
-        "type": "FeatureCollection",
-        "features": results,
-        "numberReturned": number_returned,
-        "numberMatched": number_matched,
-        "timeStamp": "2024-09-21T10:30:00Z",
-        "links": [
-            {
-                "href": "https://api.sgu.se/oppnadata/grundvattenkvalitet-analysresultat-provplatser/ogc/features/v1/collections/analysresultat/items",
-                "rel": "self",
-                "type": "application/geo+json",
-                "title": "This document",
-            }
-        ],
-    }
-
-
-def create_mock_single_sampling_site_response(
-    site_id: str = "provplatser.3",
-    platsbeteckning: str = "10001_1",
-    provplatsnamn: str = "Site_10001_1",
-) -> dict[str, Any]:
-    """Create a mock response for getting a single sampling site by ID."""
-    site = create_mock_sampling_site_feature(
-        site_id=site_id,
-        platsbeteckning=platsbeteckning,
-        provplatsnamn=provplatsnamn,
-    )
-    return create_mock_sampling_site_collection_response([site])
-
-
-def create_mock_single_analysis_result_response(
-    result_id: str = "analysresultat.1",
-    platsbeteckning: str = "3_102",
-    param_kort: str = "PH",
-) -> dict[str, Any]:
-    """Create a mock response for getting a single analysis result by ID."""
-    result = create_mock_analysis_result_feature(
-        result_id=result_id,
-        platsbeteckning=platsbeteckning,
-        param_kort=param_kort,
-    )
-    return create_mock_analysis_result_collection_response([result])
+    return _create_mock_chemistry_collection_response("analysresultat", results)
 
 
 def create_mock_multiple_sampling_sites_response(
-    platsbeteckningar: list[str] | None = None,
-    limit: int = 10,
+    sites: list[tuple[str, str, int]] | None = None,
 ) -> dict[str, Any]:
-    """Create a mock response for multiple sampling sites."""
-    if platsbeteckningar is None:
-        platsbeteckningar = ["10001_1", "10002_1"]
+    """Create a mock response for multiple sampling sites.
 
-    sites = []
-    for i, platsbeteckning in enumerate(platsbeteckningar):
-        site = create_mock_sampling_site_feature(
-            site_id=f"provplatser.{i + 3}",
-            platsbeteckning=platsbeteckning,
-            provplatsnamn=f"Site_{platsbeteckning}",
-            nationellt_provplatsid=308471 + i,
-        )
-        sites.append(site)
+    Args:
+        sites: List of (platsbeteckning, provplatsnamn, nationellt_provplatsid) tuples
+    """
+    if sites is None:
+        sites = [("TTK-442-M", "Lena", 359366), ("SYD-681-C", "Tofta Bjärs", 378865)]
 
     return create_mock_sampling_site_collection_response(
-        sites=sites[:limit],
-        number_returned=min(len(sites), limit),
-        number_matched=len(sites),
+        [
+            create_mock_sampling_site_feature(
+                site_id=f"provplatser.{i + 1}",
+                platsbeteckning=platsbeteckning,
+                provplatsnamn=provplatsnamn,
+                nationellt_provplatsid=national_site_id,
+            )
+            for i, (platsbeteckning, provplatsnamn, national_site_id) in enumerate(
+                sites
+            )
+        ]
     )
 
 
 def create_mock_multiple_analysis_results_response(
-    platsbeteckning: str = "10001_1",
+    nationellt_provplatsid: int = 359366,
     parameters: list[tuple[str, str, float]] | None = None,
     start_date: datetime | None = None,
 ) -> dict[str, Any]:
-    """Create a mock response for multiple analysis results.
+    """Create a mock response for multiple analysis results, one month apart.
 
     Args:
-        platsbeteckning: Station identifier
-        parameters: List of (param, param_kort, value) tuples
-        start_date: Starting date for the time series
+        nationellt_provplatsid: National sampling site ID
+        parameters: List of (parameternamn, ntlkemiparameterid, value) tuples
+        start_date: Sampling date of the first result
     """
     if parameters is None:
         parameters = [
-            ("pH", "PH", 7.2),
-            ("Nitrat", "NITRATE", 12.5),
-            ("Klorid", "KLORID", 8.3),
+            ("pH", "CH11/62", 7.2),
+            ("Nitratkväve", "CH02/102", 2.99),
+            ("Klorid", "CH02/96", 8.3),
         ]
 
     if start_date is None:
         start_date = datetime(2020, 1, 1, tzinfo=UTC)
 
-    results = []
-    for i, (param, param_kort, value) in enumerate(parameters):
-        result_date = start_date.replace(month=min(1 + i, 12))
-        result = create_mock_analysis_result_feature(
-            result_id=f"analysresultat.{i + 1}",
-            platsbeteckning=platsbeteckning,
-            provid=f"{platsbeteckning}_{result_date.strftime('%Y%m%d')}",
-            sampling_date=result_date,
-            param=param,
-            param_kort=param_kort,
-            matvardetal=value,
-        )
-        results.append(result)
-
     return create_mock_analysis_result_collection_response(
-        results=results,
-        number_returned=len(results),
-        number_matched=len(results),
+        [
+            create_mock_analysis_result_feature(
+                result_id=f"analysresultat.{i + 1}",
+                nationellt_provplatsid=nationellt_provplatsid,
+                sampling_date=start_date.replace(month=min(1 + i, 12)),
+                parameternamn=parameternamn,
+                ntlkemiparameterid=parameter_id,
+                matvardetal=value,
+            )
+            for i, (parameternamn, parameter_id, value) in enumerate(parameters)
+        ]
     )
 
 
 def create_mock_empty_chemistry_collection_response() -> dict[str, Any]:
     """Create a mock response for an empty chemistry collection."""
-    return create_mock_sampling_site_collection_response(
-        sites=[], number_returned=0, number_matched=0
-    )
+    return create_mock_sampling_site_collection_response(sites=[])

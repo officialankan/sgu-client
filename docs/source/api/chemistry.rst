@@ -8,6 +8,9 @@ Overview
 
 The chemistry API is accessed through ``client.chemistry`` and provides methods to query chemical measurements from groundwater monitoring stations.
 
+Data comes from SGU's *Grundvattenkvalitet, analysresultat och provplatser (version 2)* OGC API, which has two collections:
+sampling sites (``provplatser``) and analysis results (``analysresultat``).
+
 **Quick Example:**
 
 .. code-block:: python
@@ -16,19 +19,23 @@ The chemistry API is accessed through ``client.chemistry`` and provides methods 
 
    client = SGUClient()
 
-   # Get chemistry measurements
-   measurements = client.chemistry.get_measurements(
-       bbox=[12.0, 55.0, 16.0, 58.0],
-       datetime="2023-01-01/2024-01-01",
-       limit=100
+   # Find a sampling site and its national site ID
+   site = client.chemistry.get_sampling_site_by_name(site_id="TTK-442-M")
+   national_site_id = site.properties.national_site_id
+
+   # Get analysis results for the site (national_site_id is the fastest lookup)
+   results = client.chemistry.get_results_by_site(
+       national_site_id,
+       tmin="2020-01-01",
+       tmax="2024-01-01",
    )
 
-   # Get stations with chemistry data
-   stations = client.chemistry.get_stations(limit=50)
+   # Get all lead measurements since 2020
+   lead = client.chemistry.get_results_by_parameter("Bly", tmin="2020-01-01")
 
    # Convert to pandas DataFrame for analysis
-   df = measurements.to_dataframe()
-   print(df[['observation_date', 'parameter', 'value', 'unit']].head())
+   df = results.to_dataframe()
+   print(df[['sampling_date', 'parameter_name', 'measurement_value', 'unit']].head())
 
 Chemistry Client
 ----------------
@@ -37,27 +44,34 @@ The :class:`~sgu_client.client.chemistry.chemistry.GroundwaterChemistryClient` p
 
 **Key Methods:**
 
-- ``get_measurements()`` - Retrieve chemistry measurements
-- ``get_stations()`` - Retrieve stations with chemistry data
-- ``get_measurement_by_name()`` - Find measurements for a specific station
+- ``get_sampling_sites()`` / ``get_analysis_results()`` - Query the collections directly with OGC API filters
+- ``get_sampling_site_by_name()`` / ``get_sampling_sites_by_names()`` - Find sites by ``site_id``, ``site_name`` or ``national_site_id``
+- ``get_results_by_site()`` / ``get_results_by_sites()`` - Get analysis results for one or more sites
+- ``get_results_by_parameter()`` - Get analysis results for a chemical parameter, optionally per site
+
+**Identifying sites:**
+
+Analysis results reference sampling sites only by national site ID (``nationellt_provplatsid``).
+Passing ``national_site_id`` is therefore the recommended and fastest option; ``site_id``
+(``platsbeteckning``) and ``site_name`` (``provplatsnamn``) trigger an additional request to
+look up the site, and log a warning.
 
 **Filtering Options:**
 
 - **bbox**: Spatial filter (bounding box)
 - **datetime**: Temporal filter (ISO 8601 datetime or interval)
-- **filter**: CQL filter expression for parameter-specific queries
-- **limit**: Maximum number of results to return
+- **filter_expr**: CQL filter expression, e.g. ``"parameternamn='Bly' AND provtagningsdatum>='2020-01-01'"``
+- **limit**: Maximum number of results to return (paginated automatically)
 
 **Common Parameters:**
 
-The chemistry API tracks various water quality parameters including:
+Parameters are identified by SGU's Swedish parameter names (``parameter_name``), for example:
 
-- pH levels
-- Electrical conductivity
-- Major ions (Ca, Mg, Na, K, Cl, SO4, HCO3)
-- Nutrients (NO3, NH4, PO4)
-- Trace elements
-- Dissolved gases
+- ``pH``
+- ``Konduktivitet`` (electrical conductivity)
+- ``Klorid``, ``Svavelsulfat`` (major ions)
+- ``Nitratkväve`` (nutrients)
+- ``Bly`` (trace elements)
 
 .. automodule:: sgu_client.client.chemistry.chemistry
    :members:
@@ -67,7 +81,7 @@ The chemistry API tracks various water quality parameters including:
 Chemistry Data Models
 ---------------------
 
-The chemistry data uses typed Pydantic models for measurements and station metadata.
+The chemistry data uses typed Pydantic models for sampling sites and analysis results.
 
 .. automodule:: sgu_client.models.chemistry
    :members:
