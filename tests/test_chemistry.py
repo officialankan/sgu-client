@@ -1,9 +1,10 @@
-"""Tests for chemistry module with mocked API responses."""
+"""Tests for chemistry module with mocked API responses (SGU v2 API)."""
 
 from datetime import UTC, datetime
 from unittest.mock import Mock, patch
 
 import pytest
+import requests.exceptions
 from requests import Response
 
 from sgu_client import SGUClient
@@ -15,9 +16,14 @@ from sgu_client.models.chemistry import (
     SamplingSiteCollection,
 )
 from tests.mock_responses import (
+    CHEMISTRY_V2_BASE_URL,
+    create_mock_analysis_result_collection_response,
+    create_mock_analysis_result_feature,
     create_mock_empty_chemistry_collection_response,
     create_mock_multiple_analysis_results_response,
-    create_mock_single_sampling_site_response,
+    create_mock_multiple_sampling_sites_response,
+    create_mock_sampling_site_collection_response,
+    create_mock_sampling_site_feature,
 )
 
 
@@ -30,497 +36,473 @@ def create_mock_response(response_data, status_code=200):
     return mock_response
 
 
-def test_chemistry_client_exists():
-    """Test that chemistry client is accessible."""
+# Model parsing tests
+
+
+def test_sampling_site_parses_v2_payload():
+    """A v2 sampling site maps its Swedish API fields to typed English attributes."""
+    site = SamplingSite(**create_mock_sampling_site_feature())
+
+    props = site.properties
+    assert props.national_site_id == 359366
+    assert props.station_id == "TTK-442-M"
+    assert props.site_name == "Lena"
+    assert props.site_uuid == "c8942ea7-9708-4ba3-85c3-be4f84cd5e4b"
+    assert props.county_code == "04"
+    assert props.municipality == "FLEN"
+    assert props.soil_type_description == "sand"
+    assert props.pipe_height == 0.35
+    assert props.first_sample_date == "2021-10-06Z"
+    assert props.analyses_csv_url.endswith("&f=text/csv")
+    assert site.geometry.coordinates == [16.68629857, 58.90889813]
+
+
+def test_analysis_result_parses_v2_payload():
+    """A v2 analysis result maps its Swedish API fields to typed English attributes."""
+    result = AnalysisResult(**create_mock_analysis_result_feature())
+
+    props = result.properties
+    assert props.national_site_id == 359366
+    assert props.site_name == "Lena"
+    assert props.parameter_name == "Nitratkväve"
+    assert props.parameter_id == "CH02/102"
+    assert props.parameter_group == "Närsalter~Joner"
+    assert props.measurement_value == 2.99
+    assert props.unit == "mg.l-1"
+    assert props.sampling_date == "2021-10-06T00:00:00Z"
+    assert props.method == "Beräknad från NO3"
+    assert props.county == "SÖDERMANLANDS LÄN"
+
+
+@pytest.mark.parametrize(
+    ("lanskod", "expected"), [(4, "04"), (23, "23"), ("09", "09"), (None, None)]
+)
+def test_county_code_is_zero_padded_string(lanskod, expected):
+    """County codes are normalised to two-digit strings on both models."""
+    result = AnalysisResult(**create_mock_analysis_result_feature(lanskod=lanskod))
+    site_feature = create_mock_sampling_site_feature()
+    site_feature["properties"]["lanskod"] = lanskod
+    site = SamplingSite(**site_feature)
+
+    assert result.properties.county_code == expected
+    assert site.properties.county_code == expected
+
+
+# Client request tests
+
+
+def test_get_sampling_sites_requests_v2_api():
+    """Sampling sites are fetched from the v2 grundvattenkvalitet dataset."""
     client = SGUClient()
-    assert hasattr(client, "chemistry")
-    assert hasattr(client.chemistry, "get_sampling_sites")
-    assert hasattr(client.chemistry, "get_analysis_results")
-
-
-def test_chemistry_models_importable():
-    """Test that chemistry models can be imported."""
-    assert AnalysisResult is not None
-    assert AnalysisResultCollection is not None
-    assert SamplingSite is not None
-    assert SamplingSiteCollection is not None
-
-
-def test_get_sampling_sites_with_mock():
-    """Test getting sampling sites with mocked response."""
-    client = SGUClient()
-
-    # Create mock response for a single sampling site
-    mock_response_data = create_mock_single_sampling_site_response(
-        site_id="provplatser.3",
-        platsbeteckning="10001_1",
-        provplatsnamn="Test_Site",
-    )
 
     with patch.object(client.chemistry._client._session, "request") as mock_request:
-        mock_request.return_value = create_mock_response(mock_response_data)
-
-        # Call the method
+        mock_request.return_value = create_mock_response(
+            create_mock_sampling_site_collection_response()
+        )
         sites = client.chemistry.get_sampling_sites(limit=1)
 
-        # Verify results
-        assert sites is not None
-        assert isinstance(sites, SamplingSiteCollection)
-        assert len(sites.features) == 1
-        assert sites.features[0].properties.station_id == "10001_1"
-        assert sites.features[0].properties.site_name == "Test_Site"
+    assert mock_request.call_args.kwargs["url"] == (
+        f"{CHEMISTRY_V2_BASE_URL}collections/provplatser/items"
+    )
+    assert sites.features[0].properties.station_id == "TTK-442-M"
 
 
-def test_get_analysis_results_with_mock():
-    """Test getting analysis results with mocked response."""
+def test_get_analysis_results_requests_v2_api():
+    """Analysis results are fetched from the v2 grundvattenkvalitet dataset."""
     client = SGUClient()
 
-    # Create mock response for analysis results
-    mock_response_data = create_mock_multiple_analysis_results_response(
-        platsbeteckning="10001_1",
-        parameters=[("pH", "PH", 7.2)],
-    )
-
     with patch.object(client.chemistry._client._session, "request") as mock_request:
-        mock_request.return_value = create_mock_response(mock_response_data)
-
-        # Call the method
+        mock_request.return_value = create_mock_response(
+            create_mock_analysis_result_collection_response()
+        )
         results = client.chemistry.get_analysis_results(limit=1)
 
-        # Verify results
-        assert results is not None
-        assert isinstance(results, AnalysisResultCollection)
-        assert len(results.features) == 1
-        assert results.features[0].properties.station_id == "10001_1"
-        assert results.features[0].properties.parameter_short_name == "PH"
-        assert results.features[0].properties.measurement_value == 7.2
+    assert mock_request.call_args.kwargs["url"] == (
+        f"{CHEMISTRY_V2_BASE_URL}collections/analysresultat/items"
+    )
+    assert results.features[0].properties.parameter_name == "Nitratkväve"
 
 
-def test_get_sampling_site_by_name_station_id():
-    """Test getting a single sampling site by site_id with mocked response."""
+def test_get_results_by_site_with_national_site_id(caplog):
+    """national_site_id is the first argument and filters results in one request."""
     client = SGUClient()
 
-    # Create mock response with one site matching the site_id
-    mock_response_data = create_mock_single_sampling_site_response(
-        site_id="provplatser.3",
-        platsbeteckning="10001_1",
-        provplatsnamn="Test_Site",
-    )
-
     with patch.object(client.chemistry._client._session, "request") as mock_request:
-        mock_request.return_value = create_mock_response(mock_response_data)
+        mock_request.return_value = create_mock_response(
+            create_mock_multiple_analysis_results_response(
+                nationellt_provplatsid=359366
+            )
+        )
+        results = client.chemistry.get_results_by_site(359366)
 
-        # Call the convenience method
-        site = client.chemistry.get_sampling_site_by_name(site_id="10001_1")
+    assert mock_request.call_count == 1
+    assert (
+        mock_request.call_args.kwargs["params"]["filter"]
+        == "nationellt_provplatsid=359366"
+    )
+    assert len(results.features) == 3
+    assert "additional API request" not in caplog.text
 
-        # Verify results
-        assert site is not None
-        assert isinstance(site, SamplingSite)
-        assert site.properties.station_id == "10001_1"
-        assert site.properties.site_name == "Test_Site"
 
-
-def test_get_sampling_site_by_name_site_name():
-    """Test getting a single sampling site by site_name with mocked response."""
+@pytest.mark.parametrize(
+    ("kwargs", "expected_lookup_filter"),
+    [
+        ({"site_id": "TTK-442-M"}, "platsbeteckning in ('TTK-442-M')"),
+        ({"site_name": "Lena"}, "provplatsnamn in ('Lena')"),
+    ],
+)
+def test_get_results_by_site_looks_up_national_site_id(
+    caplog, kwargs, expected_lookup_filter
+):
+    """site_id/site_name are resolved to a national_site_id, with a warning."""
     client = SGUClient()
 
-    # Create mock response with one site matching the site_name
-    mock_response_data = create_mock_single_sampling_site_response(
-        site_id="provplatser.3",
-        platsbeteckning="10001_1",
-        provplatsnamn="Test_Site",
-    )
-
     with patch.object(client.chemistry._client._session, "request") as mock_request:
-        mock_request.return_value = create_mock_response(mock_response_data)
+        mock_request.side_effect = [
+            create_mock_response(create_mock_sampling_site_collection_response()),
+            create_mock_response(create_mock_multiple_analysis_results_response()),
+        ]
+        results = client.chemistry.get_results_by_site(**kwargs)
 
-        # Call the convenience method using site_name
-        site = client.chemistry.get_sampling_site_by_name(site_name="Test_Site")
+    lookup_call, results_call = mock_request.call_args_list
+    assert lookup_call.kwargs["url"].endswith("collections/provplatser/items")
+    assert lookup_call.kwargs["params"]["filter"] == expected_lookup_filter
+    assert results_call.kwargs["url"].endswith("collections/analysresultat/items")
+    assert results_call.kwargs["params"]["filter"] == "nationellt_provplatsid=359366"
+    assert len(results.features) == 3
+    assert "additional API request" in caplog.text
+    assert "national_site_id" in caplog.text
 
-        # Verify results
-        assert site is not None
-        assert isinstance(site, SamplingSite)
-        assert site.properties.station_id == "10001_1"
-        assert site.properties.site_name == "Test_Site"
 
-
-def test_get_sampling_sites_by_names():
-    """Test getting multiple sampling sites by names with mocked response."""
-    from tests.mock_responses import create_mock_multiple_sampling_sites_response
-
+def test_get_results_by_site_unknown_site_id_raises():
+    """A site_id that matches no sampling site raises a ValueError naming it."""
     client = SGUClient()
 
-    # Create mock response with multiple sites
-    mock_response_data = create_mock_multiple_sampling_sites_response(
-        platsbeteckningar=["10001_1", "10002_1"],
-        limit=10,
-    )
+    with patch.object(client.chemistry._client._session, "request") as mock_request:
+        mock_request.return_value = create_mock_response(
+            create_mock_sampling_site_collection_response(sites=[])
+        )
+        with pytest.raises(ValueError, match="NOPE-1"):
+            client.chemistry.get_results_by_site(site_id="NOPE-1")
+
+
+def test_get_results_by_sites_with_national_site_ids():
+    """A list of national_site_ids filters results with a single IN clause."""
+    client = SGUClient()
 
     with patch.object(client.chemistry._client._session, "request") as mock_request:
-        mock_request.return_value = create_mock_response(mock_response_data)
+        mock_request.return_value = create_mock_response(
+            create_mock_multiple_analysis_results_response()
+        )
+        client.chemistry.get_results_by_sites([359366, 378865])
 
-        # Call the convenience method for multiple sites
-        sites = client.chemistry.get_sampling_sites_by_names(
-            site_id=["10001_1", "10002_1"]
+    assert mock_request.call_count == 1
+    assert (
+        mock_request.call_args.kwargs["params"]["filter"]
+        == "nationellt_provplatsid in (359366, 378865)"
+    )
+
+
+def test_get_results_by_sites_with_site_ids(caplog):
+    """A list of site_ids is resolved to national_site_ids in one lookup request."""
+    client = SGUClient()
+
+    with patch.object(client.chemistry._client._session, "request") as mock_request:
+        mock_request.side_effect = [
+            create_mock_response(create_mock_multiple_sampling_sites_response()),
+            create_mock_response(create_mock_multiple_analysis_results_response()),
+        ]
+        client.chemistry.get_results_by_sites(site_id=["TTK-442-M", "SYD-681-C"])
+
+    lookup_call, results_call = mock_request.call_args_list
+    assert (
+        lookup_call.kwargs["params"]["filter"]
+        == "platsbeteckning in ('TTK-442-M', 'SYD-681-C')"
+    )
+    assert (
+        results_call.kwargs["params"]["filter"]
+        == "nationellt_provplatsid in (359366, 378865)"
+    )
+    assert "additional API request" in caplog.text
+
+
+def test_get_results_by_sites_partial_lookup_raises():
+    """If only some site_ids are found, a ValueError names the missing ones."""
+    client = SGUClient()
+
+    with patch.object(client.chemistry._client._session, "request") as mock_request:
+        mock_request.return_value = create_mock_response(
+            create_mock_multiple_sampling_sites_response()
+        )
+        with pytest.raises(ValueError, match="NOPE-1"):
+            client.chemistry.get_results_by_sites(
+                site_id=["TTK-442-M", "SYD-681-C", "NOPE-1"]
+            )
+
+    assert mock_request.call_count == 1
+
+
+@pytest.mark.parametrize(
+    ("kwargs", "expected_filter"),
+    [
+        ({}, "parameternamn='Bly'"),
+        (
+            {"national_site_id": 359366},
+            "parameternamn='Bly' AND nationellt_provplatsid=359366",
+        ),
+        (
+            {"national_site_id": [359366, 378865]},
+            "parameternamn='Bly' AND nationellt_provplatsid in (359366, 378865)",
+        ),
+        (
+            {"tmin": "2020-01-01", "tmax": "2021-01-01"},
+            "parameternamn='Bly' AND provtagningsdatum >= '2020-01-01' "
+            "AND provtagningsdatum <= '2021-01-01'",
+        ),
+    ],
+)
+def test_get_results_by_parameter_filters(kwargs, expected_filter):
+    """Results are filtered on parameternamn, optionally by site and time."""
+    client = SGUClient()
+
+    with patch.object(client.chemistry._client._session, "request") as mock_request:
+        mock_request.return_value = create_mock_response(
+            create_mock_analysis_result_collection_response()
+        )
+        client.chemistry.get_results_by_parameter("Bly", **kwargs)
+
+    assert mock_request.call_count == 1
+    assert mock_request.call_args.kwargs["params"]["filter"] == expected_filter
+
+
+def test_get_results_by_parameter_with_site_id(caplog):
+    """A site_id filter is resolved to a national_site_id, like get_results_by_site."""
+    client = SGUClient()
+
+    with patch.object(client.chemistry._client._session, "request") as mock_request:
+        mock_request.side_effect = [
+            create_mock_response(create_mock_sampling_site_collection_response()),
+            create_mock_response(create_mock_analysis_result_collection_response()),
+        ]
+        client.chemistry.get_results_by_parameter("Bly", site_id="TTK-442-M")
+
+    assert (
+        mock_request.call_args.kwargs["params"]["filter"]
+        == "parameternamn='Bly' AND nationellt_provplatsid=359366"
+    )
+    assert "additional API request" in caplog.text
+
+
+def test_get_results_by_parameter_multiple_site_identifiers_raises():
+    """Only one kind of site identifier may be passed."""
+    client = SGUClient()
+    with pytest.raises(ValueError, match="Exactly one of 'national_site_id'"):
+        client.chemistry.get_results_by_parameter(
+            "Bly", national_site_id=359366, site_id="TTK-442-M"
         )
 
-        # Verify results
-        assert sites is not None
-        assert isinstance(sites, SamplingSiteCollection)
-        assert len(sites.features) == 2
-        assert sites.features[0].properties.station_id == "10001_1"
-        assert sites.features[1].properties.station_id == "10002_1"
 
-
-def test_get_results_by_site_with_station_id():
-    """Test getting analysis results for a specific site by site_id."""
+@pytest.mark.parametrize(
+    ("kwargs", "expected_filter"),
+    [
+        ({"site_id": "TTK-442-M"}, "platsbeteckning='TTK-442-M'"),
+        ({"site_name": "Lena"}, "provplatsnamn='Lena'"),
+        ({"national_site_id": 359366}, "nationellt_provplatsid=359366"),
+    ],
+)
+def test_get_sampling_site_by_name(caplog, kwargs, expected_filter):
+    """A sampling site can be looked up by any identifier in a single request."""
     client = SGUClient()
 
-    # Create mock response with analysis results for one site
-    mock_response_data = create_mock_multiple_analysis_results_response(
-        platsbeteckning="10001_1",
-        parameters=[
-            ("pH", "PH", 7.2),
-            ("Nitrat", "NITRATE", 12.5),
-        ],
-    )
-
     with patch.object(client.chemistry._client._session, "request") as mock_request:
-        mock_request.return_value = create_mock_response(mock_response_data)
-
-        # Call the convenience method
-        results = client.chemistry.get_results_by_site(site_id="10001_1", limit=10)
-
-        # Verify results
-        assert results is not None
-        assert isinstance(results, AnalysisResultCollection)
-        assert len(results.features) == 2
-        # All results should be from the same station
-        assert all(r.properties.station_id == "10001_1" for r in results.features)
-        # Verify we got both parameters
-        params = [r.properties.parameter_short_name for r in results.features]
-        assert "PH" in params
-        assert "NITRATE" in params
-
-
-def test_get_results_by_site_with_time_filtering():
-    """Test getting analysis results for a site with time filtering."""
-    from datetime import UTC, datetime
-
-    client = SGUClient()
-
-    # Create mock response
-    mock_response_data = create_mock_multiple_analysis_results_response(
-        platsbeteckning="10001_1",
-        parameters=[("pH", "PH", 7.2)],
-    )
-
-    with patch.object(client.chemistry._client._session, "request") as mock_request:
-        mock_request.return_value = create_mock_response(mock_response_data)
-
-        # Call with time filtering
-        results = client.chemistry.get_results_by_site(
-            site_id="10001_1",
-            tmin=datetime(2020, 1, 1, tzinfo=UTC),
-            tmax=datetime(2021, 1, 1, tzinfo=UTC),
-            limit=10,
+        mock_request.return_value = create_mock_response(
+            create_mock_sampling_site_collection_response()
         )
+        site = client.chemistry.get_sampling_site_by_name(**kwargs)
 
-        # Verify results
-        assert results is not None
-        assert isinstance(results, AnalysisResultCollection)
-        assert len(results.features) > 0
+    assert mock_request.call_count == 1
+    assert mock_request.call_args.kwargs["params"]["filter"] == expected_filter
+    assert site.properties.national_site_id == 359366
+    assert "additional API request" not in caplog.text
 
 
-def test_get_results_by_sites():
-    """Test getting analysis results for multiple sites."""
+@pytest.mark.parametrize(
+    ("kwargs", "expected_filter"),
+    [
+        (
+            {"site_id": ["TTK-442-M", "SYD-681-C"]},
+            "platsbeteckning in ('TTK-442-M', 'SYD-681-C')",
+        ),
+        (
+            {"site_name": ["Lena", "Tofta Bjärs"]},
+            "provplatsnamn in ('Lena', 'Tofta Bjärs')",
+        ),
+        (
+            {"national_site_id": [359366, 378865]},
+            "nationellt_provplatsid in (359366, 378865)",
+        ),
+    ],
+)
+def test_get_sampling_sites_by_names(kwargs, expected_filter):
+    """Multiple sampling sites can be looked up by any identifier."""
     client = SGUClient()
 
-    # Create mock response with results from multiple sites
-    mock_response_data = create_mock_multiple_analysis_results_response(
-        platsbeteckning="10001_1",
-        parameters=[
-            ("pH", "PH", 7.2),
-            ("pH", "PH", 7.4),
-        ],
-    )
-
     with patch.object(client.chemistry._client._session, "request") as mock_request:
-        mock_request.return_value = create_mock_response(mock_response_data)
-
-        # Call the convenience method for multiple sites
-        results = client.chemistry.get_results_by_sites(
-            site_id=["10001_1", "10002_1"], limit=10
+        mock_request.return_value = create_mock_response(
+            create_mock_multiple_sampling_sites_response()
         )
+        sites = client.chemistry.get_sampling_sites_by_names(**kwargs)
 
-        # Verify results
-        assert results is not None
-        assert isinstance(results, AnalysisResultCollection)
-        assert len(results.features) == 2
-        # Verify all results have a station_id
-        assert all(r.properties.station_id is not None for r in results.features)
+    assert mock_request.call_args.kwargs["params"]["filter"] == expected_filter
+    assert [site.properties.national_site_id for site in sites.features] == [
+        359366,
+        378865,
+    ]
+
+
+# pandas integration tests
 
 
 def test_sampling_sites_to_dataframe():
-    """Test converting sampling sites collection to pandas DataFrame."""
-    from tests.mock_responses import create_mock_multiple_sampling_sites_response
+    """Sampling sites flatten to a DataFrame with geometry and parsed dates."""
+    pd = pytest.importorskip("pandas")
+    sites = SamplingSiteCollection(**create_mock_multiple_sampling_sites_response())
 
-    client = SGUClient()
+    df = sites.to_dataframe()
 
-    # Create mock response with multiple sites
-    mock_response_data = create_mock_multiple_sampling_sites_response(
-        platsbeteckningar=["10001_1", "10002_1"],
-    )
-
-    with patch.object(client.chemistry._client._session, "request") as mock_request:
-        mock_request.return_value = create_mock_response(mock_response_data)
-
-        sites = client.chemistry.get_sampling_sites(limit=10)
-        df = sites.to_dataframe()
-
-        # Verify DataFrame structure
-        assert df is not None
-        assert not df.empty
-        assert len(df) == 2
-
-        # Verify key columns exist
-        assert "site_id" in df.columns
-        assert "station_id" in df.columns
-        assert "site_name" in df.columns
-        assert "municipality" in df.columns
-        assert "sample_count" in df.columns
-
-        # Verify data
-        assert "10001_1" in df["station_id"].values
-        assert "10002_1" in df["station_id"].values
+    assert list(df["national_site_id"]) == [359366, 378865]
+    assert list(df["station_id"]) == ["TTK-442-M", "SYD-681-C"]
+    assert df["longitude"].iloc[0] == 16.68629857
+    assert df["county_code"].iloc[0] == "04"
+    for column in ("established_date", "first_sample_date", "latest_sample_date"):
+        assert pd.api.types.is_datetime64_any_dtype(df[column]), column
+    assert df["first_sample_date"].iloc[0] == pd.Timestamp("2021-10-06", tz="UTC")
 
 
 def test_analysis_results_to_dataframe():
-    """Test converting analysis results collection to pandas DataFrame."""
-    from pandas.api.types import is_datetime64_any_dtype as is_datetime
-
-    client = SGUClient()
-
-    # Create mock response with multiple parameters
-    mock_response_data = create_mock_multiple_analysis_results_response(
-        platsbeteckning="10001_1",
-        parameters=[
-            ("pH", "PH", 7.2),
-            ("Nitrat", "NITRATE", 12.5),
-            ("Klorid", "KLORID", 8.3),
-        ],
+    """Analysis results flatten to a DataFrame sorted by parsed sampling date."""
+    pd = pytest.importorskip("pandas")
+    results = AnalysisResultCollection(
+        **create_mock_multiple_analysis_results_response(
+            parameters=[("Klorid", "CH02/96", 8.3), ("pH", "CH11/62", 7.2)]
+        )
     )
+    results.features.reverse()
 
-    with patch.object(client.chemistry._client._session, "request") as mock_request:
-        mock_request.return_value = create_mock_response(mock_response_data)
+    df = results.to_dataframe()
 
-        results = client.chemistry.get_analysis_results(limit=10)
-        df = results.to_dataframe()
-
-        # Verify DataFrame structure
-        assert df is not None
-        assert not df.empty
-        assert len(df) == 3
-
-        # Verify key columns exist
-        assert "result_id" in df.columns
-        assert "sampling_date" in df.columns
-        assert "parameter_short_name" in df.columns
-        assert "measurement_value" in df.columns
-        assert "unit" in df.columns
-
-        # Verify datetime column is properly typed
-        assert is_datetime(df["sampling_date"])
-
-        # Verify data
-        assert "PH" in df["parameter_short_name"].values
-        assert "NITRATE" in df["parameter_short_name"].values
-        assert "KLORID" in df["parameter_short_name"].values
+    assert pd.api.types.is_datetime64_any_dtype(df["sampling_date"])
+    assert list(df["parameter_name"]) == ["Klorid", "pH"]
+    assert list(df["measurement_value"]) == [8.3, 7.2]
+    assert list(df["county_code"]) == ["04", "04"]
 
 
 def test_analysis_results_to_series():
-    """Test converting analysis results to pandas Series."""
-    client = SGUClient()
-
-    # Create mock response with single parameter measurements
-    mock_response_data = create_mock_multiple_analysis_results_response(
-        platsbeteckning="10001_1",
-        parameters=[
-            ("pH", "PH", 7.2),
-            ("pH", "PH", 7.4),
-            ("pH", "PH", 7.1),
-        ],
+    """to_series defaults to measurement values indexed by sampling date."""
+    pd = pytest.importorskip("pandas")
+    results = AnalysisResultCollection(
+        **create_mock_multiple_analysis_results_response()
     )
 
-    with patch.object(client.chemistry._client._session, "request") as mock_request:
-        mock_request.return_value = create_mock_response(mock_response_data)
+    series = results.to_series()
 
-        results = client.chemistry.get_analysis_results(limit=10)
-        series = results.to_series()
-
-        # Verify Series structure
-        assert series is not None
-        assert not series.empty
-        assert len(series) == 3
-        assert series.name == "measurement_value"
-
-        # Verify values
-        assert 7.2 in series.values
-        assert 7.4 in series.values
-        assert 7.1 in series.values
+    assert list(series.values) == [7.2, 2.99, 8.3]
+    assert series.index[0] == pd.Timestamp("2020-01-01", tz="UTC")
 
 
 def test_analysis_results_pivot_by_parameter():
-    """Test pivoting analysis results by parameter for multi-parameter analysis."""
-    client = SGUClient()
-
-    # Create mock response with multiple parameters over time
-    mock_response_data = create_mock_multiple_analysis_results_response(
-        platsbeteckning="10001_1",
-        parameters=[
-            ("pH", "PH", 7.2),
-            ("Nitrat", "NITRATE", 12.5),
-            ("Klorid", "KLORID", 8.3),
-        ],
+    """pivot_by_parameter makes one column per SGU parameter name."""
+    pytest.importorskip("pandas")
+    results = AnalysisResultCollection(
+        **create_mock_multiple_analysis_results_response()
     )
 
+    df_pivot = results.pivot_by_parameter()
+
+    assert sorted(df_pivot.columns) == ["Klorid", "Nitratkväve", "pH"]
+    assert df_pivot["Nitratkväve"].dropna().tolist() == [2.99]
+
+
+def test_get_results_by_site_with_datetime_objects():
+    """datetime tmin/tmax are sent as ISO strings on provtagningsdatum."""
+    client = SGUClient()
+
     with patch.object(client.chemistry._client._session, "request") as mock_request:
-        mock_request.return_value = create_mock_response(mock_response_data)
+        mock_request.return_value = create_mock_response(
+            create_mock_analysis_result_collection_response()
+        )
+        client.chemistry.get_results_by_site(
+            359366,
+            tmin=datetime(2020, 1, 1, tzinfo=UTC),
+            tmax=datetime(2021, 1, 1, tzinfo=UTC),
+        )
 
-        results = client.chemistry.get_analysis_results(limit=10)
-        df_pivot = results.pivot_by_parameter()
-
-        # Verify pivoted DataFrame structure
-        assert df_pivot is not None
-        assert not df_pivot.empty
-
-        # Verify columns are parameter names
-        assert "PH" in df_pivot.columns
-        assert "NITRATE" in df_pivot.columns
-        assert "KLORID" in df_pivot.columns
-
-        # Verify we can access values by parameter
-        assert df_pivot["PH"].notna().any()
-        assert df_pivot["NITRATE"].notna().any()
-        assert df_pivot["KLORID"].notna().any()
+    assert mock_request.call_args.kwargs["params"]["filter"] == (
+        "nationellt_provplatsid=359366"
+        " AND provtagningsdatum >= '2020-01-01T00:00:00+00:00'"
+        " AND provtagningsdatum <= '2021-01-01T00:00:00+00:00'"
+    )
 
 
 # Parameter validation tests
-def test_get_sampling_site_by_name_no_args():
-    """Test that get_sampling_site_by_name raises error when no arguments provided."""
+
+SITE_IDENTIFIER_ERROR = "Exactly one of 'national_site_id', 'site_id' or 'site_name'"
+
+
+@pytest.mark.parametrize(
+    ("method", "kwargs"),
+    [
+        ("get_sampling_site_by_name", {}),
+        ("get_sampling_site_by_name", {"site_id": "TTK-442-M", "site_name": "Lena"}),
+        ("get_sampling_sites_by_names", {}),
+        ("get_sampling_sites_by_names", {"site_id": []}),
+        (
+            "get_sampling_sites_by_names",
+            {"site_id": ["TTK-442-M"], "national_site_id": [359366]},
+        ),
+        ("get_results_by_site", {}),
+        ("get_results_by_site", {"national_site_id": 359366, "site_id": "TTK-442-M"}),
+        ("get_results_by_sites", {}),
+        ("get_results_by_sites", {"national_site_id": []}),
+        (
+            "get_results_by_sites",
+            {"site_id": ["TTK-442-M"], "site_name": ["Lena"]},
+        ),
+    ],
+)
+def test_site_identifier_validation(method, kwargs):
+    """Site lookups require exactly one kind of site identifier."""
     client = SGUClient()
-    with pytest.raises(
-        ValueError, match="Either 'site_id' or 'site_name' must be provided."
-    ):
-        client.chemistry.get_sampling_site_by_name()
-
-
-def test_get_sampling_site_by_name_both_args():
-    """Test that get_sampling_site_by_name raises error when both arguments provided."""
-    client = SGUClient()
-    with pytest.raises(
-        ValueError,
-        match="Only one of 'site_id' or 'site_name' can be provided.",
-    ):
-        client.chemistry.get_sampling_site_by_name(
-            site_id="10001_1", site_name="Test_Site"
-        )
-
-
-def test_get_sampling_sites_by_names_no_args():
-    """Test that get_sampling_sites_by_names raises error when no arguments provided."""
-    client = SGUClient()
-    with pytest.raises(
-        ValueError,
-        match="Either 'site_id' or 'site_name' must be provided.",
-    ):
-        client.chemistry.get_sampling_sites_by_names()
-
-
-def test_get_sampling_sites_by_names_both_args():
-    """Test that get_sampling_sites_by_names raises error when both arguments provided."""
-    client = SGUClient()
-    with pytest.raises(
-        ValueError,
-        match="Only one of 'site_id' or 'site_name' can be provided.",
-    ):
-        client.chemistry.get_sampling_sites_by_names(
-            site_id=["10001_1"], site_name=["Test_Site"]
-        )
-
-
-def test_get_sampling_sites_by_names_empty_list():
-    """Test that get_sampling_sites_by_names raises error when empty list provided."""
-    client = SGUClient()
-    with pytest.raises(
-        ValueError,
-        match="Either 'site_id' or 'site_name' must be provided.",
-    ):
-        client.chemistry.get_sampling_sites_by_names(site_id=[])
-
-
-def test_get_results_by_site_no_args():
-    """Test that get_results_by_site raises error when no arguments provided."""
-    client = SGUClient()
-    with pytest.raises(
-        ValueError, match="Either 'site_id' or 'site_name' must be provided."
-    ):
-        client.chemistry.get_results_by_site()
-
-
-def test_get_results_by_site_both_args():
-    """Test that get_results_by_site raises error when both arguments provided."""
-    client = SGUClient()
-    with pytest.raises(
-        ValueError,
-        match="Only one of 'site_id' or 'site_name' can be provided.",
-    ):
-        client.chemistry.get_results_by_site(site_id="10001_1", site_name="Test_Site")
-
-
-def test_get_results_by_sites_no_args():
-    """Test that get_results_by_sites raises error when no arguments provided."""
-    client = SGUClient()
-    with pytest.raises(
-        ValueError, match="Either 'site_id' or 'site_name' must be provided."
-    ):
-        client.chemistry.get_results_by_sites()
-
-
-def test_get_results_by_sites_both_args():
-    """Test that get_results_by_sites raises error when both arguments provided."""
-    client = SGUClient()
-    with pytest.raises(
-        ValueError,
-        match="Only one of 'site_id' or 'site_name' can be provided.",
-    ):
-        client.chemistry.get_results_by_sites(
-            site_id=["10001_1"], site_name=["Test_Site"]
-        )
-
-
-def test_get_results_by_sites_empty_list():
-    """Test that get_results_by_sites raises error when empty list provided."""
-    client = SGUClient()
-    with pytest.raises(
-        ValueError,
-        match="Either 'site_id' or 'site_name' must be provided.",
-    ):
-        client.chemistry.get_results_by_sites(site_id=[])
+    with pytest.raises(ValueError, match=SITE_IDENTIFIER_ERROR):
+        getattr(client.chemistry, method)(**kwargs)
 
 
 def test_get_results_by_parameter_no_parameter():
-    """Test that get_results_by_parameter raises error when parameter not provided."""
+    """get_results_by_parameter requires a parameter."""
     client = SGUClient()
     with pytest.raises(TypeError):
         client.chemistry.get_results_by_parameter()
 
 
-# Error condition tests
-def test_api_timeout_error():
-    """Test that API timeout errors are properly raised."""
-    import requests.exceptions
+def test_get_results_by_site_multiple_sites_for_name_raises():
+    """A site_name matching several sites is ambiguous for a single-site lookup."""
+    client = SGUClient()
 
+    with patch.object(client.chemistry._client._session, "request") as mock_request:
+        mock_request.return_value = create_mock_response(
+            create_mock_multiple_sampling_sites_response(
+                sites=[("A-1", "Brunn", 1), ("B-2", "Brunn", 2)]
+            )
+        )
+        with pytest.raises(ValueError, match="Multiple sites found"):
+            client.chemistry.get_results_by_site(site_name="Brunn")
+
+
+# Error condition tests
+
+
+def test_api_timeout_error():
+    """API timeout errors are raised as SGUTimeoutError."""
     with patch("requests.Session.request") as mock_request:
         mock_request.side_effect = requests.exceptions.ReadTimeout("Read timeout")
 
@@ -530,9 +512,7 @@ def test_api_timeout_error():
 
 
 def test_api_connection_error():
-    """Test that API connection errors are properly raised."""
-    import requests.exceptions
-
+    """API connection errors are raised as SGUConnectionError."""
     with patch("requests.Session.request") as mock_request:
         mock_request.side_effect = requests.exceptions.ConnectionError(
             "Connection failed"
@@ -543,280 +523,105 @@ def test_api_connection_error():
             client.chemistry.get_sampling_sites()
 
 
-def test_api_server_error():
-    """Test that API server errors are properly raised."""
+@pytest.mark.parametrize("status_code", [404, 500])
+def test_api_error_status(status_code):
+    """Non-2xx responses are raised as SGUAPIError."""
     with patch("requests.Session.request") as mock_request:
         mock_response = Mock(spec=Response)
         mock_response.ok = False
-        mock_response.status_code = 500
-        mock_response.json.return_value = {"error": "Internal Server Error"}
-        mock_request.return_value = mock_response
-
-        client = SGUClient()
-        with pytest.raises(SGUAPIError, match="API request failed with status 500"):
-            client.chemistry.get_sampling_sites()
-
-
-def test_api_not_found_error():
-    """Test that API 404 errors are properly raised."""
-    with patch("requests.Session.request") as mock_request:
-        mock_response = Mock(spec=Response)
-        mock_response.ok = False
-        mock_response.status_code = 404
-        mock_response.json.return_value = {"error": "Site not found"}
-        mock_request.return_value = mock_response
-
-        client = SGUClient()
-        with pytest.raises(SGUAPIError, match="API request failed with status 404"):
-            client.chemistry.get_sampling_site("nonexistent.site")
-
-
-def test_malformed_json_response():
-    """Test handling of malformed JSON responses."""
-    with patch("requests.Session.request") as mock_request:
-        mock_response = Mock(spec=Response)
-        mock_response.ok = False
-        mock_response.status_code = 500
+        mock_response.status_code = status_code
         mock_response.json.side_effect = ValueError("Invalid JSON")
-        mock_response.text = "Internal Server Error - HTML response"
+        mock_response.text = "error page"
         mock_request.return_value = mock_response
 
         client = SGUClient()
-        with pytest.raises(SGUAPIError) as exc_info:
+        with pytest.raises(
+            SGUAPIError, match=f"API request failed with status {status_code}"
+        ):
             client.chemistry.get_sampling_sites()
 
-        # Should raise SGUAPIError when JSON parsing fails
-        assert "API request failed with status 500" in str(exc_info.value)
 
-
-# Edge case tests
-def test_empty_sampling_site_response_handling():
-    """Test handling of empty sampling site responses."""
+def test_get_sampling_site_not_found():
+    """An empty response for a single site ID raises ValueError."""
     with patch("requests.Session.request") as mock_request:
-        mock_response_data = create_mock_empty_chemistry_collection_response()
-        mock_request.return_value = create_mock_response(mock_response_data)
+        mock_request.return_value = create_mock_response(
+            create_mock_empty_chemistry_collection_response()
+        )
 
         client = SGUClient()
         with pytest.raises(ValueError, match="Site .* not found"):
-            client.chemistry.get_sampling_site("nonexistent.site")
+            client.chemistry.get_sampling_site("provplatser.0")
 
 
-def test_empty_analysis_result_response_handling():
-    """Test handling of empty analysis result responses."""
+def test_get_analysis_result_not_found():
+    """An empty response for a single result ID raises ValueError."""
     with patch("requests.Session.request") as mock_request:
-        mock_response_data = create_mock_empty_chemistry_collection_response()
-        mock_request.return_value = create_mock_response(mock_response_data)
+        mock_request.return_value = create_mock_response(
+            create_mock_empty_chemistry_collection_response()
+        )
 
         client = SGUClient()
         with pytest.raises(ValueError, match="Result .* not found"):
-            client.chemistry.get_analysis_result("nonexistent.result")
+            client.chemistry.get_analysis_result("analysresultat.0")
 
 
-def test_multiple_sampling_sites_response_handling():
-    """Test handling of multiple sites returned for single ID (edge case)."""
-    from tests.mock_responses import create_mock_multiple_sampling_sites_response
-
-    with patch("requests.Session.request") as mock_request:
-        # Create response with multiple sites (should not happen but test edge case)
-        mock_response_data = create_mock_multiple_sampling_sites_response(
-            platsbeteckningar=["duplicate_1", "duplicate_2"],
-        )
-        mock_request.return_value = create_mock_response(mock_response_data)
-
-        client = SGUClient()
-        with pytest.raises(ValueError, match="Multiple sites returned for ID"):
-            client.chemistry.get_sampling_site("duplicate.site")
-
-
-def test_multiple_analysis_results_response_handling():
-    """Test handling of multiple results returned for single ID (edge case)."""
-    with patch("requests.Session.request") as mock_request:
-        # Create response with multiple results
-        mock_response_data = create_mock_multiple_analysis_results_response(
-            platsbeteckning="10001_1",
-            parameters=[("pH", "PH", 7.2), ("pH", "PH", 7.4)],
-        )
-        mock_request.return_value = create_mock_response(mock_response_data)
-
-        client = SGUClient()
-        with pytest.raises(ValueError, match="Multiple results returned for ID"):
-            client.chemistry.get_analysis_result("duplicate.result")
-
-
-# Internal helper method tests
-def test_build_datetime_filters_helper():
-    """Test the internal datetime filter building helper function."""
+def test_get_sampling_site_by_id():
+    """A single sampling site is fetched by its feature ID."""
     client = SGUClient()
-
-    # Test both tmin and tmax
-    tmin = datetime(2020, 1, 1, tzinfo=UTC)
-    tmax = datetime(2021, 1, 1, tzinfo=UTC)
-    filters = client.chemistry._build_datetime_filters(tmin, tmax)
-    expected = [
-        "provtagningsdat >= '2020-01-01T00:00:00+00:00'",
-        "provtagningsdat <= '2021-01-01T00:00:00+00:00'",
-    ]
-    assert filters == expected
-
-    # Test only tmin
-    filters = client.chemistry._build_datetime_filters(tmin, None)
-    expected = ["provtagningsdat >= '2020-01-01T00:00:00+00:00'"]
-    assert filters == expected
-
-    # Test only tmax
-    filters = client.chemistry._build_datetime_filters(None, tmax)
-    expected = ["provtagningsdat <= '2021-01-01T00:00:00+00:00'"]
-    assert filters == expected
-
-    # Test string inputs
-    filters = client.chemistry._build_datetime_filters(
-        "2020-01-01T00:00:00Z", "2021-01-01T00:00:00Z"
-    )
-    expected = [
-        "provtagningsdat >= '2020-01-01T00:00:00Z'",
-        "provtagningsdat <= '2021-01-01T00:00:00Z'",
-    ]
-    assert filters == expected
-
-    # Test no inputs
-    filters = client.chemistry._build_datetime_filters(None, None)
-    assert filters == []
-
-
-# Advanced pandas tests
-def test_analysis_results_to_series_custom_index_data():
-    """Test converting analysis results to Series with custom index/data columns."""
-    client = SGUClient()
-
-    # Create mock response
-    mock_response_data = create_mock_multiple_analysis_results_response(
-        platsbeteckning="10001_1",
-        parameters=[
-            ("pH", "PH", 7.2),
-            ("pH", "PH", 7.4),
-            ("pH", "PH", 7.1),
-        ],
-    )
 
     with patch.object(client.chemistry._client._session, "request") as mock_request:
-        mock_request.return_value = create_mock_response(mock_response_data)
+        mock_request.return_value = create_mock_response(
+            create_mock_sampling_site_collection_response()
+        )
+        site = client.chemistry.get_sampling_site("provplatser.1560")
 
-        results = client.chemistry.get_analysis_results(limit=10)
-
-        # Test custom columns
-        series = results.to_series(index="sampling_date", data="measurement_value")
-        assert not series.empty
-        assert series.name == "measurement_value"
-
-        # Test invalid index column
-        with pytest.raises(ValueError):
-            results.to_series(index="invalid_column", data="measurement_value")
-
-        # Test invalid data column
-        with pytest.raises(ValueError):
-            results.to_series(index="sampling_date", data="invalid_column")
+    assert mock_request.call_args.kwargs["url"] == (
+        f"{CHEMISTRY_V2_BASE_URL}collections/provplatser/items/provplatser.1560"
+    )
+    assert site.properties.station_id == "TTK-442-M"
 
 
-def test_analysis_results_dataframe_sorting():
-    """Test that analysis results DataFrame is sorted by sampling_date."""
-    from pandas.api.types import is_datetime64_any_dtype as is_datetime
-
-    client = SGUClient()
-
-    # Create mock response with multiple dates
-    mock_response_data = create_mock_multiple_analysis_results_response(
-        platsbeteckning="10001_1",
-        parameters=[
-            ("pH", "PH", 7.2),
-            ("pH", "PH", 7.4),
-            ("pH", "PH", 7.1),
-        ],
+def test_analysis_results_to_series_custom_columns():
+    """to_series accepts custom columns and rejects unknown ones."""
+    pytest.importorskip("pandas")
+    results = AnalysisResultCollection(
+        **create_mock_multiple_analysis_results_response()
     )
 
-    with patch.object(client.chemistry._client._session, "request") as mock_request:
-        mock_request.return_value = create_mock_response(mock_response_data)
+    series = results.to_series(index="sampling_date", data="parameter_name")
+    assert list(series.values) == ["pH", "Nitratkväve", "Klorid"]
+    assert series.name == "parameter_name"
 
-        results = client.chemistry.get_analysis_results(limit=10)
-        df = results.to_dataframe(sort_by_date=True)
-
-        # Assert that it is sorted by 'sampling_date'
-        assert is_datetime(df["sampling_date"])
-        assert df["sampling_date"].is_monotonic_increasing
+    with pytest.raises(ValueError):
+        results.to_series(index="invalid_column")
+    with pytest.raises(ValueError):
+        results.to_series(data="invalid_column")
 
 
 def test_pivot_by_parameter_with_nulls():
-    """Test pivot_by_parameter handles null/missing values correctly."""
-    client = SGUClient()
-
-    # Create mock response with null values
-    mock_response_data = create_mock_multiple_analysis_results_response(
-        platsbeteckning="10001_1",
-        parameters=[
-            ("pH", "PH", 7.2),
-            ("Nitrat", "NITRATE", None),  # Null value
-        ],
+    """pivot_by_parameter tolerates missing measurement values."""
+    pytest.importorskip("pandas")
+    results = AnalysisResultCollection(
+        **create_mock_multiple_analysis_results_response(
+            parameters=[("pH", "CH11/62", 7.2), ("Nitratkväve", "CH02/102", None)]
+        )
     )
 
-    with patch.object(client.chemistry._client._session, "request") as mock_request:
-        mock_request.return_value = create_mock_response(mock_response_data)
+    df_pivot = results.pivot_by_parameter()
 
-        results = client.chemistry.get_analysis_results(limit=10)
-        df_pivot = results.pivot_by_parameter()
-
-        # Should still create DataFrame even with nulls
-        assert df_pivot is not None
-        assert "PH" in df_pivot.columns or "NITRATE" in df_pivot.columns
+    assert df_pivot["pH"].dropna().tolist() == [7.2]
 
 
-def test_empty_collection_to_dataframe():
-    """Test converting empty collection to DataFrame returns empty DataFrame."""
-    client = SGUClient()
+def test_empty_collections_convert_to_empty_pandas_objects():
+    """Empty collections convert to empty DataFrames/Series without errors."""
+    pd = pytest.importorskip("pandas")
+    results = AnalysisResultCollection(
+        **create_mock_empty_chemistry_collection_response()
+    )
+    sites = SamplingSiteCollection(**create_mock_empty_chemistry_collection_response())
 
-    mock_response_data = create_mock_empty_chemistry_collection_response()
-
-    with patch.object(client.chemistry._client._session, "request") as mock_request:
-        mock_request.return_value = create_mock_response(mock_response_data)
-
-        results = client.chemistry.get_analysis_results(limit=1)
-        df = results.to_dataframe()
-
-        # Should return empty DataFrame, not error
-        assert df.empty
-
-
-def test_empty_collection_to_series():
-    """Test converting empty collection to Series returns empty Series."""
-    import pandas as pd
-
-    client = SGUClient()
-
-    mock_response_data = create_mock_empty_chemistry_collection_response()
-
-    with patch.object(client.chemistry._client._session, "request") as mock_request:
-        mock_request.return_value = create_mock_response(mock_response_data)
-
-        results = client.chemistry.get_analysis_results(limit=1)
-        series = results.to_series()
-
-        # Should return empty Series, not error
-        assert isinstance(series, pd.Series)
-        assert series.empty
-
-
-def test_empty_collection_pivot():
-    """Test pivoting empty collection returns empty DataFrame."""
-    import pandas as pd
-
-    client = SGUClient()
-
-    mock_response_data = create_mock_empty_chemistry_collection_response()
-
-    with patch.object(client.chemistry._client._session, "request") as mock_request:
-        mock_request.return_value = create_mock_response(mock_response_data)
-
-        results = client.chemistry.get_analysis_results(limit=1)
-        df_pivot = results.pivot_by_parameter()
-
-        # Should return empty DataFrame, not error
-        assert isinstance(df_pivot, pd.DataFrame)
-        assert df_pivot.empty
+    assert results.to_dataframe().empty
+    assert sites.to_dataframe().empty
+    assert isinstance(results.to_series(), pd.Series)
+    assert results.to_series().empty
+    assert results.pivot_by_parameter().empty

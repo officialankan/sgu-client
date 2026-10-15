@@ -19,7 +19,7 @@ class GroundwaterChemistryClient:
     """Client for groundwater chemistry-related SGU API endpoints."""
 
     BASE_PATH = "collections"
-    CHEMISTRY_BASE_URL = "https://api.sgu.se/oppnadata/grundvattenkvalitet-analysresultat-provplatser/ogc/features/v1/"
+    CHEMISTRY_BASE_URL = "https://api.sgu.se/oppnadata/grundvattenkvalitet-analysresultat-provplatser-v2/ogc/features/v1/"
 
     def __init__(self, base_client: BaseClient):
         """Initialize groundwater chemistry client.
@@ -96,21 +96,23 @@ class GroundwaterChemistryClient:
         self,
         site_id: str | None = None,
         site_name: str | None = None,
+        national_site_id: int | None = None,
         **kwargs: Any,
     ) -> SamplingSite:
-        """Convenience function to get a sampling site by name ('site_id' or 'site_name').
+        """Convenience function to get a sampling site by 'site_id', 'site_name' or 'national_site_id'.
 
         Args:
             site_id: Site identifier (maps to 'platsbeteckning' in API)
             site_name: Site name (maps to 'provplatsnamn' in API)
+            national_site_id: National sampling site ID (maps to 'nationellt_provplatsid' in API)
             **kwargs: Additional query parameters (e.g., limit)
 
         Returns:
             Typed groundwater chemistry sampling site
 
         Raises:
-            ValueError: If neither parameter is provided, both are provided,
-                       or if multiple sites are found
+            ValueError: If not exactly one identifier is provided,
+                       or if no site or multiple sites are found
 
         Example:
 
@@ -118,28 +120,24 @@ class GroundwaterChemistryClient:
             >>> client = SGUClient()
             >>>
             >>> # find site by id
-            >>> site = client.chemistry.get_sampling_site_by_name(site_id="10001_1")
+            >>> site = client.chemistry.get_sampling_site_by_name(site_id="TTK-442-M")
             >>>
             >>> # find site by name
-            >>> site = client.chemistry.get_sampling_site_by_name(
-            ...     site_name="Ringarum_1"
-            ... )
+            >>> site = client.chemistry.get_sampling_site_by_name(site_name="Lena")
+            >>>
+            >>> # find site by national site id
+            >>> site = client.chemistry.get_sampling_site_by_name(national_site_id=359366)
             >>> print(site.properties.municipality)
         """
-        if not site_id and not site_name:
-            raise ValueError("Either 'site_id' or 'site_name' must be provided.")
-        if site_id and site_name:
-            raise ValueError("Only one of 'site_id' or 'site_name' can be provided.")
+        self._validate_site_identifiers(national_site_id, site_id, site_name)
 
-        # Map English parameter names to Swedish API field names
-        if site_id:
-            name_type = "platsbeteckning"
-            site = site_id
+        if national_site_id:
+            filter_expr = f"nationellt_provplatsid={national_site_id}"
+        elif site_id:
+            filter_expr = f"platsbeteckning='{site_id}'"
         else:
-            name_type = "provplatsnamn"
-            site = site_name
+            filter_expr = f"provplatsnamn='{site_name}'"
 
-        filter_expr = f"{name_type}='{site}'"
         response = self.get_sampling_sites(filter_expr=filter_expr, **kwargs)
 
         if not response.features:
@@ -153,20 +151,22 @@ class GroundwaterChemistryClient:
         self,
         site_id: list[str] | None = None,
         site_name: list[str] | None = None,
+        national_site_id: list[int] | None = None,
         **kwargs: Any,
     ) -> SamplingSiteCollection:
-        """Convenience function to get multiple sampling sites by name ('site_id' or 'site_name').
+        """Convenience function to get multiple sampling sites by 'site_id', 'site_name' or 'national_site_id'.
 
         Args:
             site_id: List of site identifiers (maps to 'platsbeteckning' in API)
             site_name: List of site names (maps to 'provplatsnamn' in API)
+            national_site_id: List of national sampling site IDs (maps to 'nationellt_provplatsid' in API)
             **kwargs: Additional query parameters (e.g., limit)
 
         Returns:
             Typed collection of groundwater chemistry sampling sites
 
         Raises:
-            ValueError: If neither parameter is provided or both are provided
+            ValueError: If not exactly one identifier is provided
 
         Example:
 
@@ -175,28 +175,22 @@ class GroundwaterChemistryClient:
             >>>
             >>> # get multiple sampling sites by their IDs
             >>> sites = client.chemistry.get_sampling_sites_by_names(
-            ...     site_id=["10001_1", "10002_1", "10003_1"]
+            ...     site_id=["TTK-442-M", "SYD-681-C"]
             ... )
             >>> for site in sites.features:
-            ...     print(f"{site.properties.station_id}: {site.properties.municipality}")
+            ...     print(f"{site.properties.station_id}: {site.properties.national_site_id}")
         """
-        if not site_id and not site_name:
-            raise ValueError("Either 'site_id' or 'site_name' must be provided.")
-        if site_id and site_name:
-            raise ValueError("Only one of 'site_id' or 'site_name' can be provided.")
+        self._validate_site_identifiers(national_site_id, site_id, site_name)
 
-        # Map English parameter names to Swedish API field names
-        if site_id:
-            name_type = "platsbeteckning"
-            sites = site_id
+        if national_site_id:
+            name_type = "nationellt_provplatsid"
+            values = [str(site) for site in national_site_id]
         else:
-            name_type = "provplatsnamn"
-            sites = site_name
+            name_type = "platsbeteckning" if site_id else "provplatsnamn"
+            # sites is guaranteed to not be None by the validation above
+            values = [f"'{site}'" for site in site_id or site_name]  # type: ignore[union-attr]
 
-        # Build filter expression for multiple sites using IN clause
-        # sites is guaranteed to not be None by the validation above
-        quoted_sites = [f"'{site}'" for site in sites]  # type: ignore[union-attr]
-        filter_expr = f"{name_type} in ({', '.join(quoted_sites)})"
+        filter_expr = f"{name_type} in ({', '.join(values)})"
 
         return self.get_sampling_sites(filter_expr=filter_expr, **kwargs)
 
@@ -265,6 +259,7 @@ class GroundwaterChemistryClient:
 
     def get_results_by_site(
         self,
+        national_site_id: int | None = None,
         site_id: str | None = None,
         site_name: str | None = None,
         tmin: str | datetime | None = None,
@@ -272,9 +267,14 @@ class GroundwaterChemistryClient:
         limit: int | None = None,
         **kwargs: Any,
     ) -> AnalysisResultCollection:
-        """Get analysis results for a specific site by name with optional time filtering.
+        """Get analysis results for a specific site with optional time filtering.
+
+        Analysis results are linked to sampling sites by `national_site_id`, which is
+        the recommended (and fastest) way to identify a site. Using `site_id` or
+        `site_name` requires an additional API request to look up the site.
 
         Args:
+            national_site_id: National sampling site ID (maps to 'nationellt_provplatsid' in API)
             site_id: Site identifier (maps to 'platsbeteckning' in API)
             site_name: Site name (maps to 'provplatsnamn' in API)
             tmin: Start time (ISO string or datetime object)
@@ -286,7 +286,7 @@ class GroundwaterChemistryClient:
             Typed collection of groundwater chemistry analysis results
 
         Raises:
-            ValueError: If neither or both name parameters are provided,
+            ValueError: If not exactly one site identifier is provided,
                        or if site lookup fails
 
         Example:
@@ -296,55 +296,41 @@ class GroundwaterChemistryClient:
             >>> client = SGUClient()
             >>>
             >>> # get all results for a site
-            >>> results = client.chemistry.get_results_by_site(
-            ...     site_id="10001_1",
-            ...     limit=100
-            ... )
+            >>> results = client.chemistry.get_results_by_site(359366, limit=100)
             >>>
             >>> # get results with time filtering
             >>> results = client.chemistry.get_results_by_site(
-            ...     site_id="10001_1",
+            ...     359366,
             ...     tmin=datetime(2020, 1, 1, tzinfo=timezone.utc),
             ...     tmax=datetime(2021, 1, 1, tzinfo=timezone.utc)
             ... )
         """
-        if not site_id and not site_name:
-            raise ValueError("Either 'site_id' or 'site_name' must be provided.")
-        if site_id and site_name:
-            raise ValueError("Only one of 'site_id' or 'site_name' can be provided.")
+        self._validate_site_identifiers(national_site_id, site_id, site_name)
 
-        # If site_name provided, look up the site to get station_id
-        if site_name:
-            logger.warning(
-                "Using 'site_name' requires an additional API request to lookup the site. "
-                "For better performance, use 'station_id' directly if available."
-            )
-            # Don't pass kwargs to site lookup as it's a single result operation
-            site = self.get_sampling_site_by_name(site_name=site_name)
-            target_platsbeteckning = site.properties.station_id
-            if not target_platsbeteckning:
-                raise ValueError(f"Site with site_name '{site_name}' has no station_id")
+        if national_site_id:
+            national_site_ids = [national_site_id]
         else:
-            target_platsbeteckning = site_id
+            national_site_ids = self._lookup_national_site_ids(
+                site_id=[site_id] if site_id else None,
+                site_name=[site_name] if site_name else None,
+            )
+            if len(national_site_ids) > 1:
+                raise ValueError(
+                    f"Multiple sites found for {self._describe(site_id, site_name)}"
+                )
 
-        # Build filter expressions
-        filters = [f"platsbeteckning='{target_platsbeteckning}'"]
-
-        # Add datetime filters if tmin/tmax provided
-        datetime_filters = self._build_datetime_filters(tmin, tmax)
-        filters.extend(datetime_filters)
-
-        # Combine all filters with AND
-        combined_filter = " AND ".join(filters)
+        filters = [self._build_national_site_filter(national_site_ids)]
+        filters.extend(self._build_datetime_filters(tmin, tmax))
 
         return self.get_analysis_results(
-            filter_expr=combined_filter,
+            filter_expr=" AND ".join(filters),
             limit=limit,
             **kwargs,
         )
 
     def get_results_by_sites(
         self,
+        national_site_id: list[int] | None = None,
         site_id: list[str] | None = None,
         site_name: list[str] | None = None,
         tmin: str | datetime | None = None,
@@ -352,10 +338,15 @@ class GroundwaterChemistryClient:
         limit: int | None = None,
         **kwargs: Any,
     ) -> AnalysisResultCollection:
-        """Get analysis results for multiple sites by name with optional time filtering.
+        """Get analysis results for multiple sites with optional time filtering.
+
+        Analysis results are linked to sampling sites by `national_site_id`, which is
+        the recommended (and fastest) way to identify sites. Using `site_id` or
+        `site_name` requires an additional API request to look up the sites.
 
         Args:
-            site_id: List of station identifiers (maps to 'platsbeteckning' in API)
+            national_site_id: List of national sampling site IDs (maps to 'nationellt_provplatsid' in API)
+            site_id: List of site identifiers (maps to 'platsbeteckning' in API)
             site_name: List of site names (maps to 'provplatsnamn' in API)
             tmin: Start time (ISO string or datetime object)
             tmax: End time (ISO string or datetime object)
@@ -366,8 +357,8 @@ class GroundwaterChemistryClient:
             Typed collection of groundwater chemistry analysis results
 
         Raises:
-            ValueError: If neither or both name parameters are provided,
-                       or if site lookup fails
+            ValueError: If not exactly one site identifier is provided,
+                       or if any site is not found in the lookup
 
         Example:
 
@@ -376,52 +367,27 @@ class GroundwaterChemistryClient:
             >>>
             >>> # get results for multiple sites
             >>> results = client.chemistry.get_results_by_sites(
-            ...     station_id=["10001_1", "10002_1"],
+            ...     [359366, 378865],
             ...     tmin="2020-01-01T00:00:00Z",
             ...     tmax="2021-01-01T00:00:00Z",
             ...     limit=1000
             ... )
             >>> print(f"Found {len(results.features)} analysis results")
         """
-        if not site_id and not site_name:
-            raise ValueError("Either 'site_id' or 'site_name' must be provided.")
-        if site_id and site_name:
-            raise ValueError("Only one of 'site_id' or 'site_name' can be provided.")
+        self._validate_site_identifiers(national_site_id, site_id, site_name)
 
-        # If site_name provided, look up sites to get station_id values
-        if site_name:
-            logger.warning(
-                "Using 'site_name' requires an additional API request to lookup sites. "
-                "For better performance, use 'station_id' directly if available."
-            )
-            # Don't pass kwargs to site lookup as it's a separate operation
-            sites = self.get_sampling_sites_by_names(site_name=site_name)
-            target_platsbeteckningar = []
-            for site in sites.features:
-                if site.properties.station_id:
-                    target_platsbeteckningar.append(site.properties.station_id)
-                else:
-                    raise ValueError(
-                        f"Site {site.id} with site_name '{site.properties.site_name}' "
-                        f"has no station_id"
-                    )
+        if national_site_id:
+            national_site_ids = national_site_id
         else:
-            target_platsbeteckningar = site_id
+            national_site_ids = self._lookup_national_site_ids(
+                site_id=site_id, site_name=site_name
+            )
 
-        # Build filter expressions
-        # target_platsbeteckningar is guaranteed to not be None by validation above
-        quoted_sites = [f"'{site}'" for site in target_platsbeteckningar]  # type: ignore[union-attr]
-        filters = [f"platsbeteckning in ({', '.join(quoted_sites)})"]
-
-        # Add datetime filters if tmin/tmax provided
-        datetime_filters = self._build_datetime_filters(tmin, tmax)
-        filters.extend(datetime_filters)
-
-        # Combine all filters with AND
-        combined_filter = " AND ".join(filters)
+        filters = [self._build_national_site_filter(national_site_ids)]
+        filters.extend(self._build_datetime_filters(tmin, tmax))
 
         return self.get_analysis_results(
-            filter_expr=combined_filter,
+            filter_expr=" AND ".join(filters),
             limit=limit,
             **kwargs,
         )
@@ -429,7 +395,9 @@ class GroundwaterChemistryClient:
     def get_results_by_parameter(
         self,
         parameter: str,
+        national_site_id: int | list[int] | None = None,
         site_id: str | list[str] | None = None,
+        site_name: str | list[str] | None = None,
         tmin: str | datetime | None = None,
         tmax: str | datetime | None = None,
         limit: int | None = None,
@@ -438,11 +406,16 @@ class GroundwaterChemistryClient:
         """Get analysis results filtered by chemical parameter (e.g., pH, nitrate).
 
         This convenience method makes it easy to retrieve all measurements for a specific
-        chemical parameter, optionally filtered by site and time range.
+        chemical parameter, optionally filtered by site(s) and time range. Sites are
+        identified the same way as in `get_results_by_site()`: `national_site_id` is
+        recommended, while `site_id` or `site_name` require an additional API request.
 
         Args:
-            parameter: Parameter short name (e.g., 'PH', 'NITRATE', 'KLORID')
-            site_id: Optional station identifier(s) to filter by
+            parameter: Parameter name as used by SGU (maps to 'parameternamn' in API),
+                e.g. 'pH', 'Bly', 'Nitratkväve', 'Klorid'
+            national_site_id: Optional national sampling site ID(s) to filter by
+            site_id: Optional site identifier(s) to filter by
+            site_name: Optional site name(s) to filter by
             tmin: Start time (ISO string or datetime object)
             tmax: End time (ISO string or datetime object)
             limit: Maximum number of results to return
@@ -451,56 +424,131 @@ class GroundwaterChemistryClient:
         Returns:
             Typed collection of groundwater chemistry analysis results
 
+        Raises:
+            ValueError: If more than one site identifier is provided,
+                       or if any site is not found in the lookup
+
         Example:
 
             >>> from sgu_client import SGUClient
             >>> client = SGUClient()
             >>>
-            >>> # get all pH measurements
+            >>> # get all lead measurements since 2020
             >>> results = client.chemistry.get_results_by_parameter(
-            ...     parameter="PH",
-            ...     limit=1000
+            ...     parameter="Bly",
+            ...     tmin="2020-01-01",
             ... )
             >>>
             >>> # get pH measurements for a specific site
             >>> results = client.chemistry.get_results_by_parameter(
-            ...     parameter="PH",
-            ...     site_id="10001_1",
+            ...     parameter="pH",
+            ...     national_site_id=359366,
             ...     tmin="2020-01-01",
             ...     tmax="2021-01-01"
             ... )
             >>>
             >>> # ... or multiple sites
             >>> results = client.chemistry.get_results_by_parameter(
-            ...     parameter="PH",
-            ...     site_id=["10001_1", "10002_1"]
+            ...     parameter="pH",
+            ...     national_site_id=[359366, 378865]
             ... )
         """
-        # Build filter expressions
-        filters = [f"param_kort='{parameter}'"]
+        filters = [f"parameternamn='{parameter}'"]
 
-        # Add station filter if provided
-        if site_id:
-            if isinstance(site_id, list):
-                quoted_sites = [f"'{site}'" for site in site_id]
-                filters.append(f"platsbeteckning in ({', '.join(quoted_sites)})")
+        if national_site_id or site_id or site_name:
+            self._validate_site_identifiers(national_site_id, site_id, site_name)
+            if national_site_id:
+                national_site_ids = self._as_list(national_site_id)
             else:
-                filters.append(f"platsbeteckning='{site_id}'")
+                national_site_ids = self._lookup_national_site_ids(
+                    site_id=self._as_list(site_id) if site_id else None,
+                    site_name=self._as_list(site_name) if site_name else None,
+                )
+            filters.append(self._build_national_site_filter(national_site_ids))
 
-        # Add datetime filters if tmin/tmax provided
-        datetime_filters = self._build_datetime_filters(tmin, tmax)
-        filters.extend(datetime_filters)
-
-        # Combine all filters with AND
-        combined_filter = " AND ".join(filters)
+        filters.extend(self._build_datetime_filters(tmin, tmax))
 
         return self.get_analysis_results(
-            filter_expr=combined_filter,
+            filter_expr=" AND ".join(filters),
             limit=limit,
             **kwargs,
         )
 
     # ===== Internal Helper Methods =====
+
+    def _validate_site_identifiers(
+        self,
+        national_site_id: Any,
+        site_id: Any,
+        site_name: Any,
+    ) -> None:
+        """Ensure exactly one site identifier is provided.
+
+        Raises:
+            ValueError: If none or more than one identifier is provided
+        """
+        provided = [
+            identifier
+            for identifier in (national_site_id, site_id, site_name)
+            if identifier
+        ]
+        if len(provided) != 1:
+            raise ValueError(
+                "Exactly one of 'national_site_id', 'site_id' or 'site_name' "
+                "must be provided."
+            )
+
+    def _lookup_national_site_ids(
+        self,
+        site_id: list[str] | None = None,
+        site_name: list[str] | None = None,
+    ) -> list[int]:
+        """Look up the national site IDs of sampling sites by `site_id` or `site_name`.
+
+        Analysis results only reference sampling sites by national site ID, so this
+        costs one additional API request.
+
+        Raises:
+            ValueError: If any of the requested sites is not found
+        """
+        identifier = "site_id" if site_id else "site_name"
+        logger.warning(
+            f"Using '{identifier}' requires an additional API request to look up "
+            "the sampling site(s). For better performance, use 'national_site_id' "
+            "directly if available."
+        )
+        sites = self.get_sampling_sites_by_names(site_id=site_id, site_name=site_name)
+
+        requested = site_id or site_name or []
+        if site_id:
+            found = {site.properties.station_id for site in sites.features}
+        else:
+            found = {site.properties.site_name for site in sites.features}
+        missing = [value for value in requested if value not in found]
+        if missing:
+            raise ValueError(f"No sampling sites found for {identifier}: {missing}")
+
+        return [
+            site.properties.national_site_id
+            for site in sites.features
+            if site.properties.national_site_id is not None
+        ]
+
+    def _build_national_site_filter(self, national_site_ids: list[int]) -> str:
+        """Build a CQL filter matching analysis results for the given sites."""
+        if len(national_site_ids) == 1:
+            return f"nationellt_provplatsid={national_site_ids[0]}"
+        return f"nationellt_provplatsid in ({', '.join(map(str, national_site_ids))})"
+
+    @staticmethod
+    def _as_list(value: Any) -> list[Any]:
+        """Wrap a single value in a list, leaving lists untouched."""
+        return value if isinstance(value, list) else [value]
+
+    @staticmethod
+    def _describe(site_id: str | None, site_name: str | None) -> str:
+        """Describe a site identifier for error messages."""
+        return f"site_id '{site_id}'" if site_id else f"site_name '{site_name}'"
 
     def _build_query_params(self, **params: Any) -> dict[str, Any]:
         """Build query parameters for API requests.
@@ -550,11 +598,11 @@ class GroundwaterChemistryClient:
 
         if tmin:
             tmin_str = to_iso_string(tmin)
-            filters.append(f"provtagningsdat >= '{tmin_str}'")
+            filters.append(f"provtagningsdatum >= '{tmin_str}'")
 
         if tmax:
             tmax_str = to_iso_string(tmax)
-            filters.append(f"provtagningsdat <= '{tmax_str}'")
+            filters.append(f"provtagningsdatum <= '{tmax_str}'")
 
         return filters
 

@@ -1,9 +1,9 @@
 """Pydantic models for groundwater chemistry data from SGU API."""
 
 from datetime import datetime
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
-from pydantic import Field
+from pydantic import Field, field_validator
 
 from sgu_client.models.base import SGUBaseModel, SGUResponse
 from sgu_client.models.shared import CRS, Geometry, Link
@@ -13,22 +13,67 @@ if TYPE_CHECKING:
     import pandas as pd
 
 
+# Date columns parsed as datetimes in to_dataframe()
+SITE_DATE_COLUMNS = ("established_date", "first_sample_date", "latest_sample_date")
+RESULT_DATE_COLUMNS = (
+    "sampling_date",
+    "sampling_end_date",
+    "registration_date",
+    "analysis_date",
+)
+
+
+def _parse_date_columns(df: "pd.DataFrame", columns: tuple[str, ...]) -> None:
+    """Parse ISO date strings in the given DataFrame columns as UTC datetimes.
+
+    The v2 API returns dates as '2021-10-06Z' and datetimes as
+    '2021-10-06T00:00:00Z'; pandas cannot parse a 'Z' suffix on a bare date.
+    """
+    pd = get_pandas()
+    for column in columns:
+        if column in df.columns:
+            df[column] = pd.to_datetime(
+                df[column].str.removesuffix("Z"), utc=True, format="ISO8601"
+            )
+
+
+def _normalize_county_code(value: Any) -> str | None:
+    """Normalize county codes to two-digit strings.
+
+    The v2 API returns `lanskod` as a string ("04") for sampling sites but as an
+    integer (4) for analysis results.
+    """
+    if value is None:
+        return None
+    return str(value).zfill(2)
+
+
 # Sampling site properties (English field names with Swedish API aliases)
 class SamplingSiteProperties(SGUBaseModel):
     """Properties for a groundwater chemistry sampling site."""
 
     # Site identification
+    object_id: int | None = Field(None, alias="objectid", description="Object ID")
+    national_site_id: int | None = Field(
+        None, alias="nationellt_provplatsid", description="National sampling site ID"
+    )
+    site_uuid: str | None = Field(
+        None, alias="provplatsuuid", description="Sampling site UUID"
+    )
+    monitoring_station_id: int | None = Field(
+        None, alias="overvakningsstation", description="Monitoring station ID"
+    )
     station_id: str | None = Field(
         None, alias="platsbeteckning", description="Station identifier"
     )
     site_name: str | None = Field(
         None, alias="provplatsnamn", description="Sampling site name"
     )
-    national_site_id: int | None = Field(
-        None, alias="nationellt_provplatsid", description="National sampling site ID"
+    other_designations: str | None = Field(
+        None, alias="andra_beteckningar", description="Other site designations"
     )
     eu_station_code: str | None = Field(
-        None, alias="eucd_stn", description="EU station code"
+        None, alias="eu_cd", description="EU station code"
     )
     eu_groundwater_body: str | None = Field(
         None, alias="eucd_gwb", description="EU groundwater body"
@@ -52,7 +97,10 @@ class SamplingSiteProperties(SGUBaseModel):
         description="Sampling site category description",
     )
 
-    # Coordinates (projected)
+    # Coordinates (projected, SWEREF 99 TM)
+    coordinates_hidden: str | None = Field(
+        None, alias="dold_koordinat", description="Whether coordinates are hidden"
+    )
     north_coordinate: float | None = Field(
         None, alias="n", description="North coordinate"
     )
@@ -89,11 +137,28 @@ class SamplingSiteProperties(SGUBaseModel):
     region_description: str | None = Field(
         None, alias="region_bdgr_tx", description="Region description"
     )
+
+    # Hydrological location
     water_district_code: str | None = Field(
         None, alias="vattendistrikt", description="Water district code"
     )
     water_district_description: str | None = Field(
         None, alias="vattendistrikt_tx", description="Water district description"
+    )
+    sub_catchment_name: str | None = Field(
+        None, alias="delaro_namn", description="Sub-catchment name"
+    )
+    sub_catchment_code: str | None = Field(
+        None, alias="delaro_ms_cd", description="Sub-catchment MS code"
+    )
+    sub_catchment_uuid: str | None = Field(
+        None, alias="delaro_uuid", description="Sub-catchment UUID"
+    )
+    water_body_catchment_id: str | None = Field(
+        None, alias="vattenforekomst_aro_id", description="Water body catchment ID"
+    )
+    main_catchment_id: int | None = Field(
+        None, alias="huvudavrinningsomrade_id", description="Main catchment area ID"
     )
 
     # Well/site characteristics
@@ -103,52 +168,114 @@ class SamplingSiteProperties(SGUBaseModel):
     elevation_system: str | None = Field(
         None, alias="hojdsystem", description="Elevation reference system"
     )
-    well_depth: float | None = Field(None, alias="brunnsdjup", description="Well depth")
-    well_depth_qualifier: str | None = Field(
-        None, alias="tecken_brunnsdjup", description="Well depth sign/qualifier"
+    elevation_system_description: str | None = Field(
+        None,
+        alias="hojdsystem_tx",
+        description="Elevation reference system description",
     )
-    filter_depth_top: float | None = Field(
-        None, alias="filterdjup_fran", description="Filter depth from (top)"
+    elevation_method_code: str | None = Field(
+        None, alias="hojdmetod", description="Elevation method code"
     )
-    filter_depth_bottom: float | None = Field(
-        None, alias="filterdjup_till", description="Filter depth to (bottom)"
+    elevation_method_description: str | None = Field(
+        None, alias="hojdmetod_tx", description="Elevation method description"
     )
-    filter_depth_qualifier: str | None = Field(
-        None, alias="tecken_filterdjup", description="Filter depth sign/qualifier"
+    pipe_height: float | None = Field(
+        None, alias="rorhojd", description="Pipe height above ground"
+    )
+    pipe_length: float | None = Field(None, alias="rorlangd", description="Pipe length")
+    borehole_inclination: float | None = Field(
+        None, alias="borrhalslutning", description="Borehole inclination"
+    )
+    screen_length: float | None = Field(
+        None, alias="sillangd", description="Well screen length"
+    )
+    inner_diameter: float | None = Field(
+        None, alias="innerdiam", description="Inner diameter"
+    )
+    material_code: str | None = Field(
+        None, alias="material", description="Well material code"
+    )
+    material_description: str | None = Field(
+        None, alias="material_tx", description="Well material description"
     )
 
-    # Aquifer information
-    aquifer_code: str | None = Field(None, alias="akvifer", description="Aquifer code")
-    aquifer_description: str | None = Field(
-        None, alias="akvifer_tx", description="Aquifer description"
+    # Soil
+    soil_depth_qualifier: str | None = Field(
+        None, alias="tecken_jorddjup", description="Soil depth sign/qualifier"
     )
-
-    # Geology
+    soil_depth: float | None = Field(None, alias="jorddjup", description="Soil depth")
+    soil_type_code: str | None = Field(
+        None, alias="jordart", description="Soil type code"
+    )
+    soil_type_description: str | None = Field(
+        None, alias="jordart_tx", description="Soil type description"
+    )
+    overlying_soil_code: str | None = Field(
+        None, alias="jord_ovan_jord", description="Overlying soil type code"
+    )
+    overlying_soil_description: str | None = Field(
+        None, alias="jord_ovan_jord_tx", description="Overlying soil type description"
+    )
     soil_genesis_code: str | None = Field(
         None, alias="genes_jord", description="Soil genesis code"
     )
     soil_genesis_description: str | None = Field(
         None, alias="genes_jord_tx", description="Soil genesis description"
     )
+
+    # Bedrock and aquifer
     rock_type_code: str | None = Field(
         None, alias="bergart", description="Rock type code"
     )
     rock_type_description: str | None = Field(
         None, alias="bergart_tx", description="Rock type description"
     )
+    aquifer_code: str | None = Field(None, alias="akvifer", description="Aquifer code")
+    aquifer_description: str | None = Field(
+        None, alias="akvifer_tx", description="Aquifer description"
+    )
+    groundwater_environment_code: str | None = Field(
+        None,
+        alias="gvmiljo_bedgr",
+        description="Groundwater environment code (assessment basis)",
+    )
+    groundwater_environment_description: str | None = Field(
+        None,
+        alias="gvmiljo_bedgr_tx",
+        description="Groundwater environment description",
+    )
+    geohydrological_position_code: str | None = Field(
+        None, alias="geohylag", description="Geohydrological position code"
+    )
+    geohydrological_position_description: str | None = Field(
+        None, alias="geohylag_tx", description="Geohydrological position description"
+    )
 
-    # Site history and monitoring
+    # Sampling history
     established_date: str | None = Field(
         None, alias="etabldatum", description="Site establishment date"
     )  # ISO date string
-    decommissioned_date: str | None = Field(
-        None, alias="nedlagdatum", description="Site decommissioning date"
+    first_sample_date: str | None = Field(
+        None, alias="forstaprov", description="Date of first sample"
+    )  # ISO date string
+    latest_sample_date: str | None = Field(
+        None, alias="senasteprov", description="Date of latest sample"
     )  # ISO date string
     sample_count: int | None = Field(
         None, alias="antal_prov", description="Number of samples collected"
     )
-    program_affiliation: str | None = Field(
-        None, alias="programkoppl", description="Program affiliation/connections"
+    sampling_occasion_count: int | None = Field(
+        None, alias="antal_provtillf", description="Number of sampling occasions"
+    )
+    sample_types: str | None = Field(
+        None, alias="provtyper", description="Sample types collected"
+    )
+    media: str | None = Field(None, alias="media", description="Sampled media")
+    sampling_purpose_code: str | None = Field(
+        None, alias="provtagningssyfte", description="Sampling purpose code"
+    )
+    sampling_purpose_description: str | None = Field(
+        None, alias="provtagningssyften_tx", description="Sampling purpose description"
     )
 
     # Monitoring program flags
@@ -158,9 +285,6 @@ class SamplingSiteProperties(SGUBaseModel):
     regional_monitoring: str | None = Field(
         None, alias="regional", description="Regional monitoring program (ja/nej)"
     )
-    local_monitoring: str | None = Field(
-        None, alias="lokal", description="Local monitoring program (ja/nej)"
-    )
 
     # Classification and symbols
     symbol: str | None = Field(
@@ -169,13 +293,17 @@ class SamplingSiteProperties(SGUBaseModel):
 
     # Analysis result links
     analyses_csv_url: str | None = Field(
-        None, alias="analyser_csv", description="URL to CSV file with analysis results"
+        None,
+        alias="analysdata_csv",
+        description="URL to CSV file with analysis results",
     )
     analyses_json_url: str | None = Field(
         None,
-        alias="analyser_json",
+        alias="analysdata_json",
         description="URL to JSON file with analysis results",
     )
+
+    _county_code = field_validator("county_code", mode="before")(_normalize_county_code)
 
     @property
     def established_datetime(self) -> datetime | None:
@@ -184,18 +312,6 @@ class SamplingSiteProperties(SGUBaseModel):
             try:
                 return datetime.fromisoformat(
                     self.established_date.replace("Z", "+00:00")
-                )
-            except (ValueError, AttributeError):
-                return None
-        return None
-
-    @property
-    def decommissioned_datetime(self) -> datetime | None:
-        """Parse decommissioning date as datetime object."""
-        if self.decommissioned_date:
-            try:
-                return datetime.fromisoformat(
-                    self.decommissioned_date.replace("Z", "+00:00")
                 )
             except (ValueError, AttributeError):
                 return None
@@ -215,95 +331,283 @@ class SamplingSite(SGUBaseModel):
 class AnalysisResultProperties(SGUBaseModel):
     """Properties for a groundwater chemistry analysis result."""
 
-    # Site identification
-    station_id: str | None = Field(
-        None, alias="platsbeteckning", description="Station identifier"
+    # Result identification
+    object_id: int | None = Field(None, alias="objectid", description="Object ID")
+    result_id: int | None = Field(None, alias="resultatid", description="Result ID")
+    delivery_id: str | None = Field(None, alias="leveransid", description="Delivery ID")
+    origin: str | None = Field(None, alias="ursprung", description="Data origin")
+
+    # Commissioning and reporting
+    commissioned_by_code: str | None = Field(
+        None, alias="bestallare", description="Commissioning organisation code"
     )
+    commissioned_by_description: str | None = Field(
+        None, alias="bestallare_tx", description="Commissioning organisation"
+    )
+    survey_type: str | None = Field(
+        None, alias="undersokningstyp", description="Survey type"
+    )
+    commissioned_survey: str | None = Field(
+        None, alias="bestalld_undersokning", description="Commissioned survey"
+    )
+    performing_organisation: str | None = Field(
+        None, alias="utfor_org", description="Performing organisation"
+    )
+    performing_organisation_type: str | None = Field(
+        None, alias="utfor_org_typ", description="Performing organisation type"
+    )
+    report_name: str | None = Field(
+        None, alias="rapportnamn", description="Report name"
+    )
+    report_name_diva: str | None = Field(
+        None, alias="rapportnamn_diva", description="Report name in DiVA"
+    )
+    diva_url: str | None = Field(None, alias="diva_url", description="DiVA report URL")
+
+    # Site identification
     national_site_id: int | None = Field(
         None, alias="nationellt_provplatsid", description="National sampling site ID"
     )
-    county_code: str | None = Field(None, alias="lan", description="County code")
-
-    # Sample identification
-    sample_id: str | None = Field(None, alias="provid", description="Sample ID")
-    sample_type: str | None = Field(None, alias="provtyp", description="Sample type")
-    delivery_id: str | None = Field(None, alias="inlevid", description="Delivery ID")
-
-    # Monitoring program
-    program_name: str | None = Field(
-        None, alias="programnamn", description="Monitoring program name"
+    monitoring_station_id: int | None = Field(
+        None, alias="overvakningsstation", description="Monitoring station ID"
     )
-    program_id: str | None = Field(
-        None, alias="programid", description="Monitoring program ID"
+    site_uuid: str | None = Field(
+        None, alias="provplatsuuid", description="Sampling site UUID"
     )
-    monitoring_manual: str | None = Field(
-        None, alias="overvakningsmanual", description="Monitoring manual reference"
+    site_name: str | None = Field(
+        None, alias="provplatsnamn", description="Sampling site name"
+    )
+    site_type_code: str | None = Field(
+        None, alias="provplatstyp", description="Sampling site type code"
     )
 
-    # Dates
+    # Location
+    county_code: str | None = Field(None, alias="lanskod", description="County code")
+    county: str | None = Field(None, alias="lan", description="County")
+    municipality_code: str | None = Field(
+        None, alias="kommunkod", description="Municipality code"
+    )
+    municipality: str | None = Field(None, alias="kommun", description="Municipality")
+    east_coordinate: float | None = Field(
+        None, alias="e", description="East coordinate"
+    )
+    north_coordinate: float | None = Field(
+        None, alias="n", description="North coordinate"
+    )
+    actual_sampling_point_east: float | None = Field(
+        None,
+        alias="fkt_provpunkt_e",
+        description="Actual sampling point east coordinate",
+    )
+    actual_sampling_point_north: float | None = Field(
+        None,
+        alias="fkt_provpunkt_n",
+        description="Actual sampling point north coordinate",
+    )
+
+    # Sampling
+    sampling_organisation_code: str | None = Field(
+        None, alias="provtag_org", description="Sampling organisation code"
+    )
+    sampling_organisation_description: str | None = Field(
+        None, alias="provtag_org_tx", description="Sampling organisation"
+    )
     sampling_date: str | None = Field(
-        None, alias="provtagningsdat", description="Sampling date"
+        None, alias="provtagningsdatum", description="Sampling date"
     )  # ISO datetime string
-    submission_date: str | None = Field(
-        None, alias="inlamningsdat", description="Sample submission date"
+    sampling_end_date: str | None = Field(
+        None, alias="provtagning_slutdatum", description="Sampling end date"
     )  # ISO datetime string
+    sampling_purpose_code: str | None = Field(
+        None, alias="provtagningssyfte", description="Sampling purpose code"
+    )
+    sampling_purpose_description: str | None = Field(
+        None, alias="provtagningssyfte_tx", description="Sampling purpose description"
+    )
+    sampling_method: str | None = Field(
+        None, alias="provtagningsmetod", description="Sampling method"
+    )
+    sampling_method_url: str | None = Field(
+        None, alias="provtagningsmetod_url", description="Sampling method URL"
+    )
+    sample_data_type: str | None = Field(
+        None, alias="provdatatyp", description="Sample data type"
+    )
+    site_environment: str | None = Field(
+        None, alias="provplatsmiljo", description="Sampling site environment"
+    )
+    media: str | None = Field(None, alias="media", description="Sampled media")
+    accredited_sampler: str | None = Field(
+        None, alias="ackrediteradprovtagare", description="Accredited sampler"
+    )
+    direct_treatment: str | None = Field(
+        None, alias="direktbehandling", description="Direct sample treatment"
+    )
+    direct_treatment_url: str | None = Field(
+        None, alias="direktbehandling_url", description="Direct sample treatment URL"
+    )
+    filtered: str | None = Field(
+        None, alias="filtrerat", description="Whether the sample was filtered"
+    )
+    filter_size: str | None = Field(
+        None, alias="filterstorlek", description="Filter size"
+    )
+    purge_time: str | None = Field(
+        None, alias="omsattningstid", description="Well purge time"
+    )
+    purge_volume: str | None = Field(
+        None, alias="omsattningsvolym", description="Well purge volume"
+    )
+    purge_to_sample_time: str | None = Field(
+        None, alias="omsatt_tid_till_prov", description="Time from purge to sampling"
+    )
+    sample_comment: str | None = Field(
+        None, alias="kommentar_prov", description="Sample comment"
+    )
+    original_sample_code: str | None = Field(
+        None, alias="provkodoriginal", description="Original sample code"
+    )
+
+    # Laboratory
+    laboratory: str | None = Field(
+        None, alias="laboratorium", description="Laboratory name"
+    )
+    laboratory_description: str | None = Field(
+        None, alias="laboratorium_tx", description="Laboratory description"
+    )
+    performing_lab_id: str | None = Field(
+        None, alias="utforarlabbid", description="Performing laboratory ID"
+    )
+    performing_lab_description: str | None = Field(
+        None, alias="utforarlabbid_tx", description="Performing laboratory description"
+    )
+    lab_report_code: str | None = Field(
+        None, alias="rapportkodlabb", description="Laboratory report code"
+    )
+    registration_date: str | None = Field(
+        None, alias="registreringsdatum", description="Registration date"
+    )  # ISO datetime string
+    analysis_date: str | None = Field(
+        None, alias="analysdatum", description="Analysis date"
+    )  # ISO datetime string
+    sample_preparation: str | None = Field(
+        None, alias="provberedning", description="Sample preparation method"
+    )
+    sample_preparation_url: str | None = Field(
+        None, alias="provberedning_url", description="Sample preparation method URL"
+    )
+    sample_container_code: str | None = Field(
+        None, alias="provkarl", description="Sample container code"
+    )
+    sample_container_description: str | None = Field(
+        None, alias="provkarl_tx", description="Sample container description"
+    )
+    sample_storage_code: str | None = Field(
+        None, alias="provlagring", description="Sample storage code"
+    )
+    sample_storage_description: str | None = Field(
+        None, alias="provlagring_tx", description="Sample storage description"
+    )
 
     # Parameter (chemical substance measured)
+    parameter_id: str | None = Field(
+        None, alias="ntlkemiparameterid", description="National chemistry parameter ID"
+    )
     parameter_name: str | None = Field(
-        None, alias="param", description="Parameter/chemical substance name"
+        None, alias="parameternamn", description="Parameter/chemical substance name"
     )
-    parameter_short_name: str | None = Field(
-        None, alias="param_kort", description="Short parameter name"
+    parameter_comment: str | None = Field(
+        None, alias="parameter_anm", description="Parameter comment"
     )
-    parameter_sequence_number: int | None = Field(
-        None, alias="paramlopnr", description="Parameter sequence number"
+    parameter_group: str | None = Field(
+        None, alias="parametergrupp", description="Parameter group"
     )
-
-    # Sample and analysis preparation
-    water_preparation: str | None = Field(
-        None, alias="vattenberedn", description="Water sample preparation"
-    )
-    sample_preparation: str | None = Field(
-        None, alias="provberedn", description="Sample preparation method"
-    )
-
-    # Laboratory and method
-    laboratory: str | None = Field(None, alias="labb", description="Laboratory name")
-    method: str | None = Field(None, alias="metod", description="Analysis method used")
-
-    # Detection and reporting limits
-    reporting_limit: float | None = Field(
-        None, alias="rapporteringsgrans", description="Reporting limit"
-    )
-    detection_limit: float | None = Field(
-        None, alias="detektionsgrans", description="Detection limit"
+    cas_number: str | None = Field(
+        None, alias="cas_kod", description="CAS registry number"
     )
 
     # Measurement value
-    measurement_value_annotation: str | None = Field(
-        None,
-        alias="matvardetalanm",
-        description="Measurement value annotation/qualifier",
+    measurement_value_text: str | None = Field(
+        None, alias="matvardetext", description="Measurement value as text"
     )
     measurement_value: float | None = Field(
         None, alias="matvardetal", description="Measurement value (numeric)"
     )
+    measurement_value_annotation: str | None = Field(
+        None,
+        alias="matvardetal_anm",
+        description="Measurement value annotation/qualifier",
+    )
     measurement_value_span: str | None = Field(
         None, alias="matvardespar", description="Measurement value span/range"
     )
-    measurement_value_text: str | None = Field(
-        None, alias="matvardetext", description="Measurement value as text"
-    )
     unit: str | None = Field(None, alias="enhet", description="Unit of measurement")
+    unit_description: str | None = Field(
+        None, alias="enhet_tx", description="Unit of measurement description"
+    )
+    measurement_standard_code: str | None = Field(
+        None, alias="matvstd", description="Measurement standard code"
+    )
+    measurement_standard_description: str | None = Field(
+        None, alias="matvstd_tx", description="Measurement standard description"
+    )
+    quantification_limit: str | None = Field(
+        None, alias="loq", description="Limit of quantification (LOQ)"
+    )
+    detection_limit: str | None = Field(
+        None, alias="lod", description="Limit of detection (LOD)"
+    )
     measurement_uncertainty: str | None = Field(
         None, alias="matosakerhet", description="Measurement uncertainty"
     )
+    measurement_uncertainty_unit_code: str | None = Field(
+        None, alias="matosakerhetenhet", description="Measurement uncertainty unit code"
+    )
+    measurement_uncertainty_unit_description: str | None = Field(
+        None, alias="matosakerhetenhet_tx", description="Measurement uncertainty unit"
+    )
+    measurement_uncertainty_type_code: str | None = Field(
+        None, alias="matosakerhettyp", description="Measurement uncertainty type code"
+    )
+    measurement_uncertainty_type_description: str | None = Field(
+        None, alias="matosakerhettyp_tx", description="Measurement uncertainty type"
+    )
+    measurement_comment: str | None = Field(
+        None, alias="kommentar_matvarde", description="Measurement value comment"
+    )
 
-    # Metadata
-    last_updated: str | None = Field(
-        None, alias="lastupdate", description="Last update timestamp"
-    )  # ISO datetime string
-    row_number: int | None = Field(None, alias="radnummer", description="Row number")
+    # Analysis method
+    method: str | None = Field(
+        None, alias="analysmetod", description="Analysis method used"
+    )
+    method_url: str | None = Field(
+        None, alias="analysmetod_url", description="Analysis method URL"
+    )
+    accredited_method: str | None = Field(
+        None, alias="ackrediteradmetod", description="Accredited analysis method"
+    )
+    analysis_instrument: str | None = Field(
+        None, alias="analysinstrument", description="Analysis instrument"
+    )
+    analysis_instrument_url: str | None = Field(
+        None, alias="analysinstrument_url", description="Analysis instrument URL"
+    )
+
+    # Water type and quality control
+    water_type_code: str | None = Field(
+        None, alias="vattentyp", description="Water type code"
+    )
+    water_type_description: str | None = Field(
+        None, alias="vattentyp_tx", description="Water type description"
+    )
+    quality_flag: str | None = Field(
+        None, alias="kvalitetsflagga", description="Quality flag"
+    )
+    review_comment: str | None = Field(
+        None, alias="granskningskommentar", description="Review comment"
+    )
+
+    _county_code = field_validator("county_code", mode="before")(_normalize_county_code)
 
     @property
     def sampling_datetime(self) -> datetime | None:
@@ -311,28 +615,6 @@ class AnalysisResultProperties(SGUBaseModel):
         if self.sampling_date:
             try:
                 return datetime.fromisoformat(self.sampling_date.replace("Z", "+00:00"))
-            except (ValueError, AttributeError):
-                return None
-        return None
-
-    @property
-    def submission_datetime(self) -> datetime | None:
-        """Parse submission date as datetime object."""
-        if self.submission_date:
-            try:
-                return datetime.fromisoformat(
-                    self.submission_date.replace("Z", "+00:00")
-                )
-            except (ValueError, AttributeError):
-                return None
-        return None
-
-    @property
-    def last_updated_datetime(self) -> datetime | None:
-        """Parse last update as datetime object."""
-        if self.last_updated:
-            try:
-                return datetime.fromisoformat(self.last_updated.replace("Z", "+00:00"))
             except (ValueError, AttributeError):
                 return None
         return None
@@ -391,9 +673,7 @@ class SamplingSiteCollection(SGUResponse):
         """
         data = []
         for feature in self.features:
-            row = {
-                "site_id": feature.id,
-            }
+            row: dict[str, Any] = {"site_id": feature.id}
             # Add geometry if present
             if feature.geometry:
                 row.update(
@@ -408,10 +688,6 @@ class SamplingSiteCollection(SGUResponse):
                     }
                 )
 
-            # Add parsed datetime columns
-            row["established_date"] = feature.properties.established_datetime
-            row["decommissioned_date"] = feature.properties.decommissioned_datetime
-
             # Add all properties
             row.update(feature.properties.model_dump())
             data.append(row)
@@ -419,12 +695,8 @@ class SamplingSiteCollection(SGUResponse):
         pd = get_pandas()
         df = pd.DataFrame(data)
 
-        # Ensure datetime columns are properly typed
         if not df.empty:
-            if "established_date" in df.columns:
-                df["established_date"] = pd.to_datetime(df["established_date"])
-            if "decommissioned_date" in df.columns:
-                df["decommissioned_date"] = pd.to_datetime(df["decommissioned_date"])
+            _parse_date_columns(df, SITE_DATE_COLUMNS)
 
         return df
 
@@ -473,12 +745,7 @@ class AnalysisResultCollection(SGUResponse):
         """
         data = []
         for feature in self.features:
-            row = {
-                "result_id": feature.id,
-                "sampling_date": feature.properties.sampling_datetime,
-                "submission_date": feature.properties.submission_datetime,
-                "last_update": feature.properties.last_updated_datetime,
-            }
+            row: dict[str, Any] = {"result_id": feature.id}
 
             # Add geometry if present
             if feature.geometry:
@@ -501,14 +768,8 @@ class AnalysisResultCollection(SGUResponse):
         pd = get_pandas()
         df = pd.DataFrame(data)
 
-        # Ensure datetime columns are properly typed
         if not df.empty:
-            if "sampling_date" in df.columns:
-                df["sampling_date"] = pd.to_datetime(df["sampling_date"])
-            if "submission_date" in df.columns:
-                df["submission_date"] = pd.to_datetime(df["submission_date"])
-            if "last_update" in df.columns:
-                df["last_update"] = pd.to_datetime(df["last_update"])
+            _parse_date_columns(df, RESULT_DATE_COLUMNS)
 
         if sort_by_date and not df.empty and "sampling_date" in df.columns:
             df = df.sort_values(by="sampling_date")
@@ -574,7 +835,7 @@ class AnalysisResultCollection(SGUResponse):
         self,
         values: str = "measurement_value",
         index: str = "sampling_date",
-        columns: str = "parameter_short_name",
+        columns: str = "parameter_name",
         aggfunc: str = "mean",
     ) -> "pd.DataFrame":
         """Pivot analysis results by parameter for easier time series analysis.
@@ -585,7 +846,7 @@ class AnalysisResultCollection(SGUResponse):
         Args:
             values: Column to use for values (default: 'measurement_value')
             index: Column to use as index (default: 'sampling_date')
-            columns: Column to pivot into columns (default: 'parameter_short_name')
+            columns: Column to pivot into columns (default: 'parameter_name')
             aggfunc: Aggregation function if there are duplicate index/column pairs
                     (default: 'mean'). Can be 'mean', 'median', 'first', 'last', etc.
 
