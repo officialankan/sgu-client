@@ -50,6 +50,8 @@ class GroundwaterChemistryClient:
             limit: Maximum number of features to return (automatically paginated if needed)
             filter_expr: CQL filter expression
             sortby: List of sort expressions (e.g., ['+name', '-date'])
+                Note: the SGU v2 chemistry API currently ignores sortby;
+                features are returned in the server's default order.
             **kwargs: Additional query parameters
 
         Returns:
@@ -215,6 +217,8 @@ class GroundwaterChemistryClient:
             limit: Maximum number of features to return (automatically paginated if needed)
             filter_expr: CQL filter expression
             sortby: List of sort expressions (e.g., ['+date', '-value'])
+                Note: the SGU v2 chemistry API currently ignores sortby;
+                features are returned in the server's default order.
             **kwargs: Additional query parameters
 
         Returns:
