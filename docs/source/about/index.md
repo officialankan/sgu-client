@@ -10,12 +10,12 @@ This package is not affiliated with or endorsed by SGU.
 
 ## Data
 
-All data is fetched from SGU's open data APIs and is provided by SGU. License terms
-vary by dataset; for example, the modeled groundwater levels (SGU-HYPE) are licensed
-under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/), which requires
-attribution to SGU. See SGU's
+All data is fetched from SGU's open data APIs and is provided by SGU. The groundwater
+level, SGU-HYPE and groundwater chemistry APIs used by this package publish their data
+under [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/), as declared in each
+API's license link. See SGU's
 [license terms for geological data](https://www.sgu.se/en/products/geological-data/about-sgus-geological-data/license-terms-for-sgus-geological-data/)
-and the product description of each dataset you use.
+for details.
 
 ## License
 

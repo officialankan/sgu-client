@@ -4,3 +4,34 @@ dl.py.pydantic_field,
 dl.py.property {
   margin-bottom: 1rem !important;
 }
+
+/* Quick example on the landing page: stack the tab panels in one grid cell so the
+   box keeps the same height whichever tab is selected */
+.quick-example.sd-tab-set {
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+}
+
+.quick-example.sd-tab-set > label {
+  grid-row: 1;
+}
+
+.quick-example.sd-tab-set > .sd-tab-content {
+  display: flex !important;
+  flex-direction: column;
+  justify-content: center;
+  grid-row: 2;
+  grid-column: 1 / -1;
+  visibility: hidden;
+}
+
+.quick-example.sd-tab-set > input:checked + label + .sd-tab-content {
+  visibility: visible;
+}
+
+/* Keep the plot about as tall as the code so neither tab is mostly empty space */
+.quick-example img {
+  max-height: 26rem;
+  width: auto;
+  max-width: 100%;
+}

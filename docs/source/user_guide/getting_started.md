@@ -73,13 +73,7 @@ config = SGUConfig(timeout=60, max_retries=5, log_level="DEBUG")
 client = SGUClient(config=config)
 ```
 
-| Option | Default | Description |
-| --- | --- | --- |
-| `timeout` | `30.0` | Request timeout in seconds |
-| `max_retries` | `3` | Maximum number of retry attempts |
-| `log_level` | `"WARNING"` | Logging level, or `None` to leave logging configuration to you |
-
-See {class}`~sgu_client.SGUConfig` for all options.
+See {class}`~sgu_client.SGUConfig` for all options and their defaults.
 
 ## Handling errors
 

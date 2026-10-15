@@ -59,7 +59,7 @@ Parameters are identified by SGU's Swedish parameter names (`parameter_name`,
 | `pH` | pH |
 | `Konduktivitet` | Electrical conductivity |
 | `Klorid` | Chloride |
-| `Svavelsulfat` | Sulphate |
+| `Svavelsulfat` | Sulfate |
 | `Nitratkväve` | Nitrate nitrogen |
 | `Bly` | Lead |
 

@@ -23,6 +23,7 @@ Quick example
 -------------
 
 .. tab-set::
+    :class: quick-example
 
     .. tab-item:: Python
 
@@ -53,8 +54,8 @@ Quick example
 
     .. tab-item:: Result
 
-        .. figure:: _static/lagga2.svg
-            :width: 100%
+        .. image:: _static/lagga2.svg
+            :alt: Plot of groundwater levels at station 95_2
             :align: center
 
 Explore the docs

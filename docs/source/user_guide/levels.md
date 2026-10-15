@@ -54,7 +54,7 @@ measurements = client.levels.observed.get_measurements_by_names(
 )
 ```
 
-Each measurement has levels in metres above sea level (`water_level_masl_m`) and below
+Each measurement has levels in meters above sea level (`water_level_masl_m`) and below
 ground (`water_level_below_ground_m`). See
 {class}`~sgu_client.models.observed.GroundwaterMeasurementProperties` for all fields.
 
@@ -87,8 +87,7 @@ groundwater resources. See
 
 ## Filtering
 
-The general query methods (`get_stations()`, `get_measurements()`, `get_areas()`,
-`get_levels()`) accept the standard OGC API filters:
+The general query methods accept the standard OGC API filters:
 
 | Parameter | Description |
 | --- | --- |
@@ -96,6 +95,9 @@ The general query methods (`get_stations()`, `get_measurements()`, `get_areas()`
 | `datetime` | ISO 8601 datetime or interval, e.g. `"2024-01-01/2025-01-01"` |
 | `filter_expr` | CQL filter using the Swedish API field names, e.g. `"akvifer='JS'"` |
 | `limit` | Maximum number of features to return |
+
+`get_stations()`, `get_measurements()` and `get_levels()` accept all four;
+`get_areas()` accepts all but `datetime`.
 
 Results are paginated automatically, so `limit` can be larger than the API's page size.
 The convenience methods (`get_*_by_name()`, `get_levels_by_*()`) build these filters for

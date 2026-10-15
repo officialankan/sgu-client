@@ -34,7 +34,6 @@ extensions = [
     "myst_nb",
 ]
 
-templates_path = ["_templates"]
 exclude_patterns = []
 
 # typehints_fixup_module_name is a function, so the config cannot be pickled; harmless
