@@ -147,8 +147,8 @@ def test_get_results_by_site_with_national_site_id(caplog):
 @pytest.mark.parametrize(
     ("kwargs", "expected_lookup_filter"),
     [
-        ({"site_id": "TTK-442-M"}, "platsbeteckning in ('TTK-442-M')"),
-        ({"site_name": "Lena"}, "provplatsnamn in ('Lena')"),
+        ({"site_id": "TTK-442-M"}, "platsbeteckning='TTK-442-M'"),
+        ({"site_name": "Lena"}, "provplatsnamn='Lena'"),
     ],
 )
 def test_get_results_by_site_looks_up_national_site_id(
@@ -370,6 +370,7 @@ def test_sampling_sites_to_dataframe():
 
     df = sites.to_dataframe()
 
+    assert list(df["feature_id"]) == ["provplatser.1", "provplatser.2"]
     assert list(df["national_site_id"]) == [359366, 378865]
     assert list(df["station_id"]) == ["TTK-442-M", "SYD-681-C"]
     assert df["longitude"].iloc[0] == 16.68629857
@@ -625,3 +626,54 @@ def test_empty_collections_convert_to_empty_pandas_objects():
     assert isinstance(results.to_series(), pd.Series)
     assert results.to_series().empty
     assert results.pivot_by_parameter().empty
+
+
+def test_analysis_results_to_dataframe_keeps_feature_id_and_result_id():
+    """The feature ID and SGU's resultatid are separate DataFrame columns."""
+    pytest.importorskip("pandas")
+    results = AnalysisResultCollection(
+        **create_mock_analysis_result_collection_response()
+    )
+
+    df = results.to_dataframe()
+
+    assert df["feature_id"].iloc[0] == "analysresultat.1757"
+    assert df["result_id"].iloc[0] == 5865282
+
+
+@pytest.mark.parametrize(
+    ("kwargs", "missing"),
+    [
+        ({"site_id": ["TTK-442-M", "NOPE-1"]}, "NOPE-1"),
+        ({"site_name": ["Lena", "Nowhere"]}, "Nowhere"),
+        ({"national_site_id": [359366, 1]}, "1"),
+    ],
+)
+def test_get_sampling_sites_by_names_missing_sites_raises(kwargs, missing):
+    """Sites that are not found are named in a ValueError, as for results."""
+    client = SGUClient()
+
+    with patch.object(client.chemistry._client._session, "request") as mock_request:
+        mock_request.return_value = create_mock_response(
+            create_mock_sampling_site_collection_response()
+        )
+        with pytest.raises(
+            ValueError, match=f"No sampling sites found for .*{missing}"
+        ):
+            client.chemistry.get_sampling_sites_by_names(**kwargs)
+
+
+def test_get_results_by_site_lookup_without_national_site_id_raises():
+    """A looked-up site without a national_site_id raises instead of sending bad CQL."""
+    client = SGUClient()
+    site = create_mock_sampling_site_feature()
+    site["properties"]["nationellt_provplatsid"] = None
+
+    with patch.object(client.chemistry._client._session, "request") as mock_request:
+        mock_request.return_value = create_mock_response(
+            create_mock_sampling_site_collection_response([site])
+        )
+        with pytest.raises(ValueError, match="no national_site_id"):
+            client.chemistry.get_results_by_site(site_id="TTK-442-M")
+
+    assert mock_request.call_count == 1

@@ -20,7 +20,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **County codes**: `county_code` is a zero-padded two-digit string on both sites and results (the v2 API mixes `"04"` and `4`); on analysis results it now maps to `lanskod` instead of `lan` (county name, see `county`)
 - **Results by site**: analysis results no longer carry `platsbeteckning`, so `get_results_by_site()` and `get_results_by_sites()` take `national_site_id` as their first argument. `site_id` and `site_name` still work, but cost an extra lookup request and log a warning. Lookups that miss any requested site raise `ValueError`
 - **Results by parameter**: `get_results_by_parameter()` matches SGU's parameter name (`parameternamn`, e.g. `"Bly"`, `"pH"`), and its site filter accepts `national_site_id`, `site_id` or `site_name` like `get_results_by_site()`
-- **pandas**: `pivot_by_parameter()` pivots on `parameter_name` by default; `to_dataframe()` parses `sampling_date`, `sampling_end_date`, `registration_date` and `analysis_date` (results) and `established_date`, `first_sample_date`, `latest_sample_date` (sites) as UTC datetimes
+- **Site lookups**: `get_sampling_sites_by_names()` raises `ValueError` naming any requested sites that are not found, instead of returning a partial collection
+- **pandas**: the feature ID column in chemistry `to_dataframe()` output is now `feature_id` (previously `site_id` for sites and `result_id` for results, which clashed with the new `result_id` field); `pivot_by_parameter()` pivots on `parameter_name` by default; `to_dataframe()` parses `sampling_date`, `sampling_end_date`, `registration_date` and `analysis_date` (results) and `established_date`, `first_sample_date`, `latest_sample_date` (sites) as UTC datetimes
 
 ### Added
 

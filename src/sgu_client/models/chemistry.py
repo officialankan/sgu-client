@@ -633,7 +633,10 @@ class AnalysisResult(SGUBaseModel):
 
 # Collection response models
 class SamplingSiteCollection(SGUResponse):
-    """Collection of groundwater chemistry sampling sites (GeoJSON FeatureCollection)."""
+    """Collection of groundwater chemistry sampling sites (GeoJSON).
+
+    A GeoJSON FeatureCollection of sampling sites.
+    """
 
     type: Literal["FeatureCollection"] = "FeatureCollection"
     features: list[SamplingSite] = Field(
@@ -667,13 +670,14 @@ class SamplingSiteCollection(SGUResponse):
             >>> sites = client.chemistry.get_sampling_sites(limit=10)
             >>> df = sites.to_dataframe()
             >>>
-            >>> # dataFrame includes site properties with datetime parsing
-            >>> print(df[['station_id', 'site_name', 'municipality', 'established_date', 'sample_count']].head())
-            >>> # established_date and decommissioned_date are parsed as datetime objects
+            >>> # one row per site, with the feature ID in 'feature_id'
+            >>> print(df[['national_site_id', 'station_id', 'site_name']].head())
+            >>> # established_date, first_sample_date and latest_sample_date
+            >>> # are parsed as UTC datetimes
         """
         data = []
         for feature in self.features:
-            row: dict[str, Any] = {"site_id": feature.id}
+            row: dict[str, Any] = {"feature_id": feature.id}
             # Add geometry if present
             if feature.geometry:
                 row.update(
@@ -702,7 +706,10 @@ class SamplingSiteCollection(SGUResponse):
 
 
 class AnalysisResultCollection(SGUResponse):
-    """Collection of groundwater chemistry analysis results (GeoJSON FeatureCollection)."""
+    """Collection of groundwater chemistry analysis results (GeoJSON).
+
+    A GeoJSON FeatureCollection of analysis results.
+    """
 
     type: Literal["FeatureCollection"] = "FeatureCollection"
     features: list[AnalysisResult] = Field(
@@ -736,16 +743,17 @@ class AnalysisResultCollection(SGUResponse):
             >>> from sgu_client import SGUClient
             >>> client = SGUClient()
             >>>
-            >>> results = client.chemistry.get_results_by_site(site_id="10001_1", limit=100)
+            >>> results = client.chemistry.get_results_by_site(359366, limit=100)
             >>> df = results.to_dataframe()
             >>>
-            >>> # dataFrame includes chemical analysis results with multiple datetime columns
-            >>> print(df[['sampling_date', 'parameter_short_name', 'measurement_value', 'unit']].head())
-            >>> # sampling_date, submission_date, and last_update are all parsed as datetime objects
+            >>> # one row per result, with the feature ID in 'feature_id'
+            >>> print(df[['sampling_date', 'parameter_name', 'measurement_value']])
+            >>> # sampling_date, sampling_end_date, registration_date and
+            >>> # analysis_date are parsed as UTC datetimes
         """
         data = []
         for feature in self.features:
-            row: dict[str, Any] = {"result_id": feature.id}
+            row: dict[str, Any] = {"feature_id": feature.id}
 
             # Add geometry if present
             if feature.geometry:
@@ -788,7 +796,8 @@ class AnalysisResultCollection(SGUResponse):
         Args:
             index: Column name to use as index. If None, `sampling_date` is used.
             data: Column name to use as data. If None, `measurement_value` is used.
-            sort_by_date: Whether to sort the data by sampling date before creating the Series.
+            sort_by_date: Whether to sort the data by sampling date before
+                creating the Series.
 
         Returns:
             Series containing analysis result data.
@@ -797,16 +806,16 @@ class AnalysisResultCollection(SGUResponse):
 
             >>> from sgu_client import SGUClient
             >>> client = SGUClient()
-            >>> results = client.chemistry.get_results_by_site(site_id="10001_1", limit=100)
+            >>> results = client.chemistry.get_results_by_site(359366, limit=100)
             >>>
-            >>> # create time series with default columns (sampling_date, measurement_value)
+            >>> # time series with default columns (sampling_date, measurement_value)
             >>> series = results.to_series()
             >>> print(series.head())
             >>>
             >>> # use custom columns - e.g., parameter names as data
             >>> series_params = results.to_series(
             ...     index="sampling_date",
-            ...     data="parameter_short_name"
+            ...     data="parameter_name"
             ... )
         """
         df = self.to_dataframe(sort_by_date=sort_by_date)
@@ -855,12 +864,12 @@ class AnalysisResultCollection(SGUResponse):
 
         Example:
 
-            >>> from sgu_client import SGUClient()
+            >>> from sgu_client import SGUClient
             >>> client = SGUClient()
             >>>
-            >>> results = client.chemistry.get_results_by_site(site_id="10001_1")
+            >>> results = client.chemistry.get_results_by_site(359366)
             >>> df_pivot = results.pivot_by_parameter()
-            >>> # now df_pivot has columns like 'PH', 'NITRATE', 'CHLORIDE', etc.
+            >>> # now df_pivot has columns like 'pH', 'Nitratkväve', 'Klorid', etc.
         """
         df = self.to_dataframe(sort_by_date=True)
         pd = get_pandas()
