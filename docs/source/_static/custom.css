@@ -1,0 +1,6 @@
+/* Tighter spacing between Pydantic fields, which can number in the dozens per model.
+   !important overrides the theme's long :not() chain on dl[class]. */
+dl.py.pydantic_field,
+dl.py.property {
+  margin-bottom: 1rem !important;
+}

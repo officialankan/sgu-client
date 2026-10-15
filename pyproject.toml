@@ -25,6 +25,9 @@ dev = [
     "sphinx-autodoc-typehints>=1.25",
     "sphinx-autobuild>=2025.8.25",
     "sphinx-design>=0.5",
+    "autodoc-pydantic>=2.2.0",
+    "myst-nb>=1.4.0",
+    "sphinx-copybutton>=0.5.2",
 ]
 
 [tool.ruff]
