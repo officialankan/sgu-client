@@ -88,6 +88,9 @@ def test_optional_pandas_method_preserves_metadata():
 
     assert dummy_method.__name__ == "dummy_method"
     assert dummy_method.__doc__ == "A test method."
+    # needed by sphinx-autodoc-typehints to resolve the original signature
+    assert dummy_method.__qualname__.endswith("dummy_method")
+    assert dummy_method.__wrapped__.__name__ == "dummy_method"
 
 
 def test_base_response_to_dataframe_missing_pandas(monkeypatch):

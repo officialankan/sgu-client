@@ -111,9 +111,12 @@ class ObservedGroundwaterLevelClient:
         sortby: list[str] | None = None,
         **kwargs: Any,
     ) -> GroundwaterMeasurementCollection:
-        """Get groundwater level measurements. This method is used internally by convenience functions like
-        `get_measurements_by_name() by constructing filter expressions. A user may also do this, but readability
-        is greater when using the built-in convenience functions.
+        """Get groundwater level measurements.
+
+        This method is used internally by convenience functions like
+        ``get_measurements_by_name()`` by constructing filter expressions. A user
+        may also do this, but readability is greater when using the built-in
+        convenience functions.
 
         Args:
             bbox: Bounding box as [min_lon, min_lat, max_lon, max_lat]
