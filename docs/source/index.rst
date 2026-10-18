@@ -32,21 +32,21 @@ Quick example
             # import the SGU Client
             from sgu_client import SGUClient
 
-            # initialize the client
-            client = SGUClient()
+            # create the client, which closes its session when the block ends
+            with SGUClient() as client:
 
-            # get groundwater monitoring stations in southern Sweden
-            stations = client.levels.observed.get_stations(
-                bbox=[12.0, 55.0, 16.0, 58.0],
-                limit=50
-            )
+                # get groundwater monitoring stations in southern Sweden
+                stations = client.levels.observed.get_stations(
+                    bbox=[12.0, 55.0, 16.0, 58.0],
+                    limit=50
+                )
 
-            # get recent measurements with date filtering
-            measurements = client.levels.observed.get_measurements_by_name(
-                "95_2",
-                tmin="2024-10-01",
-                tmax="2025-09-30",
-            )
+                # get recent measurements with date filtering
+                measurements = client.levels.observed.get_measurements_by_name(
+                    "95_2",
+                    tmin="2024-10-01",
+                    tmax="2025-09-30",
+                )
 
             # convert to pandas Series (requires pandas)
             s = measurements.to_series()

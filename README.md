@@ -56,20 +56,22 @@ pip install "sgu-client[recommended]"
 
 ### Initializing a client
 
+Use the client as a context manager, so its HTTP session is closed when you are done:
+
 ```python
-from sgu_client import SGUClient
+from sgu_client import SGUClient, SGUConfig
 
-client = SGUClient()
-
-# with custom configuration
-from sgu_client import SGUConfig
-config = SGUConfig(timeout=60, log_level="DEBUG", max_retries=5)
-client = SGUClient(config=config)
-
-# as a context manager
 with SGUClient() as client:
     stations = client.levels.observed.get_stations(limit=10)
+
+# with custom configuration
+config = SGUConfig(timeout=60, log_level="DEBUG", max_retries=5)
+with SGUClient(config=config) as client:
+    stations = client.levels.observed.get_stations(limit=10)
 ```
+
+In a notebook or a long-running application, create the client once, reuse it, and
+call `client.close()` when you are done.
 
 ### Observed groundwater levels
 
@@ -261,23 +263,22 @@ All responses are fully typed with Pydantic models:
 ```python
 from sgu_client import SGUClient
 
-client = SGUClient()
+with SGUClient() as client:
+    # Get stations with full type safety
+    stations = client.levels.observed.get_stations(limit=5)
 
-# Get stations with full type safety
-stations = client.levels.observed.get_stations(limit=5)
+    for station in stations.features:
+        # All properties are typed and documented
+        print(f"Station: {station.properties.station_name}")
+        print(f"Municipality: {station.properties.municipality}")
+        print(f"Coordinates: {station.geometry.coordinates}")
 
-for station in stations.features:
-    # All properties are typed and documented
-    print(f"Station: {station.properties.station_name}")
-    print(f"Municipality: {station.properties.municipality}")
-    print(f"Coordinates: {station.geometry.coordinates}")
-
-# Get measurements with automatic datetime parsing
-measurements = client.levels.observed.get_measurements(limit=5)
-for measurement in measurements.features:
-    props = measurement.properties
-    print(f"Date: {props.observation_datetime}")  # Parsed datetime object
-    print(f"Level: {props.water_level_masl_m} m above sea level")
+    # Get measurements with automatic datetime parsing
+    measurements = client.levels.observed.get_measurements(limit=5)
+    for measurement in measurements.features:
+        props = measurement.properties
+        print(f"Date: {props.observation_datetime}")  # Parsed datetime object
+        print(f"Level: {props.water_level_masl_m} m above sea level")
 ```
 
 ## API Reference

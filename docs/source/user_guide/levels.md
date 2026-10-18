@@ -17,11 +17,12 @@ Look up a station by its identifier (`station_id`, *platsbeteckning*) or its nam
 ```python
 from sgu_client import SGUClient
 
-client = SGUClient()
-
-station = client.levels.observed.get_station_by_name(station_id="95_2")
-# or several at once
-stations = client.levels.observed.get_stations_by_names(station_id=["95_2", "101_1"])
+with SGUClient() as client:
+    station = client.levels.observed.get_station_by_name(station_id="95_2")
+    # or several at once
+    stations = client.levels.observed.get_stations_by_names(
+        station_id=["95_2", "101_1"]
+    )
 ```
 
 To search for stations, use {meth}`~sgu_client.client.levels.observed.ObservedGroundwaterLevelClient.get_stations`

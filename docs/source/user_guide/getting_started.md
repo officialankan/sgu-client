@@ -27,21 +27,22 @@ domain on its attributes:
 | `client.levels.modeled` | Modeled groundwater levels from SGU-HYPE |
 | `client.chemistry` | Groundwater chemistry sampling sites and analysis results |
 
+Use the client as a context manager. It reuses one HTTP session for all requests and
+closes it when the `with` block ends:
+
 ```python
 from sgu_client import SGUClient
 
-client = SGUClient()
-station = client.levels.observed.get_station_by_name(station_id="95_2")
-print(station.properties.station_name)
-```
-
-Use the client as a context manager to close the underlying HTTP session when you are
-done:
-
-```python
 with SGUClient() as client:
-    stations = client.levels.observed.get_stations(limit=10)
+    station = client.levels.observed.get_station_by_name(station_id="95_2")
+    print(station.properties.station_name)
 ```
+
+In a notebook or a long-running application, where one `with` block is impractical,
+create the client once, reuse it, and call {meth}`~sgu_client.SGUClient.close` when you
+are done.
+
+The examples further down this page assume such a `client`.
 
 ## Typed responses
 
@@ -70,7 +71,9 @@ Pass an {class}`~sgu_client.SGUConfig` to change timeouts, retries or logging:
 from sgu_client import SGUClient, SGUConfig
 
 config = SGUConfig(timeout=60, max_retries=5, log_level="DEBUG")
-client = SGUClient(config=config)
+
+with SGUClient(config=config) as client:
+    ...
 ```
 
 See {class}`~sgu_client.SGUConfig` for all options and their defaults.

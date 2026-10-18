@@ -24,10 +24,9 @@ request to look up the site and logs a warning.
 ```python
 from sgu_client import SGUClient
 
-client = SGUClient()
-
-site = client.chemistry.get_sampling_site_by_name(site_id="TTK-442-M")
-national_site_id = site.properties.national_site_id  # 359366
+with SGUClient() as client:
+    site = client.chemistry.get_sampling_site_by_name(site_id="TTK-442-M")
+    national_site_id = site.properties.national_site_id  # 359366
 ```
 
 ## Fetching analysis results

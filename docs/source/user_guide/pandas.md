@@ -17,12 +17,12 @@ Without pandas installed, the conversion methods raise a
 ```python
 from sgu_client import SGUClient
 
-client = SGUClient()
+with SGUClient() as client:
+    measurements = client.levels.observed.get_measurements_by_names(
+        station_id=["95_2", "101_1"],
+        tmin="2020-01-01",
+    )
 
-measurements = client.levels.observed.get_measurements_by_names(
-    station_id=["95_2", "101_1"],
-    tmin="2020-01-01",
-)
 df = measurements.to_dataframe()
 df.groupby("station_id")["water_level_masl_m"].mean()
 ```
