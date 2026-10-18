@@ -144,13 +144,12 @@ class ModeledAreaCollection(SGUResponse):
         Examples:
 
             >>> from sgu_client import SGUClient
-            >>> client = SGUClient()
-            >>> areas = client.levels.modeled.get_areas(limit=10)
-            >>> df = areas.to_dataframe()
-            >>>
-            >>> # dataFrame includes area properties and centroid coordinates
-            >>> print(df.columns)  # feature_id, centroid_longitude, centroid_latitude, area_id, time_series_url
-            >>> print(df[['area_id', 'centroid_longitude', 'centroid_latitude']].head())
+            >>> with SGUClient() as client:
+            ...     areas = client.levels.modeled.get_areas(limit=10)
+            ...     df = areas.to_dataframe()
+            ...     # dataFrame includes area properties and centroid coordinates
+            ...     print(df.columns)  # feature_id, centroid_longitude, centroid_latitude, area_id, time_series_url
+            ...     print(df[['area_id', 'centroid_longitude', 'centroid_latitude']].head())
         """
 
         data = []
@@ -230,12 +229,11 @@ class ModeledGroundwaterLevelCollection(SGUResponse):
         Examples:
 
             >>> from sgu_client import SGUClient
-            >>> client = SGUClient()
-            >>> levels = client.levels.modeled.get_levels(limit=100)
-            >>> df = levels.to_dataframe()
-
-            >>> # dataFrame includes modeled percentile data sorted by date
-            >>> print(df[['date', 'area_id', 'relative_level_small_resources', 'deviation_small_resources']].head())
+            >>> with SGUClient() as client:
+            ...     levels = client.levels.modeled.get_levels(limit=100)
+            ...     df = levels.to_dataframe()
+            ...     # dataFrame includes modeled percentile data sorted by date
+            ...     print(df[['date', 'area_id', 'relative_level_small_resources', 'deviation_small_resources']].head())
         """
 
         data = []
@@ -278,18 +276,16 @@ class ModeledGroundwaterLevelCollection(SGUResponse):
         Examples:
 
             >>> from sgu_client import SGUClient
-            >>> client = SGUClient()
-            >>> levels = client.levels.modeled.get_levels(limit=100)
-            >>>
-            >>> # create time series with default columns (date, relative_level_small_resources)
-            >>> series = levels.to_series()
-            >>> print(series.head())
-            >>>
-            >>> # use custom columns - compare small vs large resources
-            >>> series_large = levels.to_series(
-            ...     index="date",
-            ...     data="relative_level_large_resources"
-            ... )
+            >>> with SGUClient() as client:
+            ...     levels = client.levels.modeled.get_levels(limit=100)
+            ...     # create time series with default columns (date, relative_level_small_resources)
+            ...     series = levels.to_series()
+            ...     print(series.head())
+            ...     # use custom columns - compare small vs large resources
+            ...     series_large = levels.to_series(
+            ...         index="date",
+            ...         data="relative_level_large_resources"
+            ...     )
         """
         df = self.to_dataframe(sort_by_date=sort_by_date)
         pd = get_pandas()

@@ -11,14 +11,18 @@ class SGUClient:
 
     This is the primary interface users will interact with.
 
+    Use it as a context manager so the HTTP session is closed when you are done.
+    If the client has to outlive a ``with`` block, call :meth:`close` yourself.
+
     Example:
-        >>> client = SGUClient()
-        >>> stations = client.levels.observed.get_stations()
-        >>> measurements = client.levels.observed.get_measurements()
+        >>> with SGUClient() as client:
+        ...     stations = client.levels.observed.get_stations()
+        ...     measurements = client.levels.observed.get_measurements()
 
         >>> # With custom config
-        >>> config = SGUConfig(timeout=60, debug=True)
-        >>> client = SGUClient(config=config)
+        >>> config = SGUConfig(timeout=60, log_level="DEBUG")
+        >>> with SGUClient(config=config) as client:
+        ...     stations = client.levels.observed.get_stations()
     """
 
     def __init__(self, config: SGUConfig | None = None):
@@ -32,6 +36,14 @@ class SGUClient:
         # Initialize sub-clients
         self.levels = LevelsClient(self._base_client)
         self.chemistry = GroundwaterChemistryClient(self._base_client)
+
+    def close(self) -> None:
+        """Close the underlying HTTP session and its pooled connections.
+
+        Called automatically when the client is used as a context manager. Call it
+        yourself when you create the client without a ``with`` block.
+        """
+        self._base_client.close()
 
     def __enter__(self):
         """Context manager entry.
@@ -50,4 +62,4 @@ class SGUClient:
             exc_val: Exception value (if any)
             exc_tb: Exception traceback (if any)
         """
-        self._base_client.__exit__(exc_type, exc_val, exc_tb)
+        self.close()

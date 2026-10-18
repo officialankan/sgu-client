@@ -51,17 +51,15 @@ class ModeledGroundwaterLevelClient:
         Example:
 
             >>> from sgu_client import SGUClient
-            >>> client = SGUClient()
-            >>>
-            >>> # get all modeled areas
-            >>> areas = client.levels.modeled.get_areas(limit=100)
-            >>>
-            >>> # get areas in a specific region
-            >>> areas = client.levels.modeled.get_areas(
-            ...     bbox=[15.0, 58.0, 17.0, 60.0]
-            ... )
-            >>> for area in areas.features:
-            ...     print(f"area: {area.properties.area_id}")
+            >>> with SGUClient() as client:
+            ...     # get all modeled areas
+            ...     areas = client.levels.modeled.get_areas(limit=100)
+            ...     # get areas in a specific region
+            ...     areas = client.levels.modeled.get_areas(
+            ...         bbox=[15.0, 58.0, 17.0, 60.0]
+            ...     )
+            ...     for area in areas.features:
+            ...         print(f"area: {area.properties.area_id}")
         """
         endpoint = f"{self.BASE_PATH}/omraden/items"
         params = self._build_query_params(
@@ -125,16 +123,14 @@ class ModeledGroundwaterLevelClient:
         Example:
 
             >>> from sgu_client import SGUClient
-            >>> client = SGUClient()
-            >>>
-            >>> # get modeled levels
-            >>> levels = client.levels.modeled.get_levels(limit=100)
-            >>>
-            >>> # get levels for a specific time period
-            >>> levels = client.levels.modeled.get_levels(
-            ...     datetime="2023-01-01/2024-01-01",
-            ...     limit=1000
-            ... )
+            >>> with SGUClient() as client:
+            ...     # get modeled levels
+            ...     levels = client.levels.modeled.get_levels(limit=100)
+            ...     # get levels for a specific time period
+            ...     levels = client.levels.modeled.get_levels(
+            ...         datetime="2023-01-01/2024-01-01",
+            ...         limit=1000
+            ...     )
         """
         endpoint = f"{self.BASE_PATH}/grundvattennivaer-tidigare/items"
         params = self._build_query_params(
@@ -188,19 +184,17 @@ class ModeledGroundwaterLevelClient:
         Example:
 
             >>> from sgu_client import SGUClient
-            >>> client = SGUClient()
-            >>>
-            >>> # get all modeled levels for a specific area
-            >>> levels = client.levels.modeled.get_levels_by_area(
-            ...     area_id=30125,
-            ...     limit=500
-            ... )
-            >>>
-            >>> # with time filtering
-            >>> levels = client.levels.modeled.get_levels_by_area(
-            ...     area_id=30125,
-            ...     datetime="2023-01-01/2024-01-01"
-            ... )
+            >>> with SGUClient() as client:
+            ...     # get all modeled levels for a specific area
+            ...     levels = client.levels.modeled.get_levels_by_area(
+            ...         area_id=30125,
+            ...         limit=500
+            ...     )
+            ...     # with time filtering
+            ...     levels = client.levels.modeled.get_levels_by_area(
+            ...         area_id=30125,
+            ...         datetime="2023-01-01/2024-01-01"
+            ...     )
         """
         filter_expr = f"omrade_id = {area_id}"
         return self.get_levels(filter_expr=filter_expr, **kwargs)
@@ -220,12 +214,12 @@ class ModeledGroundwaterLevelClient:
         Example:
 
             >>> from sgu_client import SGUClient
-            >>> client = SGUClient()
-            >>> levels = client.levels.modeled.get_levels_by_areas(
-            ...     area_ids=[30125, 30126],
-            ...     datetime="2024-09-31/2025-10-01"
-            ... )
-            >>> print(f"Found {len(levels.features)} modeled levels")
+            >>> with SGUClient() as client:
+            ...     levels = client.levels.modeled.get_levels_by_areas(
+            ...         area_ids=[30125, 30126],
+            ...         datetime="2024-09-30/2025-10-01"
+            ...     )
+            ...     print(f"Found {len(levels.features)} modeled levels")
         """
         if not area_ids:
             raise ValueError("At least one area ID must be provided")
@@ -266,22 +260,20 @@ class ModeledGroundwaterLevelClient:
         Example:
 
             >>> from sgu_client import SGUClient
-            >>> client = SGUClient()
-            >>>
-            >>> # get modeled levels for a specific location (Stockholm)
-            >>> levels = client.levels.modeled.get_levels_by_coords(
-            ...     lat=59.33,
-            ...     lon=18.07,
-            ...     limit=100
-            ... )
-            >>>
-            >>> # increase buffer for larger search area
-            >>> levels = client.levels.modeled.get_levels_by_coords(
-            ...     lat=59.33,
-            ...     lon=18.07,
-            ...     buffer=0.05,  # ~5km radius
-            ...     datetime="2023-01-01/2024-01-01"
-            ... )
+            >>> with SGUClient() as client:
+            ...     # get modeled levels for a specific location (Stockholm)
+            ...     levels = client.levels.modeled.get_levels_by_coords(
+            ...         lat=59.33,
+            ...         lon=18.07,
+            ...         limit=100
+            ...     )
+            ...     # increase buffer for larger search area
+            ...     levels = client.levels.modeled.get_levels_by_coords(
+            ...         lat=59.33,
+            ...         lon=18.07,
+            ...         buffer=0.05,  # ~5km radius
+            ...         datetime="2023-01-01/2024-01-01"
+            ...     )
         """
         # Create bounding box around the point
         bbox = [

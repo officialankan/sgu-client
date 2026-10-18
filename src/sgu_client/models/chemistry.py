@@ -665,15 +665,13 @@ class SamplingSiteCollection(SGUResponse):
         Examples:
 
             >>> from sgu_client import SGUClient
-            >>> client = SGUClient()
-            >>>
-            >>> sites = client.chemistry.get_sampling_sites(limit=10)
-            >>> df = sites.to_dataframe()
-            >>>
-            >>> # one row per site, with the feature ID in 'feature_id'
-            >>> print(df[['national_site_id', 'station_id', 'site_name']].head())
-            >>> # established_date, first_sample_date and latest_sample_date
-            >>> # are parsed as UTC datetimes
+            >>> with SGUClient() as client:
+            ...     sites = client.chemistry.get_sampling_sites(limit=10)
+            ...     df = sites.to_dataframe()
+            ...     # one row per site, with the feature ID in 'feature_id'
+            ...     print(df[['national_site_id', 'station_id', 'site_name']].head())
+            ...     # established_date, first_sample_date and latest_sample_date
+            ...     # are parsed as UTC datetimes
         """
         data = []
         for feature in self.features:
@@ -741,15 +739,13 @@ class AnalysisResultCollection(SGUResponse):
         Examples:
 
             >>> from sgu_client import SGUClient
-            >>> client = SGUClient()
-            >>>
-            >>> results = client.chemistry.get_results_by_site(359366, limit=100)
-            >>> df = results.to_dataframe()
-            >>>
-            >>> # one row per result, with the feature ID in 'feature_id'
-            >>> print(df[['sampling_date', 'parameter_name', 'measurement_value']])
-            >>> # sampling_date, sampling_end_date, registration_date and
-            >>> # analysis_date are parsed as UTC datetimes
+            >>> with SGUClient() as client:
+            ...     results = client.chemistry.get_results_by_site(359366, limit=100)
+            ...     df = results.to_dataframe()
+            ...     # one row per result, with the feature ID in 'feature_id'
+            ...     print(df[['sampling_date', 'parameter_name', 'measurement_value']])
+            ...     # sampling_date, sampling_end_date, registration_date and
+            ...     # analysis_date are parsed as UTC datetimes
         """
         data = []
         for feature in self.features:
@@ -805,18 +801,16 @@ class AnalysisResultCollection(SGUResponse):
         Examples:
 
             >>> from sgu_client import SGUClient
-            >>> client = SGUClient()
-            >>> results = client.chemistry.get_results_by_site(359366, limit=100)
-            >>>
-            >>> # time series with default columns (sampling_date, measurement_value)
-            >>> series = results.to_series()
-            >>> print(series.head())
-            >>>
-            >>> # use custom columns - e.g., parameter names as data
-            >>> series_params = results.to_series(
-            ...     index="sampling_date",
-            ...     data="parameter_name"
-            ... )
+            >>> with SGUClient() as client:
+            ...     results = client.chemistry.get_results_by_site(359366, limit=100)
+            ...     # time series with default columns (sampling_date, measurement_value)
+            ...     series = results.to_series()
+            ...     print(series.head())
+            ...     # use custom columns - e.g., parameter names as data
+            ...     series_params = results.to_series(
+            ...         index="sampling_date",
+            ...         data="parameter_name"
+            ...     )
         """
         df = self.to_dataframe(sort_by_date=sort_by_date)
         pd = get_pandas()
@@ -865,11 +859,10 @@ class AnalysisResultCollection(SGUResponse):
         Example:
 
             >>> from sgu_client import SGUClient
-            >>> client = SGUClient()
-            >>>
-            >>> results = client.chemistry.get_results_by_site(359366)
-            >>> df_pivot = results.pivot_by_parameter()
-            >>> # now df_pivot has columns like 'pH', 'Nitratkväve', 'Klorid', etc.
+            >>> with SGUClient() as client:
+            ...     results = client.chemistry.get_results_by_site(359366)
+            ...     df_pivot = results.pivot_by_parameter()
+            ...     # now df_pivot has columns like 'pH', 'Nitratkväve', 'Klorid', etc.
         """
         df = self.to_dataframe(sort_by_date=True)
         pd = get_pandas()

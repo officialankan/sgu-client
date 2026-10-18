@@ -1,5 +1,6 @@
 """Pandas utilities with optional dependency handling."""
 
+import functools
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
@@ -54,14 +55,10 @@ def optional_pandas_method(feature_name: str):
     """Decorator to mark methods that require pandas."""
 
     def decorator(func):
+        @functools.wraps(func)
         def wrapper(*args, **kwargs):
             check_pandas_available(feature_name)
             return func(*args, **kwargs)
-
-        # Preserve function metadata
-        wrapper.__name__ = func.__name__
-        wrapper.__doc__ = func.__doc__
-        wrapper.__annotations__ = func.__annotations__
 
         return wrapper
 
