@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `SGUClient.close()` closes the HTTP session for clients created without a `with` block
+
+### Changed
+
+- **Documentation**: restructured into User Guide, API Reference and About sections; the README is now a short landing page that links to the docs
+
+### Fixed
+
+- Methods wrapped by `optional_pandas_method` keep their original signature and docstring
+- Stale docstring examples (the removed `debug` config option, an API alias passed as a keyword, an invalid date)
+
 ## [0.5.0] - 2026-10-15
 
 ### Changed
