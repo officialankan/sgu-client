@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - `SGUClient.close()` closes the HTTP session for clients created without a `with` block
-- **Type checking**: [ty](https://github.com/astral-sh/ty) now runs in CI on every supported Python version (#45)
+- **Type checking**: the package's type hints are now verified with [ty](https://github.com/astral-sh/ty) on every supported Python version, so editors and type checkers see accurate types (#45)
 
 ### Changed
 
