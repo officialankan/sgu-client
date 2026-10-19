@@ -11,10 +11,10 @@ class LevelsClient:
     through a hierarchical API structure.
 
     Example:
-        >>> client = SGUClient()
-        >>> stations = client.levels.observed.get_stations()
-        >>> areas = client.levels.modeled.get_areas()
-        >>> levels = client.levels.modeled.get_levels()
+        >>> with SGUClient() as client:
+        ...     stations = client.levels.observed.get_stations()
+        ...     areas = client.levels.modeled.get_areas()
+        ...     levels = client.levels.modeled.get_levels()
     """
 
     def __init__(self, base_client):

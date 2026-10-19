@@ -135,19 +135,16 @@ class GroundwaterChemistryClient:
         Example:
 
             >>> from sgu_client import SGUClient
-            >>> client = SGUClient()
-            >>>
-            >>> # find site by id
-            >>> site = client.chemistry.get_sampling_site_by_name(site_id="TTK-442-M")
-            >>>
-            >>> # find site by name
-            >>> site = client.chemistry.get_sampling_site_by_name(site_name="Lena")
-            >>>
-            >>> # find site by national site id
-            >>> site = client.chemistry.get_sampling_site_by_name(
-            ...     national_site_id=359366
-            ... )
-            >>> print(site.properties.municipality)
+            >>> with SGUClient() as client:
+            ...     # find site by id
+            ...     site = client.chemistry.get_sampling_site_by_name(site_id="TTK-442-M")
+            ...     # find site by name
+            ...     site = client.chemistry.get_sampling_site_by_name(site_name="Lena")
+            ...     # find site by national site id
+            ...     site = client.chemistry.get_sampling_site_by_name(
+            ...         national_site_id=359366
+            ...     )
+            ...     print(site.properties.municipality)
         """
         identifier, values = self._select_site_identifier(
             national_site_id, site_id, site_name
@@ -188,15 +185,14 @@ class GroundwaterChemistryClient:
         Example:
 
             >>> from sgu_client import SGUClient
-            >>> client = SGUClient()
-            >>>
-            >>> # get multiple sampling sites by their IDs
-            >>> sites = client.chemistry.get_sampling_sites_by_names(
-            ...     site_id=["TTK-442-M", "SYD-681-C"]
-            ... )
-            >>> for site in sites.features:
-            ...     props = site.properties
-            ...     print(f"{props.station_id}: {props.national_site_id}")
+            >>> with SGUClient() as client:
+            ...     # get multiple sampling sites by their IDs
+            ...     sites = client.chemistry.get_sampling_sites_by_names(
+            ...         site_id=["TTK-442-M", "SYD-681-C"]
+            ...     )
+            ...     for site in sites.features:
+            ...         props = site.properties
+            ...         print(f"{props.station_id}: {props.national_site_id}")
         """
         identifier, values = self._select_site_identifier(
             national_site_id, site_id, site_name
@@ -309,17 +305,15 @@ class GroundwaterChemistryClient:
 
             >>> from sgu_client import SGUClient
             >>> from datetime import datetime, timezone
-            >>> client = SGUClient()
-            >>>
-            >>> # get all results for a site
-            >>> results = client.chemistry.get_results_by_site(359366, limit=100)
-            >>>
-            >>> # get results with time filtering
-            >>> results = client.chemistry.get_results_by_site(
-            ...     359366,
-            ...     tmin=datetime(2020, 1, 1, tzinfo=timezone.utc),
-            ...     tmax=datetime(2021, 1, 1, tzinfo=timezone.utc)
-            ... )
+            >>> with SGUClient() as client:
+            ...     # get all results for a site
+            ...     results = client.chemistry.get_results_by_site(359366, limit=100)
+            ...     # get results with time filtering
+            ...     results = client.chemistry.get_results_by_site(
+            ...         359366,
+            ...         tmin=datetime(2020, 1, 1, tzinfo=timezone.utc),
+            ...         tmax=datetime(2021, 1, 1, tzinfo=timezone.utc)
+            ...     )
         """
         national_site_ids = self._resolve_national_site_ids(
             national_site_id, site_id, site_name
@@ -371,16 +365,15 @@ class GroundwaterChemistryClient:
         Example:
 
             >>> from sgu_client import SGUClient
-            >>> client = SGUClient()
-            >>>
-            >>> # get results for multiple sites
-            >>> results = client.chemistry.get_results_by_sites(
-            ...     [359366, 378865],
-            ...     tmin="2020-01-01T00:00:00Z",
-            ...     tmax="2021-01-01T00:00:00Z",
-            ...     limit=1000
-            ... )
-            >>> print(f"Found {len(results.features)} analysis results")
+            >>> with SGUClient() as client:
+            ...     # get results for multiple sites
+            ...     results = client.chemistry.get_results_by_sites(
+            ...         [359366, 378865],
+            ...         tmin="2020-01-01T00:00:00Z",
+            ...         tmax="2021-01-01T00:00:00Z",
+            ...         limit=1000
+            ...     )
+            ...     print(f"Found {len(results.features)} analysis results")
         """
         national_site_ids = self._resolve_national_site_ids(
             national_site_id, site_id, site_name
@@ -434,27 +427,24 @@ class GroundwaterChemistryClient:
         Example:
 
             >>> from sgu_client import SGUClient
-            >>> client = SGUClient()
-            >>>
-            >>> # get all lead measurements since 2020
-            >>> results = client.chemistry.get_results_by_parameter(
-            ...     parameter="Bly",
-            ...     tmin="2020-01-01",
-            ... )
-            >>>
-            >>> # get pH measurements for a specific site
-            >>> results = client.chemistry.get_results_by_parameter(
-            ...     parameter="pH",
-            ...     national_site_id=359366,
-            ...     tmin="2020-01-01",
-            ...     tmax="2021-01-01"
-            ... )
-            >>>
-            >>> # ... or multiple sites
-            >>> results = client.chemistry.get_results_by_parameter(
-            ...     parameter="pH",
-            ...     national_site_id=[359366, 378865]
-            ... )
+            >>> with SGUClient() as client:
+            ...     # get all lead measurements since 2020
+            ...     results = client.chemistry.get_results_by_parameter(
+            ...         parameter="Bly",
+            ...         tmin="2020-01-01",
+            ...     )
+            ...     # get pH measurements for a specific site
+            ...     results = client.chemistry.get_results_by_parameter(
+            ...         parameter="pH",
+            ...         national_site_id=359366,
+            ...         tmin="2020-01-01",
+            ...         tmax="2021-01-01"
+            ...     )
+            ...     # ... or multiple sites
+            ...     results = client.chemistry.get_results_by_parameter(
+            ...         parameter="pH",
+            ...         national_site_id=[359366, 378865]
+            ...     )
         """
         filters = [f"parameternamn='{parameter}'"]
 

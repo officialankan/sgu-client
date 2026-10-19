@@ -53,17 +53,15 @@ class ObservedGroundwaterLevelClient:
         Example:
 
             >>> from sgu_client import SGUClient
-            >>> client = SGUClient()
-            >>>
-            >>> # get stations in southern Sweden
-            >>> stations = client.levels.observed.get_stations(
-            ...     bbox=[12.0, 55.0, 16.0, 58.0]
-            ... )
-            >>>
-            >>> # filter stations by municipality using CQL
-            >>> stations = client.levels.observed.get_stations(
-            ...     filter_expr="kommun='Uppsala' AND akvifer='JS'"
-            ... )
+            >>> with SGUClient() as client:
+            ...     # get stations in southern Sweden
+            ...     stations = client.levels.observed.get_stations(
+            ...         bbox=[12.0, 55.0, 16.0, 58.0]
+            ...     )
+            ...     # filter stations by municipality using CQL
+            ...     stations = client.levels.observed.get_stations(
+            ...         filter_expr="kommun='Uppsala' AND akvifer='JS'"
+            ...     )
         """
         endpoint = f"{self.BASE_PATH}/stationer/items"
         params = self._build_query_params(
@@ -111,9 +109,12 @@ class ObservedGroundwaterLevelClient:
         sortby: list[str] | None = None,
         **kwargs: Any,
     ) -> GroundwaterMeasurementCollection:
-        """Get groundwater level measurements. This method is used internally by convenience functions like
-        `get_measurements_by_name() by constructing filter expressions. A user may also do this, but readability
-        is greater when using the built-in convenience functions.
+        """Get groundwater level measurements.
+
+        This method is used internally by convenience functions like
+        ``get_measurements_by_name()`` by constructing filter expressions. A user
+        may also do this, but readability is greater when using the built-in
+        convenience functions.
 
         Args:
             bbox: Bounding box as [min_lon, min_lat, max_lon, max_lat]
@@ -186,19 +187,15 @@ class ObservedGroundwaterLevelClient:
         Example:
 
             >>> from sgu_client import SGUClient
-            >>> client = SGUClient()
-            >>>
-            >>> # find station by platsbeteckning (recommended)
-            >>> station = client.levels.observed.get_station_by_name(station_id="95_2")
-            >>>
-            >>> # find station by obsplatsnamn
-            >>> station = client.levels.observed.get_station_by_name(
-            ...     station_name="Lagga_2"
-            ... )
-            >>> print(station.properties.aquifer_description)
+            >>> with SGUClient() as client:
+            ...     # find station by platsbeteckning (recommended)
+            ...     station = client.levels.observed.get_station_by_name(station_id="95_2")
+            ...     # find station by obsplatsnamn
+            ...     station = client.levels.observed.get_station_by_name(
+            ...         station_name="Lagga_2"
+            ...     )
+            ...     print(station.properties.aquifer_description)
         """
-        if not station_id and not station_name:
-            raise ValueError("Either 'station_id' or 'station_name' must be provided.")
         if station_id and station_name:
             raise ValueError(
                 "Only one of 'station_id' or 'station_name' can be provided."
@@ -208,9 +205,11 @@ class ObservedGroundwaterLevelClient:
         if station_id:
             name_type = "platsbeteckning"
             station = station_id
-        else:
+        elif station_name:
             name_type = "obsplatsnamn"
             station = station_name
+        else:
+            raise ValueError("Either 'station_id' or 'station_name' must be provided.")
         filter_expr = f"{name_type}='{station}'"
         response = self.get_stations(filter_expr=filter_expr, **kwargs)
         if len(response.features) > 1:
@@ -239,17 +238,14 @@ class ObservedGroundwaterLevelClient:
         Example:
 
             >>> from sgu_client import SGUClient
-            >>> client = SGUClient()
-            >>>
-            >>> # get multiple stations by their IDs
-            >>> stations = client.levels.observed.get_stations_by_names(
-            ...     station_id=["95_2", "101_1", "102_3"]
-            ... )
-            >>> for station in stations.features:
-            ...     print(f"{station.properties.station_id}: {station.properties.aquifer_code}")
+            >>> with SGUClient() as client:
+            ...     # get multiple stations by their IDs
+            ...     stations = client.levels.observed.get_stations_by_names(
+            ...         station_id=["95_2", "101_1", "102_3"]
+            ...     )
+            ...     for station in stations.features:
+            ...         print(f"{station.properties.station_id}: {station.properties.aquifer_code}")
         """
-        if not station_id and not station_name:
-            raise ValueError("Either 'station_id' or 'station_name' must be provided.")
         if station_id and station_name:
             raise ValueError(
                 "Only one of 'station_id' or 'station_name' can be provided."
@@ -259,13 +255,14 @@ class ObservedGroundwaterLevelClient:
         if station_id:
             name_type = "platsbeteckning"
             stations = station_id
-        else:
+        elif station_name:
             name_type = "obsplatsnamn"
             stations = station_name
+        else:
+            raise ValueError("Either 'station_id' or 'station_name' must be provided.")
 
         # Build filter expression for multiple stations using IN clause
-        # stations is guaranteed to not be None by the validation above
-        quoted_stations = [f"'{station}'" for station in stations]  # type: ignore[union-attr]
+        quoted_stations = [f"'{station}'" for station in stations]
         filter_expr = f"{name_type} in ({', '.join(quoted_stations)})"
 
         return self.get_stations(filter_expr=filter_expr, **kwargs)
@@ -300,30 +297,25 @@ class ObservedGroundwaterLevelClient:
 
             >>> from sgu_client import SGUClient
             >>> from datetime import datetime, timezone
-            >>> client = SGUClient()
-            >>>
-            >>> # get all measurements for a station
-            >>> measurements = client.levels.observed.get_measurements_by_name(
-            ...     station_id="95_2",
-            ...     limit=100
-            ... )
-            >>>
-            >>> # get measurements with time filtering
-            >>> measurements = client.levels.observed.get_measurements_by_name(
-            ...     station_id="95_2",
-            ...     tmin=datetime(2020, 1, 1, tzinfo=timezone.utc),
-            ...     tmax=datetime(2021, 1, 1, tzinfo=timezone.utc)
-            ... )
-            >>>
-            >>> # using ISO string for time filtering
-            >>> measurements = client.levels.observed.get_measurements_by_name(
-            ...     station_id="95_2",
-            ...     tmin="2020-01-01T00:00:00Z",
-            ...     tmax="2021-01-01T00:00:00Z"
-            ... )
+            >>> with SGUClient() as client:
+            ...     # get all measurements for a station
+            ...     measurements = client.levels.observed.get_measurements_by_name(
+            ...         station_id="95_2",
+            ...         limit=100
+            ...     )
+            ...     # get measurements with time filtering
+            ...     measurements = client.levels.observed.get_measurements_by_name(
+            ...         station_id="95_2",
+            ...         tmin=datetime(2020, 1, 1, tzinfo=timezone.utc),
+            ...         tmax=datetime(2021, 1, 1, tzinfo=timezone.utc)
+            ...     )
+            ...     # using ISO string for time filtering
+            ...     measurements = client.levels.observed.get_measurements_by_name(
+            ...         station_id="95_2",
+            ...         tmin="2020-01-01T00:00:00Z",
+            ...         tmax="2021-01-01T00:00:00Z"
+            ...     )
         """
-        if not station_id and not station_name:
-            raise ValueError("Either 'station_id' or 'station_name' must be provided.")
         if station_id and station_name:
             raise ValueError(
                 "Only one of 'station_id' or 'station_name' can be provided."
@@ -342,8 +334,10 @@ class ObservedGroundwaterLevelClient:
                 raise ValueError(
                     f"Station with station_name '{station_name}' has no station_id"
                 )
-        else:
+        elif station_id:
             target_platsbeteckning = station_id
+        else:
+            raise ValueError("Either 'station_id' or 'station_name' must be provided.")
 
         # Build filter expressions
         filters = [f"platsbeteckning='{target_platsbeteckning}'"]
@@ -390,19 +384,16 @@ class ObservedGroundwaterLevelClient:
         Example:
 
             >>> from sgu_client import SGUClient
-            >>> client = SGUClient()
-            >>>
-            >>> # get measurements for multiple stations
-            >>> measurements = client.levels.observed.get_measurements_by_names(
-            ...     station_id=["95_2", "101_1"],
-            ...     tmin="2020-01-01T00:00:00Z",
-            ...     tmax="2021-01-01T00:00:00Z",
-            ...     limit=1000
-            ... )
-            >>> print(f"Found {len(measurements.features)} measurements")
+            >>> with SGUClient() as client:
+            ...     # get measurements for multiple stations
+            ...     measurements = client.levels.observed.get_measurements_by_names(
+            ...         station_id=["95_2", "101_1"],
+            ...         tmin="2020-01-01T00:00:00Z",
+            ...         tmax="2021-01-01T00:00:00Z",
+            ...         limit=1000
+            ...     )
+            ...     print(f"Found {len(measurements.features)} measurements")
         """
-        if not station_id and not station_name:
-            raise ValueError("Either 'station_id' or 'station_name' must be provided.")
         if station_id and station_name:
             raise ValueError(
                 "Only one of 'station_id' or 'station_name' can be provided."
@@ -425,12 +416,13 @@ class ObservedGroundwaterLevelClient:
                         f"Station {station.id} with station_name '{station.properties.station_name}' "
                         f"has no station_id"
                     )
-        else:
+        elif station_id:
             target_platsbeteckningar = station_id
+        else:
+            raise ValueError("Either 'station_id' or 'station_name' must be provided.")
 
         # Build filter expressions
-        # target_platsbeteckningar is guaranteed to not be None by validation above
-        quoted_stations = [f"'{station}'" for station in target_platsbeteckningar]  # type: ignore[union-attr]
+        quoted_stations = [f"'{station}'" for station in target_platsbeteckningar]
         filters = [f"platsbeteckning in ({', '.join(quoted_stations)})"]
 
         # Add datetime filters if tmin/tmax provided

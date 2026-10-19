@@ -41,6 +41,24 @@ def test_client_context_manager():
         assert client is not None
 
 
+def test_context_manager_closes_session():
+    """Test that leaving the with block closes the HTTP session."""
+    with (
+        patch("requests.Session.close") as mock_close,
+        SGUClient(),
+    ):
+        mock_close.assert_not_called()
+    mock_close.assert_called_once()
+
+
+def test_close_closes_session():
+    """Test that close() closes the HTTP session."""
+    client = SGUClient()
+    with patch.object(client._base_client._session, "close") as mock_close:
+        client.close()
+    mock_close.assert_called_once()
+
+
 @patch("requests.Session.request")
 def test_request_with_kwargs(mock_request) -> None:
     """Test that we can pass additional kwargs to the request method."""

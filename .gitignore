@@ -157,3 +157,6 @@ CLAUDE.md
 modeled_sgu_openapi.json
 levels_sgu_openapi.json
 gwchemistry_open_api.json
+
+# Local interpreter choice (uv / pyenv)
+.python-version

@@ -5,7 +5,7 @@ depending on external API availability. For integration tests that verify the
 real API still works, see test_actual_api.py.
 """
 
-from datetime import datetime
+from datetime import UTC, datetime
 from unittest.mock import Mock, patch
 
 import pytest
@@ -34,6 +34,7 @@ TEST_AREA_OMRADE_ID = 30125
 TEST_LEVEL_ID = "grundvattennivaer-tidigare.1"
 TEST_LEVEL_OMRADE_ID = 30125
 TEST_LEVEL_DATUM = "2024-08-01Z"
+TEST_LEVEL_DATE = datetime(2024, 8, 1, tzinfo=UTC)
 TEST_LEVEL_OBJECTID = 1
 
 
@@ -130,9 +131,8 @@ def test_get_level_by_id(mock_request) -> None:
     assert isinstance(level, ModeledGroundwaterLevel)
     assert level.id == TEST_LEVEL_ID
     assert level.properties.area_id == TEST_LEVEL_OMRADE_ID
-    assert level.properties.date == TEST_LEVEL_DATUM
+    assert level.properties.date == TEST_LEVEL_DATE
     assert level.properties.object_id == TEST_LEVEL_OBJECTID
-    assert isinstance(level.properties.date_parsed, datetime)
 
 
 def test_get_level_not_found() -> None:
@@ -226,9 +226,7 @@ def test_levels_with_sortby(mock_request) -> None:
 
     # Check that dates are in descending order (latest first)
     dates = [
-        level.properties.date_parsed
-        for level in levels.features
-        if level.properties.date_parsed
+        level.properties.date for level in levels.features if level.properties.date
     ]
     for i in range(len(dates) - 1):
         assert dates[i] >= dates[i + 1]
@@ -353,11 +351,7 @@ def test_date_property_parsing(mock_request) -> None:
 
     client = SGUClient()
     level = client.levels.modeled.get_level(TEST_LEVEL_ID)
-    assert level.properties.date == TEST_LEVEL_DATUM
-    assert isinstance(level.properties.date_parsed, datetime)
-    assert level.properties.date_parsed.year == 2024
-    assert level.properties.date_parsed.month == 8
-    assert level.properties.date_parsed.day == 1
+    assert level.properties.date == TEST_LEVEL_DATE
 
 
 @patch("requests.Session.request")
@@ -769,8 +763,8 @@ def test_get_levels_by_coords_with_datetime(mock_request) -> None:
 
     # Check that all dates are from 2023
     for level in levels.features:
-        if level.properties.date_parsed:
-            assert level.properties.date_parsed.year == 2023
+        if level.properties.date:
+            assert level.properties.date.year == 2023
 
 
 @patch("requests.Session.request")

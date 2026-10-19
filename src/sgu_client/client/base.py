@@ -318,6 +318,10 @@ class BaseClient:
         """
         return self._make_request("POST", endpoint, data=data, **kwargs)
 
+    def close(self) -> None:
+        """Close the underlying HTTP session and its pooled connections."""
+        self._session.close()
+
     def __enter__(self):
         """Context manager entry.
 
@@ -334,4 +338,4 @@ class BaseClient:
             exc_val: Exception value (if any)
             exc_tb: Exception traceback (if any)
         """
-        self._session.close()
+        self.close()

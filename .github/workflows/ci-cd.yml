@@ -12,8 +12,10 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.11", "3.12", "3.13"]
-    
+        python-version: ["3.11", "3.12", "3.13", "3.14"]
+    env:
+      UV_PYTHON: ${{ matrix.python-version }}  # uv otherwise picks the runner's Python
+
     steps:
     - uses: actions/checkout@v4
     
@@ -30,7 +32,10 @@ jobs:
       run: |
         uv run ruff check
         uv run ruff format --check
-        
+
+    - name: Run type checking
+      run: uv run ty check --python-version ${{ matrix.python-version }}
+
     - name: Run tests with coverage
       run: uv run pytest --cov=src --cov-report=term-missing --cov-report=html --cov-report=xml --cov-branch
       
@@ -41,11 +46,36 @@ jobs:
         files: ./coverage.xml
         fail_ci_if_error: true
 
+  docs:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' && github.event.action != 'closed'
+    env:
+      UV_PYTHON: "3.11"
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v3
+
+    - name: Set up Python
+      run: uv python install 3.11
+
+    - name: Install dependencies
+      run: uv sync --all-groups --all-extras
+
+    - name: Build documentation (warnings are errors)
+      run: |
+        cd docs
+        uv run sphinx-build -W --keep-going -b html source build
+
   test-publish:
     needs: test
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request' && github.base_ref == 'main'
-    
+    env:
+      UV_PYTHON: "3.11"
+
     permissions:
       id-token: write        # For trusted publishing to TestPyPI
       pull-requests: write   # For commenting on PRs
@@ -106,7 +136,9 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main'
-    
+    env:
+      UV_PYTHON: "3.11"
+
     permissions:
       contents: write  # For creating releases
       id-token: write  # For trusted publishing to PyPI
@@ -162,6 +194,8 @@ jobs:
     needs: publish-and-release
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main'
+    env:
+      UV_PYTHON: "3.11"
 
     permissions:
       contents: write  # For pushing to gh-pages branch
@@ -178,7 +212,7 @@ jobs:
       run: uv python install 3.11
 
     - name: Install dependencies
-      run: uv sync --all-groups
+      run: uv sync --all-groups --all-extras
 
     - name: Build documentation
       run: |

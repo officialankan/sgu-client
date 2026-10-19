@@ -14,6 +14,8 @@ def create_mock_station_feature(
     platsbeteckning: str = "95_2",
     obsplatsnamn: str = "Lagga_2",
     coordinates: list[float] | None = None,
+    fdat: str | None = "1985-03-15Z",
+    tdat: str | None = None,
 ) -> dict[str, Any]:
     """Create a single mock groundwater station feature."""
     if coordinates is None:
@@ -27,6 +29,8 @@ def create_mock_station_feature(
             "rowid": 12345,
             "platsbeteckning": platsbeteckning,
             "obsplatsnamn": obsplatsnamn,
+            "fdat": fdat,
+            "tdat": tdat,
             "kommun": "Kalmar",
             "lan": "Kalmar län",
             "landskap": "Småland",
@@ -296,12 +300,8 @@ def create_mock_modeled_level_feature(
     omrade_id: int = 30125,
     datum: str = "2024-08-01Z",
     objectid: int = 1,
-    date: datetime | None = None,
 ) -> dict[str, Any]:
     """Create a single mock modeled groundwater level feature."""
-    if date is None:
-        date = datetime(2024, 8, 1, tzinfo=UTC)
-
     return {
         "type": "Feature",
         "id": level_id,
@@ -310,7 +310,6 @@ def create_mock_modeled_level_feature(
             "omrade_id": omrade_id,
             "datum": datum,
             "objectid": objectid,
-            "date": date.isoformat(),
             "grundvattensituation_sma": 45,
             "grundvattensituation_stora": 53,
             "fyllnadsgrad_sma": 68,
@@ -464,7 +463,6 @@ def create_mock_multiple_modeled_levels_response(
             omrade_id=omrade_id,
             datum=datum_str,
             objectid=i + 1,
-            date=level_date,
         )
         levels.append(level)
 
@@ -765,7 +763,7 @@ def create_mock_multiple_sampling_sites_response(
 
 def create_mock_multiple_analysis_results_response(
     nationellt_provplatsid: int = 359366,
-    parameters: list[tuple[str, str, float]] | None = None,
+    parameters: list[tuple[str, str, float | None]] | None = None,
     start_date: datetime | None = None,
 ) -> dict[str, Any]:
     """Create a mock response for multiple analysis results, one month apart.

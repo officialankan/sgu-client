@@ -54,7 +54,7 @@ def test_sgu_base_model_validates_assignment():
     assert model.count == 10
 
     with pytest.raises(ValidationError):
-        model.count = "invalid"  # Should fail validation
+        model.count = "invalid"  # ty: ignore[invalid-assignment]
 
 
 def test_sgu_response_to_dict():
@@ -186,6 +186,7 @@ def test_groundwater_station_valid():
 
     assert station.type == "Feature"
     assert station.id == "123"
+    assert station.geometry is not None
     assert station.geometry.coordinates == [15.5, 58.4]
     assert station.properties.station_id == "95_2"
 
@@ -235,7 +236,7 @@ def test_groundwater_measurement_properties_minimal():
     props = GroundwaterMeasurementProperties(row_id=456, station_id="95_2")
     assert props.row_id == 456
     assert props.station_id == "95_2"
-    assert props.observation_datetime is None
+    assert props.observation_date is None
 
 
 def test_groundwater_measurement_properties_with_date():
@@ -249,7 +250,7 @@ def test_groundwater_measurement_properties_with_date():
     )
 
     assert props.row_id == 456
-    assert props.observation_datetime == datetime(2023, 6, 15, 10, 30, 0, tzinfo=UTC)
+    assert props.observation_date == datetime(2023, 6, 15, 10, 30, 0, tzinfo=UTC)
     assert props.water_level_masl_m == 45.67
 
 
@@ -258,7 +259,7 @@ def test_groundwater_measurement_properties_invalid_date():
     props = GroundwaterMeasurementProperties(
         row_id=456, station_id="95_2", observation_date="invalid-date"
     )
-    assert props.observation_datetime is None
+    assert props.observation_date is None
 
 
 def test_groundwater_measurement_valid():
@@ -276,7 +277,8 @@ def test_groundwater_measurement_valid():
 
     assert measurement.type == "Feature"
     assert measurement.id == "456"
-    assert measurement.properties.observation_datetime.year == 2023
+    assert measurement.properties.observation_date is not None
+    assert measurement.properties.observation_date.year == 2023
 
 
 def test_crs_model():
@@ -335,7 +337,7 @@ def test_modeled_groundwater_level_properties():
     props = ModeledGroundwaterLevelProperties(
         area_id=100,
         object_id=1001,
-        date="2023-06-15",
+        date="2023-06-15Z",
         deviation_small_resources=25,
         deviation_large_resources=75,
         relative_level_small_resources=30,
@@ -344,7 +346,7 @@ def test_modeled_groundwater_level_properties():
 
     assert props.area_id == 100
     assert props.object_id == 1001
-    assert props.date == "2023-06-15"
+    assert props.date == datetime(2023, 6, 15, tzinfo=UTC)
     assert props.deviation_small_resources == 25
     assert props.deviation_large_resources == 75
 
@@ -371,7 +373,7 @@ def test_modeled_groundwater_level():
         properties=ModeledGroundwaterLevelProperties(
             area_id=100,
             object_id=1001,
-            date="2023-06-15",
+            date="2023-06-15Z",
             deviation_small_resources=25,
             relative_level_small_resources=30,
             relative_level_large_resources=80,
@@ -478,9 +480,8 @@ def test_model_dump_uses_english_field_names():
     assert data["station_id"] == "95_2"
 
 
-def test_last_updated_datetime_invalid_format():
-    """Test that last_updated_datetime returns None for invalid datetime formats."""
-    # Test with invalid datetime string using measurement (which has last_updated_datetime property)
+def test_last_updated_invalid_format():
+    """An unparseable last_updated becomes None instead of raising."""
     measurement_data = {
         "type": "Feature",
         "id": "nivaer.1",
@@ -497,13 +498,11 @@ def test_last_updated_datetime_invalid_format():
 
     measurement = GroundwaterMeasurement(**measurement_data)
 
-    # Should return None instead of raising an exception
-    assert measurement.properties.last_updated_datetime is None
-    assert measurement.properties.last_updated == "not-a-valid-datetime"
+    assert measurement.properties.last_updated is None
 
 
-def test_last_updated_datetime_with_none():
-    """Test that last_updated_datetime returns None when last_updated is None."""
+def test_last_updated_with_none():
+    """A null last_updated stays None."""
     measurement_data = {
         "type": "Feature",
         "id": "nivaer.1",
@@ -519,7 +518,7 @@ def test_last_updated_datetime_with_none():
     }
 
     measurement = GroundwaterMeasurement(**measurement_data)
-    assert measurement.properties.last_updated_datetime is None
+    assert measurement.properties.last_updated is None
 
 
 def test_to_series_empty_dataframe():
@@ -563,7 +562,7 @@ def test_to_series_invalid_index_column():
         "timeStamp": datetime.now(UTC).isoformat(),
     }
 
-    collection = GroundwaterMeasurementCollection(**measurement_data)
+    collection = GroundwaterMeasurementCollection.model_validate(measurement_data)
 
     # Should raise ValueError for non-existent index column
     with pytest.raises(ValueError) as exc_info:
@@ -596,7 +595,7 @@ def test_to_series_invalid_data_column():
         "timeStamp": datetime.now(UTC).isoformat(),
     }
 
-    collection = GroundwaterMeasurementCollection(**measurement_data)
+    collection = GroundwaterMeasurementCollection.model_validate(measurement_data)
 
     # Should raise ValueError for non-existent data column
     with pytest.raises(ValueError) as exc_info:
