@@ -28,6 +28,7 @@ dev = [
     "autodoc-pydantic>=2.2.0",
     "myst-nb>=1.4.0",
     "sphinx-copybutton>=0.5.2",
+    "ty>=0.0.89",
 ]
 
 [tool.ruff]
@@ -68,6 +69,8 @@ line-ending = "auto"
 [tool.ruff.lint.isort]
 known-first-party = ["sgu_client"]
 
+[tool.ty.terminal]
+error-on-warning = true
 
 [tool.pytest.ini_options]
 addopts = ""

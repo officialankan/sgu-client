@@ -53,7 +53,9 @@ def test_sampling_site_parses_v2_payload():
     assert props.soil_type_description == "sand"
     assert props.pipe_height == 0.35
     assert props.first_sample_date == datetime(2021, 10, 6, tzinfo=UTC)
+    assert props.analyses_csv_url is not None
     assert props.analyses_csv_url.endswith("&f=text/csv")
+    assert site.geometry is not None
     assert site.geometry.coordinates == [16.68629857, 58.90889813]
 
 
@@ -482,7 +484,7 @@ def test_get_results_by_parameter_no_parameter():
     """get_results_by_parameter requires a parameter."""
     client = SGUClient()
     with pytest.raises(TypeError):
-        client.chemistry.get_results_by_parameter()
+        client.chemistry.get_results_by_parameter()  # ty: ignore[missing-argument]
 
 
 def test_get_results_by_site_multiple_sites_for_name_raises():

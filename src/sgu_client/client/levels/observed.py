@@ -196,8 +196,6 @@ class ObservedGroundwaterLevelClient:
             ...     )
             ...     print(station.properties.aquifer_description)
         """
-        if not station_id and not station_name:
-            raise ValueError("Either 'station_id' or 'station_name' must be provided.")
         if station_id and station_name:
             raise ValueError(
                 "Only one of 'station_id' or 'station_name' can be provided."
@@ -207,9 +205,11 @@ class ObservedGroundwaterLevelClient:
         if station_id:
             name_type = "platsbeteckning"
             station = station_id
-        else:
+        elif station_name:
             name_type = "obsplatsnamn"
             station = station_name
+        else:
+            raise ValueError("Either 'station_id' or 'station_name' must be provided.")
         filter_expr = f"{name_type}='{station}'"
         response = self.get_stations(filter_expr=filter_expr, **kwargs)
         if len(response.features) > 1:
@@ -246,8 +246,6 @@ class ObservedGroundwaterLevelClient:
             ...     for station in stations.features:
             ...         print(f"{station.properties.station_id}: {station.properties.aquifer_code}")
         """
-        if not station_id and not station_name:
-            raise ValueError("Either 'station_id' or 'station_name' must be provided.")
         if station_id and station_name:
             raise ValueError(
                 "Only one of 'station_id' or 'station_name' can be provided."
@@ -257,13 +255,14 @@ class ObservedGroundwaterLevelClient:
         if station_id:
             name_type = "platsbeteckning"
             stations = station_id
-        else:
+        elif station_name:
             name_type = "obsplatsnamn"
             stations = station_name
+        else:
+            raise ValueError("Either 'station_id' or 'station_name' must be provided.")
 
         # Build filter expression for multiple stations using IN clause
-        # stations is guaranteed to not be None by the validation above
-        quoted_stations = [f"'{station}'" for station in stations]  # type: ignore[union-attr]
+        quoted_stations = [f"'{station}'" for station in stations]
         filter_expr = f"{name_type} in ({', '.join(quoted_stations)})"
 
         return self.get_stations(filter_expr=filter_expr, **kwargs)
@@ -317,8 +316,6 @@ class ObservedGroundwaterLevelClient:
             ...         tmax="2021-01-01T00:00:00Z"
             ...     )
         """
-        if not station_id and not station_name:
-            raise ValueError("Either 'station_id' or 'station_name' must be provided.")
         if station_id and station_name:
             raise ValueError(
                 "Only one of 'station_id' or 'station_name' can be provided."
@@ -337,8 +334,10 @@ class ObservedGroundwaterLevelClient:
                 raise ValueError(
                     f"Station with station_name '{station_name}' has no station_id"
                 )
-        else:
+        elif station_id:
             target_platsbeteckning = station_id
+        else:
+            raise ValueError("Either 'station_id' or 'station_name' must be provided.")
 
         # Build filter expressions
         filters = [f"platsbeteckning='{target_platsbeteckning}'"]
@@ -395,8 +394,6 @@ class ObservedGroundwaterLevelClient:
             ...     )
             ...     print(f"Found {len(measurements.features)} measurements")
         """
-        if not station_id and not station_name:
-            raise ValueError("Either 'station_id' or 'station_name' must be provided.")
         if station_id and station_name:
             raise ValueError(
                 "Only one of 'station_id' or 'station_name' can be provided."
@@ -419,12 +416,13 @@ class ObservedGroundwaterLevelClient:
                         f"Station {station.id} with station_name '{station.properties.station_name}' "
                         f"has no station_id"
                     )
-        else:
+        elif station_id:
             target_platsbeteckningar = station_id
+        else:
+            raise ValueError("Either 'station_id' or 'station_name' must be provided.")
 
         # Build filter expressions
-        # target_platsbeteckningar is guaranteed to not be None by validation above
-        quoted_stations = [f"'{station}'" for station in target_platsbeteckningar]  # type: ignore[union-attr]
+        quoted_stations = [f"'{station}'" for station in target_platsbeteckningar]
         filters = [f"platsbeteckning in ({', '.join(quoted_stations)})"]
 
         # Add datetime filters if tmin/tmax provided

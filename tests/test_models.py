@@ -54,7 +54,7 @@ def test_sgu_base_model_validates_assignment():
     assert model.count == 10
 
     with pytest.raises(ValidationError):
-        model.count = "invalid"  # Should fail validation
+        model.count = "invalid"  # ty: ignore[invalid-assignment]
 
 
 def test_sgu_response_to_dict():
@@ -186,6 +186,7 @@ def test_groundwater_station_valid():
 
     assert station.type == "Feature"
     assert station.id == "123"
+    assert station.geometry is not None
     assert station.geometry.coordinates == [15.5, 58.4]
     assert station.properties.station_id == "95_2"
 
@@ -276,6 +277,7 @@ def test_groundwater_measurement_valid():
 
     assert measurement.type == "Feature"
     assert measurement.id == "456"
+    assert measurement.properties.observation_date is not None
     assert measurement.properties.observation_date.year == 2023
 
 
@@ -560,7 +562,7 @@ def test_to_series_invalid_index_column():
         "timeStamp": datetime.now(UTC).isoformat(),
     }
 
-    collection = GroundwaterMeasurementCollection(**measurement_data)
+    collection = GroundwaterMeasurementCollection.model_validate(measurement_data)
 
     # Should raise ValueError for non-existent index column
     with pytest.raises(ValueError) as exc_info:
@@ -593,7 +595,7 @@ def test_to_series_invalid_data_column():
         "timeStamp": datetime.now(UTC).isoformat(),
     }
 
-    collection = GroundwaterMeasurementCollection(**measurement_data)
+    collection = GroundwaterMeasurementCollection.model_validate(measurement_data)
 
     # Should raise ValueError for non-existent data column
     with pytest.raises(ValueError) as exc_info:
