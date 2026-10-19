@@ -7,20 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-10-19
+
 ### Added
 
+- **Python 3.14**: supported and tested in CI (#48)
 - `SGUClient.close()` closes the HTTP session for clients created without a `with` block
 - **Type checking**: the package's type hints are now verified with [ty](https://github.com/astral-sh/ty) on every supported Python version, so editors and type checkers see accurate types (#45)
 
 ### Changed
 
-- **Documentation**: restructured into User Guide, API Reference and About sections; the README is now a short landing page that links to the docs
+- **Documentation**: restructured into User Guide, API Reference and About sections; the README is now a short landing page that links to the docs (#44)
 
 ### Fixed
 
 - Methods wrapped by `optional_pandas_method` keep their original signature and docstring
 - Stale docstring examples (the removed `debug` config option, an API alias passed as a keyword, an invalid date)
 - Station `active_since` and `active_until` are no longer raw strings like `"2018-12-10Z"` (#49)
+- **pandas 3**: date columns stay `datetime64[ns, UTC]`; pandas 3 otherwise picks the resolution per column (`us`, or `s` when every value is missing)
 
 ### BREAKING CHANGES
 
