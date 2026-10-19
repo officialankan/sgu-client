@@ -24,6 +24,8 @@ jobs:
     code-scan:
         name: Code Security Scan
         runs-on: ubuntu-latest
+        env:
+            UV_PYTHON: "3.11"
 
         permissions:
             contents: read
