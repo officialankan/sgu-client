@@ -12,8 +12,10 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.11", "3.12", "3.13"]
-    
+        python-version: ["3.11", "3.12", "3.13", "3.14"]
+    env:
+      UV_PYTHON: ${{ matrix.python-version }}  # uv otherwise picks the runner's Python
+
     steps:
     - uses: actions/checkout@v4
     
@@ -47,6 +49,8 @@ jobs:
   docs:
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request' && github.event.action != 'closed'
+    env:
+      UV_PYTHON: "3.11"
 
     steps:
     - uses: actions/checkout@v4
@@ -69,7 +73,9 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request' && github.base_ref == 'main'
-    
+    env:
+      UV_PYTHON: "3.11"
+
     permissions:
       id-token: write        # For trusted publishing to TestPyPI
       pull-requests: write   # For commenting on PRs
@@ -130,7 +136,9 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main'
-    
+    env:
+      UV_PYTHON: "3.11"
+
     permissions:
       contents: write  # For creating releases
       id-token: write  # For trusted publishing to PyPI
@@ -186,6 +194,8 @@ jobs:
     needs: publish-and-release
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main'
+    env:
+      UV_PYTHON: "3.11"
 
     permissions:
       contents: write  # For pushing to gh-pages branch
