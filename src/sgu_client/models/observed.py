@@ -1,11 +1,11 @@
 """Pydantic models for groundwater data from SGU API."""
 
-from datetime import datetime
 from typing import TYPE_CHECKING, Literal
 
 from pydantic import Field
 
 from sgu_client.models.base import SGUBaseModel, SGUResponse
+from sgu_client.models.dates import ApiDatetime, convert_datetime_columns
 from sgu_client.models.shared import CRS, Geometry, Link
 from sgu_client.utils.pandas_helpers import get_pandas, optional_pandas_method
 
@@ -30,12 +30,14 @@ class GroundwaterStationProperties(SGUBaseModel):
     )
 
     # Time period
-    active_since: str | None = Field(
-        None, alias="fdat", description="Active since date"
-    )  # ISO date string
-    active_until: str | None = Field(
-        None, alias="tdat", description="Active until date"
-    )  # ISO date string
+    active_since: ApiDatetime = Field(
+        None, alias="fdat", description="Active since date (midnight UTC)"
+    )
+    active_until: ApiDatetime = Field(
+        None,
+        alias="tdat",
+        description="Active until date (midnight UTC); None for a live station",
+    )
 
     # Elevation and reference
     reference_level: float | None = Field(
@@ -159,9 +161,9 @@ class GroundwaterMeasurementProperties(SGUBaseModel):
     )
 
     # Measurement data
-    observation_date: str | None = Field(
-        None, alias="obsdatum", description="Observation date"
-    )  # ISO datetime string
+    observation_date: ApiDatetime = Field(
+        None, alias="obsdatum", description="Observation timestamp (UTC)"
+    )
     water_level_below_ground_m: float | None = Field(
         None,
         alias="grundvattenniva_m_urok",
@@ -187,31 +189,9 @@ class GroundwaterMeasurementProperties(SGUBaseModel):
     )
 
     # Metadata
-    last_updated: str | None = Field(
-        None, alias="lastupdate", description="Last update timestamp"
-    )  # ISO datetime string
-
-    @property
-    def observation_datetime(self) -> datetime | None:
-        """Parse observation date as datetime object."""
-        if self.observation_date:
-            try:
-                return datetime.fromisoformat(
-                    self.observation_date.replace("Z", "+00:00")
-                )
-            except (ValueError, AttributeError):
-                return None
-        return None
-
-    @property
-    def last_updated_datetime(self) -> datetime | None:
-        """Parse last update as datetime object."""
-        if self.last_updated:
-            try:
-                return datetime.fromisoformat(self.last_updated.replace("Z", "+00:00"))
-            except (ValueError, AttributeError):
-                return None
-        return None
+    last_updated: ApiDatetime = Field(
+        None, alias="lastupdate", description="Last update timestamp (UTC)"
+    )
 
 
 class GroundwaterMeasurement(SGUBaseModel):
@@ -240,7 +220,7 @@ class GroundwaterStationCollection(SGUResponse):
         None, description="Number of features matching query"
     )
     numberReturned: int | None = Field(None, description="Number of features returned")
-    timeStamp: str | None = Field(None, description="Response timestamp")
+    timeStamp: ApiDatetime = Field(None, description="Response timestamp (UTC)")
 
     # Links and CRS
     links: list[Link] | None = Field(None, description="Related links")
@@ -282,7 +262,9 @@ class GroundwaterStationCollection(SGUResponse):
             data.append(row)
 
         pd = get_pandas()
-        return pd.DataFrame(data)
+        return convert_datetime_columns(
+            pd.DataFrame(data), GroundwaterStationProperties
+        )
 
 
 class GroundwaterMeasurementCollection(SGUResponse):
@@ -299,7 +281,7 @@ class GroundwaterMeasurementCollection(SGUResponse):
         None, description="Number of features matching query"
     )
     numberReturned: int | None = Field(None, description="Number of features returned")
-    timeStamp: str | None = Field(None, description="Response timestamp")
+    timeStamp: ApiDatetime = Field(None, description="Response timestamp (UTC)")
 
     # Links and CRS
     links: list[Link] | None = Field(None, description="Related links")
@@ -327,10 +309,10 @@ class GroundwaterMeasurementCollection(SGUResponse):
 
         data = []
         for feature in self.features:
+            # observation_date stays the second column, as before
             row = {
                 "measurement_id": feature.id,
-                "observation_date": feature.properties.observation_datetime,
-                "last_update": feature.properties.last_updated_datetime,
+                "observation_date": feature.properties.observation_date,
             }
             # Add geometry if present
             if feature.geometry:
@@ -351,13 +333,9 @@ class GroundwaterMeasurementCollection(SGUResponse):
             data.append(row)
 
         pd = get_pandas()
-        df = pd.DataFrame(data)
-
-        # Ensure datetime columns are properly typed
-        if not df.empty and "observation_date" in df.columns:
-            df["observation_date"] = pd.to_datetime(df["observation_date"])
-        if not df.empty and "last_update" in df.columns:
-            df["last_update"] = pd.to_datetime(df["last_update"])
+        df = convert_datetime_columns(
+            pd.DataFrame(data), GroundwaterMeasurementProperties
+        )
 
         if sort_by_date:
             df = df.sort_values(by="observation_date")

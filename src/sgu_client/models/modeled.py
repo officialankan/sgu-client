@@ -1,11 +1,11 @@
 """Pydantic models for modeled groundwater data from SGU API."""
 
-from datetime import datetime
 from typing import TYPE_CHECKING, Any, ClassVar, Literal
 
 from pydantic import Field, field_validator
 
 from sgu_client.models.base import SGUBaseModel, SGUResponse
+from sgu_client.models.dates import ApiDatetime, convert_datetime_columns
 from sgu_client.models.shared import CRS, Geometry, Link
 from sgu_client.utils.pandas_helpers import get_pandas, optional_pandas_method
 
@@ -43,7 +43,7 @@ class ModeledGroundwaterLevelProperties(SGUBaseModel):
     model_config: ClassVar = {"validate_by_name": True, "validate_by_alias": True}
 
     # Date and area identification
-    date: str | None = Field(None, alias="datum", description="Date (ISO format)")
+    date: ApiDatetime = Field(None, alias="datum", description="Date (midnight UTC)")
     area_id: int = Field(..., alias="omrade_id", description="Area ID")
 
     # Deviation percentiles (0-100)
@@ -81,18 +81,6 @@ class ModeledGroundwaterLevelProperties(SGUBaseModel):
         """Transform -1 values to None for large resource fields."""
         return None if v == -1 else v
 
-    @property
-    def date_parsed(self) -> datetime | None:
-        """Parse date as datetime object (daily data, no timezone)."""
-        if self.date:
-            try:
-                # Remove 'Z' suffix and parse as naive datetime (daily data)
-                date_str = self.date.rstrip("Z")
-                return datetime.fromisoformat(date_str)
-            except (ValueError, AttributeError):
-                return None
-        return None
-
 
 class ModeledGroundwaterLevel(SGUBaseModel):
     """A modeled groundwater level (GeoJSON Feature)."""
@@ -122,7 +110,7 @@ class ModeledAreaCollection(SGUResponse):
         None, description="Number of features matching query"
     )
     numberReturned: int | None = Field(None, description="Number of features returned")
-    timeStamp: str | None = Field(None, description="Response timestamp")
+    timeStamp: ApiDatetime = Field(None, description="Response timestamp (UTC)")
 
     # Links and CRS
     links: list[Link] | None = Field(None, description="Related links")
@@ -204,7 +192,7 @@ class ModeledGroundwaterLevelCollection(SGUResponse):
         None, description="Number of features matching query"
     )
     numberReturned: int | None = Field(None, description="Number of features returned")
-    timeStamp: str | None = Field(None, description="Response timestamp")
+    timeStamp: ApiDatetime = Field(None, description="Response timestamp (UTC)")
 
     # Links and CRS
     links: list[Link] | None = Field(None, description="Related links")
@@ -238,20 +226,15 @@ class ModeledGroundwaterLevelCollection(SGUResponse):
 
         data = []
         for feature in self.features:
-            row = {
-                "level_id": feature.id,
-                "date": feature.properties.date_parsed,
-            }
-
+            row = {"level_id": feature.id}
             # Add all properties using English field names
-            props = feature.properties.model_dump(by_alias=False)
-            # Remove the raw date string since we want the parsed datetime
-            props.pop("date", None)
-            row.update(props)
+            row.update(feature.properties.model_dump(by_alias=False))
             data.append(row)
 
         pd = get_pandas()
-        df = pd.DataFrame(data)
+        df = convert_datetime_columns(
+            pd.DataFrame(data), ModeledGroundwaterLevelProperties
+        )
         if sort_by_date and "date" in df.columns:
             df = df.sort_values(by="date")
         return df

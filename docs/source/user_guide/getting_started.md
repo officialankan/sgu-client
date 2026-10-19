@@ -63,6 +63,25 @@ Fields have English names, and each maps to the Swedish name used by the SGU API
 example `station_id` ↔ `platsbeteckning`). The {doc}`/api` lists the API name for every
 field.
 
+### Dates and times
+
+Every date and time is a timezone-aware `datetime` in UTC, as the SGU API labels it (its
+values end in `Z`):
+
+- Timestamps keep their time: `observation_date` `"2024-12-31T04:00:00Z"` becomes
+  `datetime(2024, 12, 31, 4, 0, tzinfo=UTC)`.
+- Date-only fields arrive as `"1996-04-29Z"` and become midnight UTC, so `.date()` gives
+  the calendar day.
+- Missing values are `None`. A value that can't be parsed, or that has no timezone, is
+  also `None`, and a warning is logged naming the field and the value.
+
+SGU doesn't document which timezone its data uses, so the client takes the `Z` at its
+word. One case to keep in mind: logger readings in `observation_date` fit UTC, but they
+could also be Swedish standard time (UTC+1) labelled as UTC.
+
+`to_dict()` returns `datetime` objects. For JSON, use `model_dump_json()`, which writes
+ISO 8601 strings.
+
 ## Configuration
 
 Pass an {class}`~sgu_client.SGUConfig` to change timeouts, retries or logging:

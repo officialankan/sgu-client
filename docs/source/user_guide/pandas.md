@@ -32,8 +32,9 @@ The GeoJSON structure is flattened:
 - Each feature becomes a row.
 - Point coordinates become `longitude` and `latitude` columns.
 - Every property becomes a top-level column, using its English field name.
-- Date columns of measurements, modeled levels and chemistry data are parsed as
-  datetimes. Measurement, level and result collections are sorted by date (pass
+- Date columns are `datetime64[ns, UTC]`, even when every value is missing (`NaT`).
+  See [Dates and times](getting_started.md#dates-and-times).
+- Measurement, level and result collections are sorted by date (pass
   `sort_by_date=False` to keep the API order).
 
 ```text
