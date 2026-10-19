@@ -74,7 +74,7 @@ def test_real_api_integration_get_recent_measurements():
     measurement = measurements.features[0]
     assert measurement.properties.station_id == TEST_STATION_PLATSBETECKNING
     assert measurement.properties.observation_date is not None
-    assert isinstance(measurement.properties.observation_datetime, datetime)
+    assert isinstance(measurement.properties.observation_date, datetime)
     assert measurement.properties.water_level_masl_m is not None
     assert isinstance(measurement.properties.water_level_masl_m, int | float)
 
@@ -122,7 +122,7 @@ def test_real_api_chemistry_analysis_results():
     assert result.properties.parameter_name is not None
     # measurement_value can be None for some results
     assert result.properties.sampling_date is not None
-    assert isinstance(result.properties.sampling_datetime, datetime)
+    assert isinstance(result.properties.sampling_date, datetime)
 
 
 def test_real_api_chemistry_results_by_site_id():
@@ -144,6 +144,6 @@ def test_real_api_chemistry_results_by_site_id():
         assert result.properties.national_site_id == TEST_CHEMISTRY_NATIONAL_SITE_ID
         assert (
             datetime(2021, 1, 1, tzinfo=UTC)
-            <= result.properties.sampling_datetime
+            <= result.properties.sampling_date
             <= datetime(2022, 1, 1, tzinfo=UTC)
         )

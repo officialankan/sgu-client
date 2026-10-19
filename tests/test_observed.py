@@ -90,7 +90,7 @@ def test_get_measurement_by_id(mock_request) -> None:
     assert isinstance(measurement, GroundwaterMeasurement)
     assert measurement.id == TEST_MEASUREMENT_ID
     assert measurement.properties.measurement_method == TEST_MEASUREMENT_METOD_FOR_M
-    assert isinstance(measurement.properties.observation_datetime, datetime)
+    assert isinstance(measurement.properties.observation_date, datetime)
 
 
 @patch("requests.Session.request")
@@ -359,7 +359,7 @@ def test_get_measurements_by_name_with_time_filter(mock_request) -> None:
     assert isinstance(measurements, GroundwaterMeasurementCollection)
     # Check that measurements are within the time range
     for measurement in measurements.features:
-        obs_date = measurement.properties.observation_datetime
+        obs_date = measurement.properties.observation_date
         if obs_date:
             assert tmin <= obs_date <= tmax
 
@@ -482,7 +482,7 @@ def test_get_measurements_by_names_with_time_filter(mock_request) -> None:
     assert isinstance(measurements, GroundwaterMeasurementCollection)
     # Check that measurements are within the time range
     for measurement in measurements.features:
-        obs_date = measurement.properties.observation_datetime
+        obs_date = measurement.properties.observation_date
         if obs_date:
             assert tmin <= obs_date <= tmax
 
@@ -801,3 +801,23 @@ def test_get_station_by_name_multiple_results():
             client.levels.observed.get_station_by_name(station_name="DuplicateName")
 
         assert "multiple" in str(exc_info.value).lower()
+
+
+@patch("requests.Session.request")
+def test_get_stations_parses_active_dates(mock_request) -> None:
+    """Station dates come back as UTC datetimes; a live station has no end date."""
+    mock_request.return_value = create_mock_response(
+        create_mock_station_collection_response(
+            stations=[
+                create_mock_station_feature(fdat="1996-04-29Z", tdat="2018-12-10Z"),
+                create_mock_station_feature(station_id="stationer.1", tdat=None),
+            ]
+        )
+    )
+
+    stations = SGUClient().levels.observed.get_stations(limit=10)
+
+    closed, live = (station.properties for station in stations.features)
+    assert closed.active_since == datetime(1996, 4, 29, tzinfo=UTC)
+    assert closed.active_until == datetime(2018, 12, 10, tzinfo=UTC)
+    assert live.active_until is None

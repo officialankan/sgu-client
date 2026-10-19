@@ -45,6 +45,10 @@ results = client.chemistry.get_results_by_site(
 results = client.chemistry.get_results_by_sites([359366, 378865], tmin="2020-01-01")
 ```
 
+`sampling_date` and the other result dates are UTC datetimes, as are the site dates
+`established_date`, `first_sample_date` and `latest_sample_date`. See
+[Dates and times](getting_started.md#dates-and-times).
+
 When sites are given by `site_id` or `site_name`, a lookup that misses any requested
 site raises `ValueError` instead of returning partial results.
 

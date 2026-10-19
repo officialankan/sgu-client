@@ -1,40 +1,16 @@
 """Pydantic models for groundwater chemistry data from SGU API."""
 
-from datetime import datetime
 from typing import TYPE_CHECKING, Any, Literal
 
 from pydantic import Field, field_validator
 
 from sgu_client.models.base import SGUBaseModel, SGUResponse
+from sgu_client.models.dates import ApiDatetime, convert_datetime_columns
 from sgu_client.models.shared import CRS, Geometry, Link
 from sgu_client.utils.pandas_helpers import get_pandas, optional_pandas_method
 
 if TYPE_CHECKING:
     import pandas as pd
-
-
-# Date columns parsed as datetimes in to_dataframe()
-SITE_DATE_COLUMNS = ("established_date", "first_sample_date", "latest_sample_date")
-RESULT_DATE_COLUMNS = (
-    "sampling_date",
-    "sampling_end_date",
-    "registration_date",
-    "analysis_date",
-)
-
-
-def _parse_date_columns(df: "pd.DataFrame", columns: tuple[str, ...]) -> None:
-    """Parse ISO date strings in the given DataFrame columns as UTC datetimes.
-
-    The v2 API returns dates as '2021-10-06Z' and datetimes as
-    '2021-10-06T00:00:00Z'; pandas cannot parse a 'Z' suffix on a bare date.
-    """
-    pd = get_pandas()
-    for column in columns:
-        if column in df.columns:
-            df[column] = pd.to_datetime(
-                df[column].str.removesuffix("Z"), utc=True, format="ISO8601"
-            )
 
 
 def _normalize_county_code(value: Any) -> str | None:
@@ -252,15 +228,15 @@ class SamplingSiteProperties(SGUBaseModel):
     )
 
     # Sampling history
-    established_date: str | None = Field(
-        None, alias="etabldatum", description="Site establishment date"
-    )  # ISO date string
-    first_sample_date: str | None = Field(
-        None, alias="forstaprov", description="Date of first sample"
-    )  # ISO date string
-    latest_sample_date: str | None = Field(
-        None, alias="senasteprov", description="Date of latest sample"
-    )  # ISO date string
+    established_date: ApiDatetime = Field(
+        None, alias="etabldatum", description="Site establishment date (midnight UTC)"
+    )
+    first_sample_date: ApiDatetime = Field(
+        None, alias="forstaprov", description="Date of first sample (midnight UTC)"
+    )
+    latest_sample_date: ApiDatetime = Field(
+        None, alias="senasteprov", description="Date of latest sample (midnight UTC)"
+    )
     sample_count: int | None = Field(
         None, alias="antal_prov", description="Number of samples collected"
     )
@@ -304,18 +280,6 @@ class SamplingSiteProperties(SGUBaseModel):
     )
 
     _county_code = field_validator("county_code", mode="before")(_normalize_county_code)
-
-    @property
-    def established_datetime(self) -> datetime | None:
-        """Parse establishment date as datetime object."""
-        if self.established_date:
-            try:
-                return datetime.fromisoformat(
-                    self.established_date.replace("Z", "+00:00")
-                )
-            except (ValueError, AttributeError):
-                return None
-        return None
 
 
 class SamplingSite(SGUBaseModel):
@@ -412,12 +376,12 @@ class AnalysisResultProperties(SGUBaseModel):
     sampling_organisation_description: str | None = Field(
         None, alias="provtag_org_tx", description="Sampling organisation"
     )
-    sampling_date: str | None = Field(
-        None, alias="provtagningsdatum", description="Sampling date"
-    )  # ISO datetime string
-    sampling_end_date: str | None = Field(
-        None, alias="provtagning_slutdatum", description="Sampling end date"
-    )  # ISO datetime string
+    sampling_date: ApiDatetime = Field(
+        None, alias="provtagningsdatum", description="Sampling date (UTC)"
+    )
+    sampling_end_date: ApiDatetime = Field(
+        None, alias="provtagning_slutdatum", description="Sampling end date (UTC)"
+    )
     sampling_purpose_code: str | None = Field(
         None, alias="provtagningssyfte", description="Sampling purpose code"
     )
@@ -484,12 +448,12 @@ class AnalysisResultProperties(SGUBaseModel):
     lab_report_code: str | None = Field(
         None, alias="rapportkodlabb", description="Laboratory report code"
     )
-    registration_date: str | None = Field(
-        None, alias="registreringsdatum", description="Registration date"
-    )  # ISO datetime string
-    analysis_date: str | None = Field(
-        None, alias="analysdatum", description="Analysis date"
-    )  # ISO datetime string
+    registration_date: ApiDatetime = Field(
+        None, alias="registreringsdatum", description="Registration date (UTC)"
+    )
+    analysis_date: ApiDatetime = Field(
+        None, alias="analysdatum", description="Analysis date (UTC)"
+    )
     sample_preparation: str | None = Field(
         None, alias="provberedning", description="Sample preparation method"
     )
@@ -609,16 +573,6 @@ class AnalysisResultProperties(SGUBaseModel):
 
     _county_code = field_validator("county_code", mode="before")(_normalize_county_code)
 
-    @property
-    def sampling_datetime(self) -> datetime | None:
-        """Parse sampling date as datetime object."""
-        if self.sampling_date:
-            try:
-                return datetime.fromisoformat(self.sampling_date.replace("Z", "+00:00"))
-            except (ValueError, AttributeError):
-                return None
-        return None
-
 
 class AnalysisResult(SGUBaseModel):
     """A groundwater chemistry analysis result (GeoJSON Feature)."""
@@ -649,7 +603,7 @@ class SamplingSiteCollection(SGUResponse):
         None, description="Number of features matching query"
     )
     numberReturned: int | None = Field(None, description="Number of features returned")
-    timeStamp: str | None = Field(None, description="Response timestamp")
+    timeStamp: ApiDatetime = Field(None, description="Response timestamp (UTC)")
 
     # Links and CRS
     links: list[Link] | None = Field(None, description="Related links")
@@ -695,12 +649,7 @@ class SamplingSiteCollection(SGUResponse):
             data.append(row)
 
         pd = get_pandas()
-        df = pd.DataFrame(data)
-
-        if not df.empty:
-            _parse_date_columns(df, SITE_DATE_COLUMNS)
-
-        return df
+        return convert_datetime_columns(pd.DataFrame(data), SamplingSiteProperties)
 
 
 class AnalysisResultCollection(SGUResponse):
@@ -720,7 +669,7 @@ class AnalysisResultCollection(SGUResponse):
         None, description="Number of features matching query"
     )
     numberReturned: int | None = Field(None, description="Number of features returned")
-    timeStamp: str | None = Field(None, description="Response timestamp")
+    timeStamp: ApiDatetime = Field(None, description="Response timestamp (UTC)")
 
     # Links and CRS
     links: list[Link] | None = Field(None, description="Related links")
@@ -770,10 +719,7 @@ class AnalysisResultCollection(SGUResponse):
             data.append(row)
 
         pd = get_pandas()
-        df = pd.DataFrame(data)
-
-        if not df.empty:
-            _parse_date_columns(df, RESULT_DATE_COLUMNS)
+        df = convert_datetime_columns(pd.DataFrame(data), AnalysisResultProperties)
 
         if sort_by_date and not df.empty and "sampling_date" in df.columns:
             df = df.sort_values(by="sampling_date")

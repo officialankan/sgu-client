@@ -36,6 +36,15 @@ stations = client.levels.observed.get_stations(
 )
 ```
 
+A station's `active_since` and `active_until` are dates (midnight UTC, see
+[Dates and times](getting_started.md#dates-and-times)). `active_until` is `None` while the
+station is still active, or if the API sent a value that couldn't be parsed (a warning
+is logged then):
+
+```python
+live = [s for s in stations.features if s.properties.active_until is None]
+```
+
 ### Fetching measurements
 
 Fetch the measurements for one or more stations, optionally limited to a time range with

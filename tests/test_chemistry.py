@@ -52,7 +52,7 @@ def test_sampling_site_parses_v2_payload():
     assert props.municipality == "FLEN"
     assert props.soil_type_description == "sand"
     assert props.pipe_height == 0.35
-    assert props.first_sample_date == "2021-10-06Z"
+    assert props.first_sample_date == datetime(2021, 10, 6, tzinfo=UTC)
     assert props.analyses_csv_url.endswith("&f=text/csv")
     assert site.geometry.coordinates == [16.68629857, 58.90889813]
 
@@ -69,7 +69,7 @@ def test_analysis_result_parses_v2_payload():
     assert props.parameter_group == "Närsalter~Joner"
     assert props.measurement_value == 2.99
     assert props.unit == "mg.l-1"
-    assert props.sampling_date == "2021-10-06T00:00:00Z"
+    assert props.sampling_date == datetime(2021, 10, 6, tzinfo=UTC)
     assert props.method == "Beräknad från NO3"
     assert props.county == "SÖDERMANLANDS LÄN"
 
