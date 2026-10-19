@@ -55,10 +55,11 @@ def convert_datetime_columns(
     """Give every `ApiDatetime` column of `model` in `df` a UTC datetime dtype.
 
     Needed even when the values are already datetimes: an all-null column would
-    otherwise stay `object`.
+    otherwise stay `object`. The resolution is pinned to nanoseconds because
+    pandas 3 would otherwise pick it per column (``us``, or ``s`` when all null).
     """
     pd = get_pandas()
     for name, field in model.model_fields.items():
         if _API_DATETIME_VALIDATOR in field.metadata and name in df.columns:
-            df[name] = pd.to_datetime(df[name], utc=True)
+            df[name] = pd.to_datetime(df[name], utc=True).astype("datetime64[ns, UTC]")
     return df

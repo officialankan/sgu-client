@@ -149,6 +149,7 @@ def _assert_utc_datetime_column(df, column):
     pd = pytest.importorskip("pandas")
     assert isinstance(df[column].dtype, pd.DatetimeTZDtype), column
     assert str(df[column].dtype.tz) == "UTC", column
+    assert df[column].dtype.unit == "ns", column
 
 
 def _feature(feature_id, properties):
