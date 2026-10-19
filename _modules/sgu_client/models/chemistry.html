@@ -30,7 +30,11 @@
 <link href="../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/autodoc_pydantic.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=dfb8132a" />
   
   <!-- So that users can add custom icons -->
   <script src="../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
@@ -38,12 +42,13 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=70f82a29"></script>
+    <script src="../../../_static/documentation_options.js?v=8fa8b3e9"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=fd10adb8"></script>
     <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_modules/sgu_client/models/chemistry';</script>
-    <link rel="author" title="About these documents" href="../../../about.html" />
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -95,7 +100,7 @@
   </button>
   
   
-  <div class="col-lg-3 navbar-header-items__start">
+  <div class=" navbar-header-items__start">
     
       <div class="navbar-item">
 
@@ -116,7 +121,7 @@
     
   </div>
   
-  <div class="col-lg-9 navbar-header-items">
+  <div class=" navbar-header-items">
     
     <div class="me-auto navbar-header-items__center">
       
@@ -125,6 +130,13 @@
   <ul class="bd-navbar-elements navbar-nav">
     
 <li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user_guide/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
   <a class="nav-link nav-internal" href="../../../api.html">
     API Reference
   </a>
@@ -132,7 +144,7 @@
 
 
 <li class="nav-item ">
-  <a class="nav-link nav-internal" href="../../../about.html">
+  <a class="nav-link nav-internal" href="../../../about/index.html">
     About
   </a>
 </li>
@@ -156,6 +168,14 @@
         </div>
       
       
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
         <div class="navbar-item"><ul class="navbar-icon-links"
     aria-label="Icon Links">
         <li class="nav-item">
@@ -167,8 +187,20 @@
           
           
           
-          <a href="https://github.com/officialankan/sgu-client" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+          <a href="https://github.com/officialankan/sgu-client" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
             <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/sgu-client/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-python fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">PyPI</span></a>
         </li>
 </ul></div>
       
@@ -217,6 +249,13 @@
   <ul class="bd-navbar-elements navbar-nav">
     
 <li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user_guide/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
   <a class="nav-link nav-internal" href="../../../api.html">
     API Reference
   </a>
@@ -224,7 +263,7 @@
 
 
 <li class="nav-item ">
-  <a class="nav-link nav-internal" href="../../../about.html">
+  <a class="nav-link nav-internal" href="../../../about/index.html">
     About
   </a>
 </li>
@@ -239,6 +278,14 @@
     
       <div class="sidebar-header-items__end">
         
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
           <div class="navbar-item"><ul class="navbar-icon-links"
     aria-label="Icon Links">
         <li class="nav-item">
@@ -250,8 +297,20 @@
           
           
           
-          <a href="https://github.com/officialankan/sgu-client" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+          <a href="https://github.com/officialankan/sgu-client" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
             <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/sgu-client/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-python fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">PyPI</span></a>
         </li>
 </ul></div>
         
@@ -261,6 +320,13 @@
   
   
   <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
   </div>
 
 
@@ -310,41 +376,17 @@
   <h1>Source code for sgu_client.models.chemistry</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;Pydantic models for groundwater chemistry data from SGU API.&quot;&quot;&quot;</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Literal</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">Field</span><span class="p">,</span> <span class="n">field_validator</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">sgu_client.models.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">SGUBaseModel</span><span class="p">,</span> <span class="n">SGUResponse</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sgu_client.models.dates</span><span class="w"> </span><span class="kn">import</span> <span class="n">ApiDatetime</span><span class="p">,</span> <span class="n">convert_datetime_columns</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">sgu_client.models.shared</span><span class="w"> </span><span class="kn">import</span> <span class="n">CRS</span><span class="p">,</span> <span class="n">Geometry</span><span class="p">,</span> <span class="n">Link</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">sgu_client.utils.pandas_helpers</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_pandas</span><span class="p">,</span> <span class="n">optional_pandas_method</span>
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
-
-
-<span class="c1"># Date columns parsed as datetimes in to_dataframe()</span>
-<span class="n">SITE_DATE_COLUMNS</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;established_date&quot;</span><span class="p">,</span> <span class="s2">&quot;first_sample_date&quot;</span><span class="p">,</span> <span class="s2">&quot;latest_sample_date&quot;</span><span class="p">)</span>
-<span class="n">RESULT_DATE_COLUMNS</span> <span class="o">=</span> <span class="p">(</span>
-    <span class="s2">&quot;sampling_date&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;sampling_end_date&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;registration_date&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;analysis_date&quot;</span><span class="p">,</span>
-<span class="p">)</span>
-
-
-<span class="k">def</span><span class="w"> </span><span class="nf">_parse_date_columns</span><span class="p">(</span><span class="n">df</span><span class="p">:</span> <span class="s2">&quot;pd.DataFrame&quot;</span><span class="p">,</span> <span class="n">columns</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse ISO date strings in the given DataFrame columns as UTC datetimes.</span>
-
-<span class="sd">    The v2 API returns dates as &#39;2021-10-06Z&#39; and datetimes as</span>
-<span class="sd">    &#39;2021-10-06T00:00:00Z&#39;; pandas cannot parse a &#39;Z&#39; suffix on a bare date.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">pd</span> <span class="o">=</span> <span class="n">get_pandas</span><span class="p">()</span>
-    <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">columns</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
-            <span class="n">df</span><span class="p">[</span><span class="n">column</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span>
-                <span class="n">df</span><span class="p">[</span><span class="n">column</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">removesuffix</span><span class="p">(</span><span class="s2">&quot;Z&quot;</span><span class="p">),</span> <span class="n">utc</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;ISO8601&quot;</span>
-            <span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_normalize_county_code</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
@@ -564,15 +606,15 @@
     <span class="p">)</span>
 
     <span class="c1"># Sampling history</span>
-    <span class="n">established_date</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
-        <span class="kc">None</span><span class="p">,</span> <span class="n">alias</span><span class="o">=</span><span class="s2">&quot;etabldatum&quot;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Site establishment date&quot;</span>
-    <span class="p">)</span>  <span class="c1"># ISO date string</span>
-    <span class="n">first_sample_date</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
-        <span class="kc">None</span><span class="p">,</span> <span class="n">alias</span><span class="o">=</span><span class="s2">&quot;forstaprov&quot;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Date of first sample&quot;</span>
-    <span class="p">)</span>  <span class="c1"># ISO date string</span>
-    <span class="n">latest_sample_date</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
-        <span class="kc">None</span><span class="p">,</span> <span class="n">alias</span><span class="o">=</span><span class="s2">&quot;senasteprov&quot;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Date of latest sample&quot;</span>
-    <span class="p">)</span>  <span class="c1"># ISO date string</span>
+    <span class="n">established_date</span><span class="p">:</span> <span class="n">ApiDatetime</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+        <span class="kc">None</span><span class="p">,</span> <span class="n">alias</span><span class="o">=</span><span class="s2">&quot;etabldatum&quot;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Site establishment date (midnight UTC)&quot;</span>
+    <span class="p">)</span>
+    <span class="n">first_sample_date</span><span class="p">:</span> <span class="n">ApiDatetime</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+        <span class="kc">None</span><span class="p">,</span> <span class="n">alias</span><span class="o">=</span><span class="s2">&quot;forstaprov&quot;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Date of first sample (midnight UTC)&quot;</span>
+    <span class="p">)</span>
+    <span class="n">latest_sample_date</span><span class="p">:</span> <span class="n">ApiDatetime</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+        <span class="kc">None</span><span class="p">,</span> <span class="n">alias</span><span class="o">=</span><span class="s2">&quot;senasteprov&quot;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Date of latest sample (midnight UTC)&quot;</span>
+    <span class="p">)</span>
     <span class="n">sample_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
         <span class="kc">None</span><span class="p">,</span> <span class="n">alias</span><span class="o">=</span><span class="s2">&quot;antal_prov&quot;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Number of samples collected&quot;</span>
     <span class="p">)</span>
@@ -615,19 +657,7 @@
         <span class="n">description</span><span class="o">=</span><span class="s2">&quot;URL to JSON file with analysis results&quot;</span><span class="p">,</span>
     <span class="p">)</span>
 
-    <span class="n">_county_code</span> <span class="o">=</span> <span class="n">field_validator</span><span class="p">(</span><span class="s2">&quot;county_code&quot;</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;before&quot;</span><span class="p">)(</span><span class="n">_normalize_county_code</span><span class="p">)</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">established_datetime</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">datetime</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Parse establishment date as datetime object.&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">established_date</span><span class="p">:</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="k">return</span> <span class="n">datetime</span><span class="o">.</span><span class="n">fromisoformat</span><span class="p">(</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">established_date</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;Z&quot;</span><span class="p">,</span> <span class="s2">&quot;+00:00&quot;</span><span class="p">)</span>
-                <span class="p">)</span>
-            <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">AttributeError</span><span class="p">):</span>
-                <span class="k">return</span> <span class="kc">None</span>
-        <span class="k">return</span> <span class="kc">None</span></div>
+    <span class="n">_county_code</span> <span class="o">=</span> <span class="n">field_validator</span><span class="p">(</span><span class="s2">&quot;county_code&quot;</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;before&quot;</span><span class="p">)(</span><span class="n">_normalize_county_code</span><span class="p">)</span></div>
 
 
 
@@ -730,12 +760,12 @@
     <span class="n">sampling_organisation_description</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
         <span class="kc">None</span><span class="p">,</span> <span class="n">alias</span><span class="o">=</span><span class="s2">&quot;provtag_org_tx&quot;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Sampling organisation&quot;</span>
     <span class="p">)</span>
-    <span class="n">sampling_date</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
-        <span class="kc">None</span><span class="p">,</span> <span class="n">alias</span><span class="o">=</span><span class="s2">&quot;provtagningsdatum&quot;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Sampling date&quot;</span>
-    <span class="p">)</span>  <span class="c1"># ISO datetime string</span>
-    <span class="n">sampling_end_date</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
-        <span class="kc">None</span><span class="p">,</span> <span class="n">alias</span><span class="o">=</span><span class="s2">&quot;provtagning_slutdatum&quot;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Sampling end date&quot;</span>
-    <span class="p">)</span>  <span class="c1"># ISO datetime string</span>
+    <span class="n">sampling_date</span><span class="p">:</span> <span class="n">ApiDatetime</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+        <span class="kc">None</span><span class="p">,</span> <span class="n">alias</span><span class="o">=</span><span class="s2">&quot;provtagningsdatum&quot;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Sampling date (UTC)&quot;</span>
+    <span class="p">)</span>
+    <span class="n">sampling_end_date</span><span class="p">:</span> <span class="n">ApiDatetime</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+        <span class="kc">None</span><span class="p">,</span> <span class="n">alias</span><span class="o">=</span><span class="s2">&quot;provtagning_slutdatum&quot;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Sampling end date (UTC)&quot;</span>
+    <span class="p">)</span>
     <span class="n">sampling_purpose_code</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
         <span class="kc">None</span><span class="p">,</span> <span class="n">alias</span><span class="o">=</span><span class="s2">&quot;provtagningssyfte&quot;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Sampling purpose code&quot;</span>
     <span class="p">)</span>
@@ -802,12 +832,12 @@
     <span class="n">lab_report_code</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
         <span class="kc">None</span><span class="p">,</span> <span class="n">alias</span><span class="o">=</span><span class="s2">&quot;rapportkodlabb&quot;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Laboratory report code&quot;</span>
     <span class="p">)</span>
-    <span class="n">registration_date</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
-        <span class="kc">None</span><span class="p">,</span> <span class="n">alias</span><span class="o">=</span><span class="s2">&quot;registreringsdatum&quot;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Registration date&quot;</span>
-    <span class="p">)</span>  <span class="c1"># ISO datetime string</span>
-    <span class="n">analysis_date</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
-        <span class="kc">None</span><span class="p">,</span> <span class="n">alias</span><span class="o">=</span><span class="s2">&quot;analysdatum&quot;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Analysis date&quot;</span>
-    <span class="p">)</span>  <span class="c1"># ISO datetime string</span>
+    <span class="n">registration_date</span><span class="p">:</span> <span class="n">ApiDatetime</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+        <span class="kc">None</span><span class="p">,</span> <span class="n">alias</span><span class="o">=</span><span class="s2">&quot;registreringsdatum&quot;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Registration date (UTC)&quot;</span>
+    <span class="p">)</span>
+    <span class="n">analysis_date</span><span class="p">:</span> <span class="n">ApiDatetime</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+        <span class="kc">None</span><span class="p">,</span> <span class="n">alias</span><span class="o">=</span><span class="s2">&quot;analysdatum&quot;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Analysis date (UTC)&quot;</span>
+    <span class="p">)</span>
     <span class="n">sample_preparation</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
         <span class="kc">None</span><span class="p">,</span> <span class="n">alias</span><span class="o">=</span><span class="s2">&quot;provberedning&quot;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Sample preparation method&quot;</span>
     <span class="p">)</span>
@@ -925,17 +955,7 @@
         <span class="kc">None</span><span class="p">,</span> <span class="n">alias</span><span class="o">=</span><span class="s2">&quot;granskningskommentar&quot;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Review comment&quot;</span>
     <span class="p">)</span>
 
-    <span class="n">_county_code</span> <span class="o">=</span> <span class="n">field_validator</span><span class="p">(</span><span class="s2">&quot;county_code&quot;</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;before&quot;</span><span class="p">)(</span><span class="n">_normalize_county_code</span><span class="p">)</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">sampling_datetime</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">datetime</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Parse sampling date as datetime object.&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampling_date</span><span class="p">:</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="k">return</span> <span class="n">datetime</span><span class="o">.</span><span class="n">fromisoformat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sampling_date</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;Z&quot;</span><span class="p">,</span> <span class="s2">&quot;+00:00&quot;</span><span class="p">))</span>
-            <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">AttributeError</span><span class="p">):</span>
-                <span class="k">return</span> <span class="kc">None</span>
-        <span class="k">return</span> <span class="kc">None</span></div>
+    <span class="n">_county_code</span> <span class="o">=</span> <span class="n">field_validator</span><span class="p">(</span><span class="s2">&quot;county_code&quot;</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;before&quot;</span><span class="p">)(</span><span class="n">_normalize_county_code</span><span class="p">)</span></div>
 
 
 
@@ -973,12 +993,14 @@
         <span class="kc">None</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Number of features matching query&quot;</span>
     <span class="p">)</span>
     <span class="n">numberReturned</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Number of features returned&quot;</span><span class="p">)</span>
-    <span class="n">timeStamp</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Response timestamp&quot;</span><span class="p">)</span>
+    <span class="n">timeStamp</span><span class="p">:</span> <span class="n">ApiDatetime</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Response timestamp (UTC)&quot;</span><span class="p">)</span>
 
     <span class="c1"># Links and CRS</span>
     <span class="n">links</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Link</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Related links&quot;</span><span class="p">)</span>
     <span class="n">crs</span><span class="p">:</span> <span class="n">CRS</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Coordinate reference system&quot;</span><span class="p">)</span>
 
+<div class="viewcode-block" id="SamplingSiteCollection.to_dataframe">
+<a class="viewcode-back" href="../../../api/chemistry.html#sgu_client.models.chemistry.SamplingSiteCollection.to_dataframe">[docs]</a>
     <span class="nd">@optional_pandas_method</span><span class="p">(</span><span class="s2">&quot;to_dataframe() method&quot;</span><span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">to_dataframe</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;pd.DataFrame&quot;</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert to pandas DataFrame with flattened sampling site properties.</span>
@@ -989,15 +1011,13 @@
 <span class="sd">        Examples:</span>
 
 <span class="sd">            &gt;&gt;&gt; from sgu_client import SGUClient</span>
-<span class="sd">            &gt;&gt;&gt; client = SGUClient()</span>
-<span class="sd">            &gt;&gt;&gt;</span>
-<span class="sd">            &gt;&gt;&gt; sites = client.chemistry.get_sampling_sites(limit=10)</span>
-<span class="sd">            &gt;&gt;&gt; df = sites.to_dataframe()</span>
-<span class="sd">            &gt;&gt;&gt;</span>
-<span class="sd">            &gt;&gt;&gt; # one row per site, with the feature ID in &#39;feature_id&#39;</span>
-<span class="sd">            &gt;&gt;&gt; print(df[[&#39;national_site_id&#39;, &#39;station_id&#39;, &#39;site_name&#39;]].head())</span>
-<span class="sd">            &gt;&gt;&gt; # established_date, first_sample_date and latest_sample_date</span>
-<span class="sd">            &gt;&gt;&gt; # are parsed as UTC datetimes</span>
+<span class="sd">            &gt;&gt;&gt; with SGUClient() as client:</span>
+<span class="sd">            ...     sites = client.chemistry.get_sampling_sites(limit=10)</span>
+<span class="sd">            ...     df = sites.to_dataframe()</span>
+<span class="sd">            ...     # one row per site, with the feature ID in &#39;feature_id&#39;</span>
+<span class="sd">            ...     print(df[[&#39;national_site_id&#39;, &#39;station_id&#39;, &#39;site_name&#39;]].head())</span>
+<span class="sd">            ...     # established_date, first_sample_date and latest_sample_date</span>
+<span class="sd">            ...     # are parsed as UTC datetimes</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">feature</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">features</span><span class="p">:</span>
@@ -1021,12 +1041,8 @@
             <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
 
         <span class="n">pd</span> <span class="o">=</span> <span class="n">get_pandas</span><span class="p">()</span>
-        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">df</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
-            <span class="n">_parse_date_columns</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">SITE_DATE_COLUMNS</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">df</span></div>
+        <span class="k">return</span> <span class="n">convert_datetime_columns</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">),</span> <span class="n">SamplingSiteProperties</span><span class="p">)</span></div>
+</div>
 
 
 
@@ -1049,12 +1065,14 @@
         <span class="kc">None</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Number of features matching query&quot;</span>
     <span class="p">)</span>
     <span class="n">numberReturned</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Number of features returned&quot;</span><span class="p">)</span>
-    <span class="n">timeStamp</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Response timestamp&quot;</span><span class="p">)</span>
+    <span class="n">timeStamp</span><span class="p">:</span> <span class="n">ApiDatetime</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Response timestamp (UTC)&quot;</span><span class="p">)</span>
 
     <span class="c1"># Links and CRS</span>
     <span class="n">links</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Link</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Related links&quot;</span><span class="p">)</span>
     <span class="n">crs</span><span class="p">:</span> <span class="n">CRS</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Coordinate reference system&quot;</span><span class="p">)</span>
 
+<div class="viewcode-block" id="AnalysisResultCollection.to_dataframe">
+<a class="viewcode-back" href="../../../api/chemistry.html#sgu_client.models.chemistry.AnalysisResultCollection.to_dataframe">[docs]</a>
     <span class="nd">@optional_pandas_method</span><span class="p">(</span><span class="s2">&quot;to_dataframe() method&quot;</span><span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">to_dataframe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sort_by_date</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;pd.DataFrame&quot;</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert to pandas DataFrame with analysis result data.</span>
@@ -1068,15 +1086,13 @@
 <span class="sd">        Examples:</span>
 
 <span class="sd">            &gt;&gt;&gt; from sgu_client import SGUClient</span>
-<span class="sd">            &gt;&gt;&gt; client = SGUClient()</span>
-<span class="sd">            &gt;&gt;&gt;</span>
-<span class="sd">            &gt;&gt;&gt; results = client.chemistry.get_results_by_site(359366, limit=100)</span>
-<span class="sd">            &gt;&gt;&gt; df = results.to_dataframe()</span>
-<span class="sd">            &gt;&gt;&gt;</span>
-<span class="sd">            &gt;&gt;&gt; # one row per result, with the feature ID in &#39;feature_id&#39;</span>
-<span class="sd">            &gt;&gt;&gt; print(df[[&#39;sampling_date&#39;, &#39;parameter_name&#39;, &#39;measurement_value&#39;]])</span>
-<span class="sd">            &gt;&gt;&gt; # sampling_date, sampling_end_date, registration_date and</span>
-<span class="sd">            &gt;&gt;&gt; # analysis_date are parsed as UTC datetimes</span>
+<span class="sd">            &gt;&gt;&gt; with SGUClient() as client:</span>
+<span class="sd">            ...     results = client.chemistry.get_results_by_site(359366, limit=100)</span>
+<span class="sd">            ...     df = results.to_dataframe()</span>
+<span class="sd">            ...     # one row per result, with the feature ID in &#39;feature_id&#39;</span>
+<span class="sd">            ...     print(df[[&#39;sampling_date&#39;, &#39;parameter_name&#39;, &#39;measurement_value&#39;]])</span>
+<span class="sd">            ...     # sampling_date, sampling_end_date, registration_date and</span>
+<span class="sd">            ...     # analysis_date are parsed as UTC datetimes</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">feature</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">features</span><span class="p">:</span>
@@ -1101,16 +1117,16 @@
             <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
 
         <span class="n">pd</span> <span class="o">=</span> <span class="n">get_pandas</span><span class="p">()</span>
-        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">df</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
-            <span class="n">_parse_date_columns</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">RESULT_DATE_COLUMNS</span><span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">convert_datetime_columns</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">),</span> <span class="n">AnalysisResultProperties</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">sort_by_date</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">df</span><span class="o">.</span><span class="n">empty</span> <span class="ow">and</span> <span class="s2">&quot;sampling_date&quot;</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
             <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="s2">&quot;sampling_date&quot;</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">df</span>
+        <span class="k">return</span> <span class="n">df</span></div>
 
+
+<div class="viewcode-block" id="AnalysisResultCollection.to_series">
+<a class="viewcode-back" href="../../../api/chemistry.html#sgu_client.models.chemistry.AnalysisResultCollection.to_series">[docs]</a>
     <span class="nd">@optional_pandas_method</span><span class="p">(</span><span class="s2">&quot;to_series() method&quot;</span><span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">to_series</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -1132,18 +1148,16 @@
 <span class="sd">        Examples:</span>
 
 <span class="sd">            &gt;&gt;&gt; from sgu_client import SGUClient</span>
-<span class="sd">            &gt;&gt;&gt; client = SGUClient()</span>
-<span class="sd">            &gt;&gt;&gt; results = client.chemistry.get_results_by_site(359366, limit=100)</span>
-<span class="sd">            &gt;&gt;&gt;</span>
-<span class="sd">            &gt;&gt;&gt; # time series with default columns (sampling_date, measurement_value)</span>
-<span class="sd">            &gt;&gt;&gt; series = results.to_series()</span>
-<span class="sd">            &gt;&gt;&gt; print(series.head())</span>
-<span class="sd">            &gt;&gt;&gt;</span>
-<span class="sd">            &gt;&gt;&gt; # use custom columns - e.g., parameter names as data</span>
-<span class="sd">            &gt;&gt;&gt; series_params = results.to_series(</span>
-<span class="sd">            ...     index=&quot;sampling_date&quot;,</span>
-<span class="sd">            ...     data=&quot;parameter_name&quot;</span>
-<span class="sd">            ... )</span>
+<span class="sd">            &gt;&gt;&gt; with SGUClient() as client:</span>
+<span class="sd">            ...     results = client.chemistry.get_results_by_site(359366, limit=100)</span>
+<span class="sd">            ...     # time series with default columns (sampling_date, measurement_value)</span>
+<span class="sd">            ...     series = results.to_series()</span>
+<span class="sd">            ...     print(series.head())</span>
+<span class="sd">            ...     # use custom columns - e.g., parameter names as data</span>
+<span class="sd">            ...     series_params = results.to_series(</span>
+<span class="sd">            ...         index=&quot;sampling_date&quot;,</span>
+<span class="sd">            ...         data=&quot;parameter_name&quot;</span>
+<span class="sd">            ...     )</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_dataframe</span><span class="p">(</span><span class="n">sort_by_date</span><span class="o">=</span><span class="n">sort_by_date</span><span class="p">)</span>
         <span class="n">pd</span> <span class="o">=</span> <span class="n">get_pandas</span><span class="p">()</span>
@@ -1164,8 +1178,11 @@
 
         <span class="n">series</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">df</span><span class="p">[</span><span class="n">data</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">df</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="k">if</span> <span class="n">index</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
         <span class="n">series</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">data</span>
-        <span class="k">return</span> <span class="n">series</span>
+        <span class="k">return</span> <span class="n">series</span></div>
 
+
+<div class="viewcode-block" id="AnalysisResultCollection.pivot_by_parameter">
+<a class="viewcode-back" href="../../../api/chemistry.html#sgu_client.models.chemistry.AnalysisResultCollection.pivot_by_parameter">[docs]</a>
     <span class="nd">@optional_pandas_method</span><span class="p">(</span><span class="s2">&quot;pivot_by_parameter() method&quot;</span><span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">pivot_by_parameter</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -1192,11 +1209,10 @@
 <span class="sd">        Example:</span>
 
 <span class="sd">            &gt;&gt;&gt; from sgu_client import SGUClient</span>
-<span class="sd">            &gt;&gt;&gt; client = SGUClient()</span>
-<span class="sd">            &gt;&gt;&gt;</span>
-<span class="sd">            &gt;&gt;&gt; results = client.chemistry.get_results_by_site(359366)</span>
-<span class="sd">            &gt;&gt;&gt; df_pivot = results.pivot_by_parameter()</span>
-<span class="sd">            &gt;&gt;&gt; # now df_pivot has columns like &#39;pH&#39;, &#39;Nitratkväve&#39;, &#39;Klorid&#39;, etc.</span>
+<span class="sd">            &gt;&gt;&gt; with SGUClient() as client:</span>
+<span class="sd">            ...     results = client.chemistry.get_results_by_site(359366)</span>
+<span class="sd">            ...     df_pivot = results.pivot_by_parameter()</span>
+<span class="sd">            ...     # now df_pivot has columns like &#39;pH&#39;, &#39;Nitratkväve&#39;, &#39;Klorid&#39;, etc.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_dataframe</span><span class="p">(</span><span class="n">sort_by_date</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="n">pd</span> <span class="o">=</span> <span class="n">get_pandas</span><span class="p">()</span>
@@ -1215,6 +1231,7 @@
         <span class="p">)</span>
 
         <span class="k">return</span> <span class="n">pivot_df</span></div>
+</div>
 
 </pre></div>
 
@@ -1263,6 +1280,12 @@
   </p>
 </div>
       
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
         <div class="footer-item">
 
   <p class="sphinx-version">
@@ -1270,12 +1293,6 @@
     <br/>
   </p>
 </div>
-      
-    </div>
-  
-  
-  
-    <div class="footer-items__end">
       
         <div class="footer-item">
 <p class="theme-version">
