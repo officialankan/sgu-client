@@ -142,6 +142,7 @@ def test_real_api_chemistry_results_by_site_id():
     assert len(results.features) > 0
     for result in results.features:
         assert result.properties.national_site_id == TEST_CHEMISTRY_NATIONAL_SITE_ID
+        assert result.properties.sampling_date is not None
         assert (
             datetime(2021, 1, 1, tzinfo=UTC)
             <= result.properties.sampling_date

@@ -63,6 +63,7 @@ uv sync --all-groups --all-extras
 uv run pytest
 uv run ruff format
 uv run ruff check --fix
+uv run ty check
 ```
 
 Contributions are welcome! Feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.

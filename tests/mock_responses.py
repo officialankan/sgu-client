@@ -763,7 +763,7 @@ def create_mock_multiple_sampling_sites_response(
 
 def create_mock_multiple_analysis_results_response(
     nationellt_provplatsid: int = 359366,
-    parameters: list[tuple[str, str, float]] | None = None,
+    parameters: list[tuple[str, str, float | None]] | None = None,
     start_date: datetime | None = None,
 ) -> dict[str, Any]:
     """Create a mock response for multiple analysis results, one month apart.
