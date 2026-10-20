@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `SGUNotFoundError` and `SGUAmbiguousError`, raised when a lookup matches no feature or several. Both subclass `ValueError`, so existing `except ValueError` code keeps working (#62)
 
+### Changed
+
+- **Filter text**: a single value is sent as `field=value` and several as `field in (...)` on every dataset. Modeled area filters were `omrade_id = 1` / `omrade_id IN (1, 2)`, and observed sent one-element lists as `in (...)`. Same results, different filter text (#62)
+
 ### Fixed
 
 - `get_station_by_name()` raises `SGUNotFoundError` instead of a bare `IndexError` when no station matches (#57)
@@ -19,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### BREAKING CHANGES
 
 - **`SGUConfig.base_url`** is now the root of SGU's open data APIs (`https://api.sgu.se/oppnadata/`) and applies to the observed, modeled and chemistry datasets alike. It used to be the full observed-levels URL and was ignored by the other two. If you set it, drop the `grundvattennivaer-observerade/ogc/features/v1/` suffix (#62)
+- **Internal URL constants removed**: `BASE_PATH` on the three clients, `ModeledGroundwaterLevelClient.MODELED_BASE_URL` and `GroundwaterChemistryClient.CHEMISTRY_BASE_URL`. Dataset URLs now come from `SGUConfig.base_url` (#62)
 
 ## [0.6.0] - 2026-10-19
 
