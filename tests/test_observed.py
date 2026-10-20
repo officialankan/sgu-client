@@ -797,3 +797,17 @@ def test_get_station_by_name_not_found():
 
         with pytest.raises(SGUNotFoundError, match="No stations found for"):
             client.levels.observed.get_station_by_name(station_name="Nope")
+
+
+@patch("requests.Session.request")
+def test_get_measurements_filters_on_observation_date(mock_request) -> None:
+    mock_request.return_value = create_mock_response(
+        create_mock_empty_collection_response()
+    )
+    SGUClient().levels.observed.get_measurements(
+        tmin=datetime(2020, 1, 1, tzinfo=UTC), tmax="2021-01-01"
+    )
+
+    assert mock_request.call_args.kwargs["params"]["filter"] == (
+        "obsdatum >= '2020-01-01T00:00:00+00:00' AND obsdatum <= '2021-01-01'"
+    )

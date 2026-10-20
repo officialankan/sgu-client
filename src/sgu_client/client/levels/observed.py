@@ -110,6 +110,8 @@ class ObservedGroundwaterLevelClient:
         limit: int | None = None,
         filter_expr: str | None = None,
         sortby: list[str] | None = None,
+        tmin: str | datetime | None = None,
+        tmax: str | datetime | None = None,
         **kwargs: Any,
     ) -> GroundwaterMeasurementCollection:
         """Get groundwater level measurements.
@@ -121,10 +123,12 @@ class ObservedGroundwaterLevelClient:
 
         Args:
             bbox: Bounding box as [min_lon, min_lat, max_lon, max_lat]
-            datetime: Date/time filter (RFC 3339 format or interval)
+            datetime: Raw OGC date/time filter; prefer ``tmin``/``tmax``
             limit: Maximum number of features to return (automatically paginated if needed)
             filter_expr: CQL filter expression
             sortby: List of sort expressions (e.g., ['+date', '-value'])
+            tmin: Earliest observation date (ISO string or datetime object)
+            tmax: Latest observation date (ISO string or datetime object)
             **kwargs: Additional query parameters
 
         Returns:
@@ -136,6 +140,8 @@ class ObservedGroundwaterLevelClient:
             limit=limit,
             filter_expr=filter_expr,
             sortby=sortby,
+            tmin=tmin,
+            tmax=tmax,
             **kwargs,
         )
 

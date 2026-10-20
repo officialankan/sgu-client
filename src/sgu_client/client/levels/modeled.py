@@ -108,16 +108,20 @@ class ModeledGroundwaterLevelClient:
         limit: int | None = None,
         filter_expr: str | None = None,
         sortby: list[str] | None = None,
+        tmin: str | datetime | None = None,
+        tmax: str | datetime | None = None,
         **kwargs: Any,
     ) -> ModeledGroundwaterLevelCollection:
         """Get modeled groundwater levels.
 
         Args:
             bbox: Bounding box as [min_lon, min_lat, max_lon, max_lat]
-            datetime: Date/time filter (RFC 3339 format or interval)
+            datetime: Raw OGC date/time filter; prefer ``tmin``/``tmax``
             limit: Maximum number of features to return (automatically paginated if needed)
             filter_expr: CQL filter expression
             sortby: List of sort expressions (e.g., ['+datum', '-omrade_id'] - use Swedish field names for API)
+            tmin: Earliest date (ISO string or datetime object)
+            tmax: Latest date (ISO string or datetime object)
             **kwargs: Additional query parameters
 
         Returns:
@@ -131,7 +135,8 @@ class ModeledGroundwaterLevelClient:
             ...     levels = client.levels.modeled.get_levels(limit=100)
             ...     # get levels for a specific time period
             ...     levels = client.levels.modeled.get_levels(
-            ...         datetime="2023-01-01/2024-01-01",
+            ...         tmin="2023-01-01",
+            ...         tmax="2024-01-01",
             ...         limit=1000
             ...     )
         """
@@ -141,6 +146,8 @@ class ModeledGroundwaterLevelClient:
             limit=limit,
             filter_expr=filter_expr,
             sortby=sortby,
+            tmin=tmin,
+            tmax=tmax,
             **kwargs,
         )
 

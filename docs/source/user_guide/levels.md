@@ -101,18 +101,20 @@ groundwater resources. See
 
 ## Filtering
 
-The general query methods accept the standard OGC API filters:
+The general query methods accept these filters:
 
 | Parameter | Description |
 | --- | --- |
+| `tmin`, `tmax` | Earliest and latest date (inclusive), as ISO strings or `datetime` objects |
 | `bbox` | Bounding box as `[min_lon, min_lat, max_lon, max_lat]` |
-| `datetime` | ISO 8601 datetime or interval, e.g. `"2024-01-01/2025-01-01"` |
 | `filter_expr` | CQL filter using the Swedish API field names, e.g. `"akvifer='JS'"` |
 | `limit` | Maximum number of features to return |
 
-`get_stations()`, `get_measurements()` and `get_levels()` accept all four;
-`get_areas()` accepts all but `datetime`.
+`get_measurements()` and `get_levels()` accept all of them; `get_stations()` and
+`get_areas()` accept all but `tmin` and `tmax`. Use `tmin`/`tmax` to filter by date: they
+filter on the measurement's observation date or the modeled level's date. The raw OGC
+`datetime` parameter is still accepted, but `tmin`/`tmax` is the preferred way.
 
 Results are paginated automatically, so `limit` can be larger than the API's page size.
 The convenience methods (`get_*_by_name()`, `get_levels_by_*()`) build these filters for
-you, and forward any extra keyword arguments such as `limit` or `datetime`.
+you, and forward any extra keyword arguments such as `limit` or `bbox`.

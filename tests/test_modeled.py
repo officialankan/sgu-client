@@ -962,3 +962,15 @@ def test_get_levels_by_coords_filters_on_date() -> None:
     assert level_params["filter"] == (
         f"omrade_id={area_id} AND datum >= '2024-01-01' AND datum <= '2024-01-31'"
     )
+
+
+def test_get_levels_filters_on_date() -> None:
+    with patch("requests.Session.request") as mock_request:
+        mock_request.return_value = create_mock_response(
+            create_mock_empty_modeled_collection_response()
+        )
+        SGUClient().levels.modeled.get_levels(tmin="2024-01-01", tmax="2024-01-31")
+
+    assert mock_request.call_args.kwargs["params"]["filter"] == (
+        "datum >= '2024-01-01' AND datum <= '2024-01-31'"
+    )

@@ -207,6 +207,8 @@ class GroundwaterChemistryClient:
         limit: int | None = None,
         filter_expr: str | None = None,
         sortby: list[str] | None = None,
+        tmin: str | datetime | None = None,
+        tmax: str | datetime | None = None,
         **kwargs: Any,
     ) -> AnalysisResultCollection:
         """Get groundwater chemistry analysis results.
@@ -218,12 +220,14 @@ class GroundwaterChemistryClient:
 
         Args:
             bbox: Bounding box as [min_lon, min_lat, max_lon, max_lat]
-            datetime: Date/time filter (RFC 3339 format or interval)
+            datetime: Raw OGC date/time filter; prefer ``tmin``/``tmax``
             limit: Maximum number of features to return (paginated automatically)
             filter_expr: CQL filter expression
             sortby: List of sort expressions (e.g., ['+date', '-value'])
                 Note: the SGU v2 chemistry API currently ignores sortby;
                 features are returned in the server's default order.
+            tmin: Earliest sampling date (ISO string or datetime object)
+            tmax: Latest sampling date (ISO string or datetime object)
             **kwargs: Additional query parameters
 
         Returns:
@@ -235,6 +239,8 @@ class GroundwaterChemistryClient:
             limit=limit,
             filter_expr=filter_expr,
             sortby=sortby,
+            tmin=tmin,
+            tmax=tmax,
             **kwargs,
         )
 
