@@ -9,12 +9,18 @@
 - [ ] Version consistency test passes: `uv run pytest tests/test_version.py -v`
 - [ ] All files committed to dev branch
 - [ ] Replace `[VERSION]` placeholders in this template
+- [ ] Every issue this release ships, and the release issue, is listed under **Closes**
 
 ## Added
 
 ## Fixed
 
 ## Changed
+
+## Closes
+
+<!-- One line per issue; merging this PR into main closes them -->
+Closes #
 
 ---
 
