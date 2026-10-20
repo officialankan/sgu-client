@@ -284,3 +284,9 @@ def test_default_config_points_at_the_sgu_open_data_root():
         "https://api.sgu.se/oppnadata/grundvattennivaer-observerade"
         "/ogc/features/v1/collections/stationer/items"
     )
+
+
+def test_query_rejects_a_raw_filter_param(stations):
+    # it would silently replace the where/tmin/tmax conditions
+    with pytest.raises(TypeError, match="filter_expr"):
+        stations.query(where={"platsbeteckning": "95_2"}, filter="kommun='Mora'")

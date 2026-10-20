@@ -92,7 +92,11 @@ class SGUCollection(Generic[C]):
             tmax: Latest value of the collection's date field (inclusive)
             **kwargs: Additional query parameters, sent as given
 
+        Returns:
+            The parsed collection, with every page fetched
+
         Raises:
+            TypeError: If a raw ``filter`` param is passed; use ``filter_expr``.
             ValueError: If ``tmin``/``tmax`` is given and the collection has no
                 date field.
         """
@@ -110,7 +114,13 @@ class SGUCollection(Generic[C]):
         return self._fetch(self._items, params)
 
     def get(self, feature_id: str) -> Any:
-        """Get one feature by its feature id (e.g. ``"stationer.4086"``).
+        """Get one feature by its feature id.
+
+        Args:
+            feature_id: SGU's id for the feature, e.g. ``"stationer.4086"``
+
+        Returns:
+            The feature, parsed into the collection model's feature type
 
         Raises:
             SGUNotFoundError: If no feature has that id.
@@ -126,7 +136,11 @@ class SGUCollection(Generic[C]):
     def find_one(self, **query: Any) -> Any:
         """Query the collection and return its only matching feature.
 
-        Takes the same arguments as :meth:`query`.
+        Args:
+            **query: The same arguments as :meth:`query`
+
+        Returns:
+            The matching feature, parsed into the collection model's feature type
 
         Raises:
             SGUNotFoundError: If nothing matches.
@@ -153,6 +167,9 @@ class SGUCollection(Generic[C]):
         tmax: str | Datetime | None = None,
         **kwargs: Any,
     ) -> dict[str, Any]:
+        if "filter" in kwargs:
+            # a raw `filter` param would replace the where/tmin/tmax conditions
+            raise TypeError("pass the CQL filter as 'filter_expr', not 'filter'")
         conditions = [_condition(f, v) for f, v in (where or {}).items()]
         conditions.extend(self._date_conditions(tmin, tmax))
         if filter_expr:
