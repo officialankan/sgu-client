@@ -3,12 +3,15 @@
 ## Overview
 This repository uses a gitflow-lite workflow with automated releases. The release process leverages PR templates to create structured, professional release notes.
 
+`main` is the default branch, so **an issue closes when its change is released**, not when it merges into `dev`. GitHub only acts on closing keywords (`Closes #N`, `Fixes #N`) that reach the default branch: in the description of a PR merged into `main`, or in a commit message that lands on `main`. The release PR lists every issue it ships as `Closes #N`, and merging it closes them all.
+
 ## Release Workflow
 
 ### 1. Development Phase
 - Create feature branches from `dev`
 - Make your changes and test thoroughly
-- Create PR to merge feature branch → `dev`
+- Create PR to merge feature branch → `dev`. GitHub suggests `main` as the base, because it is the default branch: change it to `dev` (`gh pr create --base dev`). A check fails any PR into `main` that doesn't come from `dev`
+- Name the issue in the PR description (`Closes #N`) and in commit messages as usual. It doesn't close anything yet; it closes the issue when the change reaches `main`
 - After review and testing, merge to `dev`
 - Feature PRs never change the version. They add their notes, including breaking changes, under `[Unreleased]` in `CHANGELOG.md`
 
@@ -27,7 +30,7 @@ When ready to release accumulated changes from `dev`:
    - `CHANGELOG.md`: rename `[Unreleased]` to `[X.Y.Z] - YYYY-MM-DD`, add a fresh empty `[Unreleased]` above it, and add anything merged without a changelog entry
    - Run the checks with the optional dependencies installed: `uv sync --all-extras --all-groups`, then `uv run pytest`, `uv run ruff check`, `uv run ruff format --check` and `uv run ty check`
 
-4. **Open a PR from that branch → `dev`** (`chore: release vX.Y.Z`) and merge it. GitHub only closes issues automatically on merges into `main`, so close the release issue by hand.
+4. **Open a PR from that branch → `dev`** (`chore: release vX.Y.Z`) and merge it. This doesn't close the release issue; the release PR into `main` does.
 
 ### 3. Release Execution
 1. **Create the release PR `dev` → `main`** with the template:
@@ -38,9 +41,10 @@ When ready to release accumulated changes from `dev`:
    - Replace `[VERSION]` in the title and install command
    - **Summary**: a short before/after of the change users will notice most
    - **Added / Fixed / Changed / ⚠️ Breaking Changes**: copy them from the changelog, citing the issue and the PR for each entry (e.g. `(#49, #52)`)
+   - **Closes**: one `Closes #N` line for every issue the release ships, including the release issue. These close when the PR is merged
    - **Merge Danger**: every release is a one-way door, because a PyPI version can't be uploaded again (a mistake means a new patch release). Describe the blast radius for users who upgrade, e.g. code that breaks because of a breaking change
 3. **Try the TestPyPI build**: CI publishes `X.Y.Z.devN` to TestPyPI on the PR and comments the install command.
-4. **Merge**: When merged to `main`, the GitHub Action automatically:
+4. **Merge**: Merging closes every issue listed under **Closes**. When merged to `main`, the GitHub Action automatically:
    - Publishes to PyPI
    - Creates GitHub release with your PR description as release notes
    - Attaches distribution files
@@ -59,6 +63,7 @@ https://github.com/officialankan/sgu-client/compare/main...dev?template=release.
 - **Fixed**: Bug fixes and resolved issues  
 - **Changed**: Modifications to existing features
 - **⚠️ Breaking Changes**: Anything that can break code using the package
+- **Closes**: The issues the release ships, closed on merge
 - **Merge Danger**: Whether the merge can be undone, and who is affected
 
 ## Best Practices

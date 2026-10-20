@@ -1,11 +1,11 @@
 """Groundwater chemistry client endpoints."""
 
 import logging
-from collections.abc import Sequence
 from datetime import datetime
 from typing import Any
 
 from sgu_client.client.base import BaseClient
+from sgu_client.client.collection import SGUCollection, Where
 from sgu_client.models.chemistry import (
     AnalysisResult,
     AnalysisResultCollection,
@@ -14,6 +14,8 @@ from sgu_client.models.chemistry import (
 )
 
 logger = logging.getLogger(__name__)
+
+DATASET = "grundvattenkvalitet-analysresultat-provplatser-v2"
 
 # A single site identifier value, or a list of them
 SiteIdentifier = int | str | list[int] | list[str] | None
@@ -26,11 +28,14 @@ SITE_IDENTIFIERS: dict[str, tuple[str, str]] = {
 }
 
 
+def _site_where(identifier: str, values: list[int | str] | list[int]) -> Where:
+    """Condition matching any of the given values of a site identifier."""
+    field, _ = SITE_IDENTIFIERS[identifier]
+    return {field: values}
+
+
 class GroundwaterChemistryClient:
     """Client for groundwater chemistry-related SGU API endpoints."""
-
-    BASE_PATH = "collections"
-    CHEMISTRY_BASE_URL = "https://api.sgu.se/oppnadata/grundvattenkvalitet-analysresultat-provplatser-v2/ogc/features/v1/"
 
     def __init__(self, base_client: BaseClient):
         """Initialize groundwater chemistry client.
@@ -39,6 +44,21 @@ class GroundwaterChemistryClient:
             base_client: Base HTTP client instance
         """
         self._client = base_client
+        self._sites = SGUCollection(
+            base_client,
+            dataset=DATASET,
+            name="provplatser",
+            model=SamplingSiteCollection,
+            label="Site",
+        )
+        self._results = SGUCollection(
+            base_client,
+            dataset=DATASET,
+            name="analysresultat",
+            model=AnalysisResultCollection,
+            label="Result",
+            date_field="provtagningsdatum",
+        )
 
     # ===== Sampling Sites Methods =====
 
@@ -71,17 +91,14 @@ class GroundwaterChemistryClient:
         Returns:
             Typed collection of groundwater chemistry sampling sites
         """
-        endpoint = f"{self.BASE_PATH}/provplatser/items"
-        params = self._build_query_params(
+        return self._sites.query(
             bbox=bbox,
             datetime=datetime,
             limit=limit,
-            filter=filter_expr,
+            filter_expr=filter_expr,
             sortby=sortby,
             **kwargs,
         )
-        response = self._make_request(endpoint, params)
-        return SamplingSiteCollection(**response)
 
     def get_sampling_site(self, site_id: str) -> SamplingSite:
         """Get a specific groundwater chemistry sampling site by ID.
@@ -97,17 +114,7 @@ class GroundwaterChemistryClient:
         Raises:
             ValueError: If site not found or multiple sites returned
         """
-        endpoint = f"{self.BASE_PATH}/provplatser/items/{site_id}"
-        response = self._make_request(endpoint, {})
-
-        # SGU API returns a FeatureCollection even for single items
-        collection = SamplingSiteCollection(**response)
-        if not collection.features:
-            raise ValueError(f"Site {site_id} not found")
-        if len(collection.features) > 1:
-            raise ValueError(f"Multiple sites returned for ID {site_id}")
-
-        return collection.features[0]
+        return self._sites.get(site_id)
 
     def get_sampling_site_by_name(
         self,
@@ -149,15 +156,7 @@ class GroundwaterChemistryClient:
         identifier, values = self._select_site_identifier(
             national_site_id, site_id, site_name
         )
-        filter_expr = self._build_site_filter(identifier, values)
-        response = self.get_sampling_sites(filter_expr=filter_expr, **kwargs)
-
-        if not response.features:
-            raise ValueError(f"No sites found for {filter_expr}")
-        if len(response.features) > 1:
-            raise ValueError(f"Multiple sites found for {filter_expr}")
-
-        return response.features[0]
+        return self._sites.find_one(where=_site_where(identifier, values), **kwargs)
 
     def get_sampling_sites_by_names(
         self,
@@ -208,6 +207,8 @@ class GroundwaterChemistryClient:
         limit: int | None = None,
         filter_expr: str | None = None,
         sortby: list[str] | None = None,
+        tmin: str | datetime | None = None,
+        tmax: str | datetime | None = None,
         **kwargs: Any,
     ) -> AnalysisResultCollection:
         """Get groundwater chemistry analysis results.
@@ -219,28 +220,29 @@ class GroundwaterChemistryClient:
 
         Args:
             bbox: Bounding box as [min_lon, min_lat, max_lon, max_lat]
-            datetime: Date/time filter (RFC 3339 format or interval)
+            datetime: Raw OGC date/time filter; prefer ``tmin``/``tmax``
             limit: Maximum number of features to return (paginated automatically)
             filter_expr: CQL filter expression
             sortby: List of sort expressions (e.g., ['+date', '-value'])
                 Note: the SGU v2 chemistry API currently ignores sortby;
                 features are returned in the server's default order.
+            tmin: Earliest sampling date (ISO string or datetime object)
+            tmax: Latest sampling date (ISO string or datetime object)
             **kwargs: Additional query parameters
 
         Returns:
             Typed collection of groundwater chemistry analysis results
         """
-        endpoint = f"{self.BASE_PATH}/analysresultat/items"
-        params = self._build_query_params(
+        return self._results.query(
             bbox=bbox,
             datetime=datetime,
             limit=limit,
-            filter=filter_expr,
+            filter_expr=filter_expr,
             sortby=sortby,
+            tmin=tmin,
+            tmax=tmax,
             **kwargs,
         )
-        response = self._make_request(endpoint, params)
-        return AnalysisResultCollection(**response)
 
     def get_analysis_result(self, result_id: str) -> AnalysisResult:
         """Get a specific groundwater chemistry analysis result by ID.
@@ -256,17 +258,7 @@ class GroundwaterChemistryClient:
         Raises:
             ValueError: If result not found or multiple results returned
         """
-        endpoint = f"{self.BASE_PATH}/analysresultat/items/{result_id}"
-        response = self._make_request(endpoint, {})
-
-        # SGU API returns a FeatureCollection even for single items
-        collection = AnalysisResultCollection(**response)
-        if not collection.features:
-            raise ValueError(f"Result {result_id} not found")
-        if len(collection.features) > 1:
-            raise ValueError(f"Multiple results returned for ID {result_id}")
-
-        return collection.features[0]
+        return self._results.get(result_id)
 
     def get_results_by_site(
         self,
@@ -321,8 +313,8 @@ class GroundwaterChemistryClient:
         if len(national_site_ids) > 1:
             raise ValueError(f"Multiple sites found for {site_id or site_name!r}")
 
-        return self._get_results_for_filters(
-            [self._build_site_filter("national_site_id", national_site_ids)],
+        return self._results.query(
+            where=_site_where("national_site_id", national_site_ids),
             tmin=tmin,
             tmax=tmax,
             limit=limit,
@@ -379,8 +371,8 @@ class GroundwaterChemistryClient:
             national_site_id, site_id, site_name
         )
 
-        return self._get_results_for_filters(
-            [self._build_site_filter("national_site_id", national_site_ids)],
+        return self._results.query(
+            where=_site_where("national_site_id", national_site_ids),
             tmin=tmin,
             tmax=tmax,
             limit=limit,
@@ -446,18 +438,16 @@ class GroundwaterChemistryClient:
             ...         national_site_id=[359366, 378865]
             ...     )
         """
-        filters = [f"parameternamn='{parameter}'"]
+        where: Where = {"parameternamn": parameter}
 
         if national_site_id or site_id or site_name:
             national_site_ids = self._resolve_national_site_ids(
                 national_site_id, site_id, site_name
             )
-            filters.append(
-                self._build_site_filter("national_site_id", national_site_ids)
-            )
+            where |= _site_where("national_site_id", national_site_ids)
 
-        return self._get_results_for_filters(
-            filters, tmin=tmin, tmax=tmax, limit=limit, **kwargs
+        return self._results.query(
+            where=where, tmin=tmin, tmax=tmax, limit=limit, **kwargs
         )
 
     # ===== Internal Helper Methods =====
@@ -536,9 +526,7 @@ class GroundwaterChemistryClient:
         Raises:
             ValueError: If any of the requested sites is not found
         """
-        sites = self.get_sampling_sites(
-            filter_expr=self._build_site_filter(identifier, values), **kwargs
-        )
+        sites = self._sites.query(where=_site_where(identifier, values), **kwargs)
 
         _, attribute = SITE_IDENTIFIERS[identifier]
         found = {getattr(site.properties, attribute) for site in sites.features}
@@ -547,100 +535,3 @@ class GroundwaterChemistryClient:
             raise ValueError(f"No sampling sites found for {identifier}: {missing}")
 
         return sites
-
-    def _build_site_filter(self, identifier: str, values: Sequence[int | str]) -> str:
-        """Build a CQL filter matching any of the given site identifier values."""
-        field, _ = SITE_IDENTIFIERS[identifier]
-        literals = [
-            f"'{value}'" if isinstance(value, str) else str(value) for value in values
-        ]
-        if len(literals) == 1:
-            return f"{field}={literals[0]}"
-        return f"{field} in ({', '.join(literals)})"
-
-    def _get_results_for_filters(
-        self,
-        filters: list[str],
-        tmin: str | datetime | None,
-        tmax: str | datetime | None,
-        limit: int | None,
-        **kwargs: Any,
-    ) -> AnalysisResultCollection:
-        """Get analysis results matching all filters and the optional time range."""
-        filters = [*filters, *self._build_datetime_filters(tmin, tmax)]
-        return self.get_analysis_results(
-            filter_expr=" AND ".join(filters), limit=limit, **kwargs
-        )
-
-    def _build_query_params(self, **params: Any) -> dict[str, Any]:
-        """Build query parameters for API requests.
-
-        Args:
-            **params: Raw parameter values
-
-        Returns:
-            Cleaned dictionary of query parameters
-        """
-        query_params = {}
-
-        for key, value in params.items():
-            if value is None:
-                continue
-
-            if key == "bbox" and isinstance(value, list):
-                query_params[key] = ",".join(map(str, value))
-            elif key == "sortby" and isinstance(value, list):
-                query_params[key] = ",".join(value)
-            else:
-                query_params[key] = value
-
-        return query_params
-
-    def _build_datetime_filters(
-        self, tmin: str | datetime | None, tmax: str | datetime | None
-    ) -> list[str]:
-        """Build CQL datetime filter expressions from tmin/tmax parameters.
-
-        Args:
-            tmin: Start time (ISO string or datetime object)
-            tmax: End time (ISO string or datetime object)
-
-        Returns:
-            List of CQL filter expressions for datetime constraints
-        """
-        filters = []
-
-        # Convert datetime objects to ISO strings
-        def to_iso_string(dt: str | datetime | None) -> str | None:
-            if dt is None:
-                return None
-            if isinstance(dt, datetime):
-                return dt.isoformat()
-            return dt
-
-        if tmin:
-            tmin_str = to_iso_string(tmin)
-            filters.append(f"provtagningsdatum >= '{tmin_str}'")
-
-        if tmax:
-            tmax_str = to_iso_string(tmax)
-            filters.append(f"provtagningsdatum <= '{tmax_str}'")
-
-        return filters
-
-    def _make_request(self, endpoint: str, params: dict[str, Any]) -> dict[str, Any]:
-        """Make HTTP request to SGU API.
-
-        Args:
-            endpoint: API endpoint path
-            params: Query parameters
-
-        Returns:
-            JSON response data
-
-        Raises:
-            Various HTTP and API exceptions via base client
-        """
-        return self._client.get(
-            endpoint, params=params, base_url=self.CHEMISTRY_BASE_URL
-        )

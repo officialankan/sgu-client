@@ -12,6 +12,8 @@ Configuration & exceptions
    SGUConnectionError
    SGUTimeoutError
    SGUValidationError
+   SGUNotFoundError
+   SGUAmbiguousError
 
 Configuration
 -------------
@@ -33,7 +35,10 @@ handles every client error:
    ├── SGUAPIError         the API returned an error response
    ├── SGUConnectionError  the connection to the API failed
    ├── SGUTimeoutError     the request timed out
-   └── SGUValidationError  data validation failed
+   ├── SGUValidationError  data validation failed
+   ├── SGUNotFoundError    a lookup matched nothing (also a ValueError)
+   └── SGUAmbiguousError   a lookup expecting one feature matched several
+                           (also a ValueError)
 
 .. autoexception:: SGUClientError
 
@@ -44,3 +49,7 @@ handles every client error:
 .. autoexception:: SGUTimeoutError
 
 .. autoexception:: SGUValidationError
+
+.. autoexception:: SGUNotFoundError
+
+.. autoexception:: SGUAmbiguousError

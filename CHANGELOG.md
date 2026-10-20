@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-10-20
+
+### Added
+
+- `SGUNotFoundError` and `SGUAmbiguousError`, raised when a lookup matches no feature or several. Both subclass `ValueError`, so existing `except ValueError` code keeps working (#62)
+- **Modeled levels**: `get_levels_by_area()`, `get_levels_by_areas()` and `get_levels_by_coords()` take `tmin` and `tmax` (ISO strings or `datetime` objects), filtering on the level's date like the observed measurement lookups (#62)
+- `get_measurements()`, `get_levels()` and `get_analysis_results()` take `tmin` and `tmax` too, filtering on the observation, level or sampling date. Docs and examples now use `tmin`/`tmax` instead of the OGC `datetime` interval (#62)
+
+### Changed
+
+- **Filter text**: a single value is sent as `field=value` and several as `field in (...)` on every dataset. Modeled area filters were `omrade_id = 1` / `omrade_id IN (1, 2)`, and observed sent one-element lists as `in (...)`. Same results, different filter text (#62)
+
+### Fixed
+
+- `get_station_by_name()` raises `SGUNotFoundError` instead of a bare `IndexError` when no station matches (#57)
+- Single quotes in station, site or parameter names are escaped in filters instead of producing an invalid query (#62)
+
+### BREAKING CHANGES
+
+- **`SGUConfig.base_url`** is now the root of SGU's open data APIs (`https://api.sgu.se/oppnadata/`) and applies to the observed, modeled and chemistry datasets alike. It used to be the full observed-levels URL and was ignored by the other two. If you set it, drop the `grundvattennivaer-observerade/ogc/features/v1/` suffix (#62)
+- **Internal URL constants removed**: `BASE_PATH` on the three clients, `ModeledGroundwaterLevelClient.MODELED_BASE_URL` and `GroundwaterChemistryClient.CHEMISTRY_BASE_URL`. Dataset URLs now come from `SGUConfig.base_url` (#62)
+
 ## [0.6.0] - 2026-10-19
 
 ### Added

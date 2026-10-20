@@ -1,0 +1,23 @@
+name: PR into main
+
+# main is the default branch, so GitHub suggests it as the target of every new PR.
+# Only release PRs from dev belong there; feature PRs go into dev.
+on:
+  pull_request:
+    types: [opened, edited, reopened, synchronize]
+    branches: [main]
+
+jobs:
+  from-dev-only:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check the PR comes from dev in this repository
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+          HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+          THIS_REPO: ${{ github.repository }}
+        run: |
+          if [ "$HEAD_REF" != "dev" ] || [ "$HEAD_REPO" != "$THIS_REPO" ]; then
+            echo "::error::PRs into main must come from dev (this one is from $HEAD_REPO:$HEAD_REF). Change the base branch to dev."
+            exit 1
+          fi

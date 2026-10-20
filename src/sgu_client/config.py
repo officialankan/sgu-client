@@ -13,8 +13,8 @@ class SGUConfig(BaseModel):
 
     # HTTP settings
     base_url: str = Field(
-        default="https://api.sgu.se/oppnadata/grundvattennivaer-observerade/ogc/features/v1/",
-        description="Base URL for SGU API",
+        default="https://api.sgu.se/oppnadata/",
+        description="Root URL of the SGU open data APIs; every dataset is found below it",
     )
     timeout: float = Field(
         default=30.0, ge=1.0, description="Request timeout in seconds"
