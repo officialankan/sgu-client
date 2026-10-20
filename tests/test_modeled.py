@@ -610,34 +610,6 @@ def test_get_levels_by_areas_mixed_existing_nonexistent(mock_request) -> None:
         assert level.properties.area_id == TEST_LEVEL_OMRADE_ID
 
 
-def test_build_query_params_helper() -> None:
-    """Test the internal query parameter building helper function."""
-    client = SGUClient()
-    modeled_client = client.levels.modeled
-
-    # Test bbox parameter
-    params = modeled_client._build_query_params(bbox=[12.0, 55.0, 16.0, 58.0])
-    assert params["bbox"] == "12.0,55.0,16.0,58.0"
-
-    # Test sortby parameter
-    params = modeled_client._build_query_params(sortby=["+datum", "-omrade_id"])
-    assert params["sortby"] == "+datum,-omrade_id"
-
-    # Test None values are filtered out
-    params = modeled_client._build_query_params(limit=10, bbox=None, datetime=None)
-    assert "bbox" not in params
-    assert "datetime" not in params
-    assert params["limit"] == 10
-
-    # Test regular parameters pass through
-    params = modeled_client._build_query_params(
-        limit=100, filter="omrade_id = 30125", datetime="2024-08-01Z"
-    )
-    assert params["limit"] == 100
-    assert params["filter"] == "omrade_id = 30125"
-    assert params["datetime"] == "2024-08-01Z"
-
-
 @patch("requests.Session.request")
 def test_get_levels_by_coords_single_area(mock_request) -> None:
     """Test get_levels_by_coords with coordinates that find a single area using mocked response."""
@@ -915,3 +887,90 @@ def test_malformed_json_response() -> None:
 
         # Should raise SGUAPIError when JSON parsing fails
         assert "API request failed with status 500" in str(exc_info.value)
+
+
+@pytest.mark.parametrize(
+    ("area_ids", "expected"),
+    [
+        (["30125"], "omrade_id=30125"),
+        ([30125, "30126"], "omrade_id in (30125, 30126)"),
+    ],
+)
+def test_get_levels_by_areas_sends_area_ids_unquoted(area_ids, expected) -> None:
+    """Area IDs are numbers in the API, even when passed as strings."""
+    with patch("requests.Session.request") as mock_request:
+        mock_request.return_value = create_mock_response(
+            create_mock_empty_modeled_collection_response()
+        )
+        SGUClient().levels.modeled.get_levels_by_areas(area_ids)
+
+    assert mock_request.call_args.kwargs["params"]["filter"] == expected
+
+
+DATUM_JAN_2024 = (
+    "datum >= '2024-01-01T00:00:00+00:00' AND datum <= '2024-01-31T00:00:00+00:00'"
+)
+
+
+@pytest.mark.parametrize(
+    ("call", "expected_area_filter"),
+    [
+        (
+            lambda modeled, **t: modeled.get_levels_by_area(30125, **t),
+            "omrade_id=30125",
+        ),
+        (
+            lambda modeled, **t: modeled.get_levels_by_areas([30125, 30126], **t),
+            "omrade_id in (30125, 30126)",
+        ),
+    ],
+)
+def test_get_levels_by_area_filters_on_date(call, expected_area_filter) -> None:
+    """tmin/tmax filter modeled levels on their date, like observed measurements."""
+    with patch("requests.Session.request") as mock_request:
+        mock_request.return_value = create_mock_response(
+            create_mock_empty_modeled_collection_response()
+        )
+        call(
+            SGUClient().levels.modeled,
+            tmin=datetime(2024, 1, 1, tzinfo=UTC),
+            tmax=datetime(2024, 1, 31, tzinfo=UTC),
+        )
+
+    assert mock_request.call_args.kwargs["params"]["filter"] == (
+        f"{expected_area_filter} AND {DATUM_JAN_2024}"
+    )
+
+
+def test_get_levels_by_coords_filters_on_date() -> None:
+    """tmin/tmax reach the levels request, not the area lookup."""
+    area = create_mock_single_modeled_area_response()
+    area_id = area["features"][0]["properties"]["omrade_id"]
+    with patch("requests.Session.request") as mock_request:
+        mock_request.side_effect = [
+            create_mock_response(area),
+            create_mock_response(create_mock_empty_modeled_collection_response()),
+        ]
+        SGUClient().levels.modeled.get_levels_by_coords(
+            lat=57.7, lon=11.97, tmin="2024-01-01", tmax="2024-01-31"
+        )
+
+    area_params, level_params = (
+        call.kwargs["params"] for call in mock_request.call_args_list
+    )
+    assert "filter" not in area_params
+    assert level_params["filter"] == (
+        f"omrade_id={area_id} AND datum >= '2024-01-01' AND datum <= '2024-01-31'"
+    )
+
+
+def test_get_levels_filters_on_date() -> None:
+    with patch("requests.Session.request") as mock_request:
+        mock_request.return_value = create_mock_response(
+            create_mock_empty_modeled_collection_response()
+        )
+        SGUClient().levels.modeled.get_levels(tmin="2024-01-01", tmax="2024-01-31")
+
+    assert mock_request.call_args.kwargs["params"]["filter"] == (
+        "datum >= '2024-01-01' AND datum <= '2024-01-31'"
+    )

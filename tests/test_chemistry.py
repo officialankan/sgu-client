@@ -679,3 +679,16 @@ def test_get_results_by_site_lookup_without_national_site_id_raises():
             client.chemistry.get_results_by_site(site_id="TTK-442-M")
 
     assert mock_request.call_count == 1
+
+
+def test_get_analysis_results_filters_on_sampling_date():
+    client = SGUClient()
+    with patch.object(client.chemistry._client._session, "request") as mock_request:
+        mock_request.return_value = create_mock_response(
+            create_mock_empty_chemistry_collection_response()
+        )
+        client.chemistry.get_analysis_results(tmin="2020-01-01", tmax="2021-01-01")
+
+    assert mock_request.call_args.kwargs["params"]["filter"] == (
+        "provtagningsdatum >= '2020-01-01' AND provtagningsdatum <= '2021-01-01'"
+    )

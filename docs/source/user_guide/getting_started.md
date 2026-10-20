@@ -114,5 +114,7 @@ except SGUClientError:
     ...  # any other client error
 ```
 
-Convenience lookups such as `get_station_by_name()` raise `ValueError` when the
-arguments are invalid or the lookup is ambiguous.
+Convenience lookups such as `get_station_by_name()` raise
+{class}`~sgu_client.SGUNotFoundError` when nothing matches and
+{class}`~sgu_client.SGUAmbiguousError` when more than one feature matches. Both are
+also `ValueError`s, as are the errors for invalid arguments.
