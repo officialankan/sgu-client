@@ -266,3 +266,21 @@ def test_find_one_raises_ambiguous_naming_the_filter(base_client, stations):
             SGUAmbiguousError, match="Multiple stations found for obsplatsnamn='Dup'"
         ):
             stations.find_one(where={"obsplatsnamn": "Dup"})
+
+
+def test_default_config_points_at_the_sgu_open_data_root():
+    stations = SGUCollection(
+        BaseClient(),
+        dataset="grundvattennivaer-observerade",
+        name="stationer",
+        model=GroundwaterStationCollection,
+        label="Station",
+    )
+    with patch.object(stations._client._session, "request") as request:
+        request.return_value = mock_response(create_mock_empty_collection_response())
+        stations.query()
+
+    assert request.call_args.kwargs["url"] == (
+        "https://api.sgu.se/oppnadata/grundvattennivaer-observerade"
+        "/ogc/features/v1/collections/stationer/items"
+    )

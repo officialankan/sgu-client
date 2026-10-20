@@ -13,7 +13,12 @@ from pandas.api.types import is_datetime64_any_dtype as is_datetime
 from requests import Response
 
 from sgu_client import SGUClient
-from sgu_client.exceptions import SGUAPIError, SGUConnectionError, SGUTimeoutError
+from sgu_client.exceptions import (
+    SGUAPIError,
+    SGUConnectionError,
+    SGUNotFoundError,
+    SGUTimeoutError,
+)
 from sgu_client.models.observed import (
     GroundwaterMeasurement,
     GroundwaterMeasurementCollection,
@@ -508,46 +513,6 @@ def test_get_measurements_by_names_both_args() -> None:
         )
 
 
-# Tests for datetime filters helper
-def test_build_datetime_filters_helper() -> None:
-    """Test the internal datetime filter building helper function."""
-    client = SGUClient()
-
-    # Test both tmin and tmax
-    tmin = datetime(2020, 1, 1, tzinfo=UTC)
-    tmax = datetime(2021, 1, 1, tzinfo=UTC)
-    filters = client.levels.observed._build_datetime_filters(tmin, tmax)
-    expected = [
-        "obsdatum >= '2020-01-01T00:00:00+00:00'",
-        "obsdatum <= '2021-01-01T00:00:00+00:00'",
-    ]
-    assert filters == expected
-
-    # Test only tmin
-    filters = client.levels.observed._build_datetime_filters(tmin, None)
-    expected = ["obsdatum >= '2020-01-01T00:00:00+00:00'"]
-    assert filters == expected
-
-    # Test only tmax
-    filters = client.levels.observed._build_datetime_filters(None, tmax)
-    expected = ["obsdatum <= '2021-01-01T00:00:00+00:00'"]
-    assert filters == expected
-
-    # Test string inputs
-    filters = client.levels.observed._build_datetime_filters(
-        "2020-01-01T00:00:00Z", "2021-01-01T00:00:00Z"
-    )
-    expected = [
-        "obsdatum >= '2020-01-01T00:00:00Z'",
-        "obsdatum <= '2021-01-01T00:00:00Z'",
-    ]
-    assert filters == expected
-
-    # Test no inputs
-    filters = client.levels.observed._build_datetime_filters(None, None)
-    assert filters == []
-
-
 @patch("requests.Session.request")
 def test_measurements_to_dataframe(mock_request) -> None:
     """Test converting measurements to DataFrame with mocked response."""
@@ -821,3 +786,14 @@ def test_get_stations_parses_active_dates(mock_request) -> None:
     assert closed.active_since == datetime(1996, 4, 29, tzinfo=UTC)
     assert closed.active_until == datetime(2018, 12, 10, tzinfo=UTC)
     assert live.active_until is None
+
+
+def test_get_station_by_name_not_found():
+    """Test that get_station_by_name raises SGUNotFoundError when nothing matches."""
+    with patch("sgu_client.client.base.BaseClient._make_request") as mock_request:
+        mock_request.return_value = create_mock_empty_collection_response()
+
+        client = SGUClient()
+
+        with pytest.raises(SGUNotFoundError, match="No stations found for"):
+            client.levels.observed.get_station_by_name(station_name="Nope")

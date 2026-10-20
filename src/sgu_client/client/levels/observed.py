@@ -5,6 +5,7 @@ from datetime import datetime
 from typing import Any
 
 from sgu_client.client.base import BaseClient
+from sgu_client.client.collection import SGUCollection
 from sgu_client.models.observed import (
     GroundwaterMeasurement,
     GroundwaterMeasurementCollection,
@@ -14,11 +15,11 @@ from sgu_client.models.observed import (
 
 logger = logging.getLogger(__name__)
 
+DATASET = "grundvattennivaer-observerade"
+
 
 class ObservedGroundwaterLevelClient:
     """Client for observed groundwater level-related SGU API endpoints."""
-
-    BASE_PATH = "collections"
 
     def __init__(self, base_client: BaseClient):
         """Initialize observed groundwater level client.
@@ -27,6 +28,21 @@ class ObservedGroundwaterLevelClient:
             base_client: Base HTTP client instance
         """
         self._client = base_client
+        self._stations = SGUCollection(
+            base_client,
+            dataset=DATASET,
+            name="stationer",
+            model=GroundwaterStationCollection,
+            label="Station",
+        )
+        self._measurements = SGUCollection(
+            base_client,
+            dataset=DATASET,
+            name="nivaer",
+            model=GroundwaterMeasurementCollection,
+            label="Measurement",
+            date_field="obsdatum",
+        )
 
     def get_stations(
         self,
@@ -63,17 +79,14 @@ class ObservedGroundwaterLevelClient:
             ...         filter_expr="kommun='Uppsala' AND akvifer='JS'"
             ...     )
         """
-        endpoint = f"{self.BASE_PATH}/stationer/items"
-        params = self._build_query_params(
+        return self._stations.query(
             bbox=bbox,
             datetime=datetime,
             limit=limit,
-            filter=filter_expr,
+            filter_expr=filter_expr,
             sortby=sortby,
             **kwargs,
         )
-        response = self._make_request(endpoint, params)
-        return GroundwaterStationCollection(**response)
 
     def get_station(self, station_id: str) -> GroundwaterStation:
         """Get a specific groundwater monitoring station by ID. This endpoint is provided by the OGC API
@@ -88,17 +101,7 @@ class ObservedGroundwaterLevelClient:
         Raises:
             ValueError: If station not found or multiple stations returned
         """
-        endpoint = f"{self.BASE_PATH}/stationer/items/{station_id}"
-        response = self._make_request(endpoint, {})
-
-        # SGU API returns a FeatureCollection even for single items
-        collection = GroundwaterStationCollection(**response)
-        if not collection.features:
-            raise ValueError(f"Station {station_id} not found")
-        if len(collection.features) > 1:
-            raise ValueError(f"Multiple stations returned for ID {station_id}")
-
-        return collection.features[0]
+        return self._stations.get(station_id)
 
     def get_measurements(
         self,
@@ -127,17 +130,14 @@ class ObservedGroundwaterLevelClient:
         Returns:
             Typed collection of groundwater level measurements
         """
-        endpoint = f"{self.BASE_PATH}/nivaer/items"
-        params = self._build_query_params(
+        return self._measurements.query(
             bbox=bbox,
             datetime=datetime,
             limit=limit,
-            filter=filter_expr,
+            filter_expr=filter_expr,
             sortby=sortby,
             **kwargs,
         )
-        response = self._make_request(endpoint, params)
-        return GroundwaterMeasurementCollection(**response)
 
     def get_measurement(self, measurement_id: str) -> GroundwaterMeasurement:
         """Get a specific groundwater level measurement by ID. This endpoint is provided by the OGGC API
@@ -152,17 +152,7 @@ class ObservedGroundwaterLevelClient:
         Raises:
             ValueError: If measurement not found or multiple measurements returned
         """
-        endpoint = f"{self.BASE_PATH}/nivaer/items/{measurement_id}"
-        response = self._make_request(endpoint, {})
-
-        # SGU API returns a FeatureCollection even for single items
-        collection = GroundwaterMeasurementCollection(**response)
-        if not collection.features:
-            raise ValueError(f"Measurement {measurement_id} not found")
-        if len(collection.features) > 1:
-            raise ValueError(f"Multiple measurements returned for ID {measurement_id}")
-
-        return collection.features[0]
+        return self._measurements.get(measurement_id)
 
     def get_station_by_name(
         self,
@@ -210,11 +200,7 @@ class ObservedGroundwaterLevelClient:
             station = station_name
         else:
             raise ValueError("Either 'station_id' or 'station_name' must be provided.")
-        filter_expr = f"{name_type}='{station}'"
-        response = self.get_stations(filter_expr=filter_expr, **kwargs)
-        if len(response.features) > 1:
-            raise ValueError(f"Multiple stations found for {filter_expr}")
-        return response.features[0]
+        return self._stations.find_one(where={name_type: station}, **kwargs)
 
     def get_stations_by_names(
         self,
@@ -260,12 +246,7 @@ class ObservedGroundwaterLevelClient:
             stations = station_name
         else:
             raise ValueError("Either 'station_id' or 'station_name' must be provided.")
-
-        # Build filter expression for multiple stations using IN clause
-        quoted_stations = [f"'{station}'" for station in stations]
-        filter_expr = f"{name_type} in ({', '.join(quoted_stations)})"
-
-        return self.get_stations(filter_expr=filter_expr, **kwargs)
+        return self._stations.query(where={name_type: stations}, **kwargs)
 
     def get_measurements_by_name(
         self,
@@ -339,18 +320,10 @@ class ObservedGroundwaterLevelClient:
         else:
             raise ValueError("Either 'station_id' or 'station_name' must be provided.")
 
-        # Build filter expressions
-        filters = [f"platsbeteckning='{target_platsbeteckning}'"]
-
-        # Add datetime filters if tmin/tmax provided
-        datetime_filters = self._build_datetime_filters(tmin, tmax)
-        filters.extend(datetime_filters)
-
-        # Combine all filters with AND
-        combined_filter = " AND ".join(filters)
-
-        return self.get_measurements(
-            filter_expr=combined_filter,
+        return self._measurements.query(
+            where={"platsbeteckning": target_platsbeteckning},
+            tmin=tmin,
+            tmax=tmax,
             limit=limit,
             **kwargs,
         )
@@ -421,90 +394,10 @@ class ObservedGroundwaterLevelClient:
         else:
             raise ValueError("Either 'station_id' or 'station_name' must be provided.")
 
-        # Build filter expressions
-        quoted_stations = [f"'{station}'" for station in target_platsbeteckningar]
-        filters = [f"platsbeteckning in ({', '.join(quoted_stations)})"]
-
-        # Add datetime filters if tmin/tmax provided
-        datetime_filters = self._build_datetime_filters(tmin, tmax)
-        filters.extend(datetime_filters)
-
-        # Combine all filters with AND
-        combined_filter = " AND ".join(filters)
-
-        return self.get_measurements(
-            filter_expr=combined_filter,
+        return self._measurements.query(
+            where={"platsbeteckning": target_platsbeteckningar},
+            tmin=tmin,
+            tmax=tmax,
             limit=limit,
             **kwargs,
         )
-
-    def _build_query_params(self, **params: Any) -> dict[str, Any]:
-        """Build query parameters for API requests.
-
-        Args:
-            **params: Raw parameter values
-
-        Returns:
-            Cleaned dictionary of query parameters
-        """
-        query_params = {}
-
-        for key, value in params.items():
-            if value is None:
-                continue
-
-            if key == "bbox" and isinstance(value, list):
-                query_params[key] = ",".join(map(str, value))
-            elif key == "sortby" and isinstance(value, list):
-                query_params[key] = ",".join(value)
-            else:
-                query_params[key] = value
-
-        return query_params
-
-    def _build_datetime_filters(
-        self, tmin: str | datetime | None, tmax: str | datetime | None
-    ) -> list[str]:
-        """Build CQL datetime filter expressions from tmin/tmax parameters.
-
-        Args:
-            tmin: Start time (ISO string or datetime object)
-            tmax: End time (ISO string or datetime object)
-
-        Returns:
-            List of CQL filter expressions for datetime constraints
-        """
-        filters = []
-
-        # Convert datetime objects to ISO strings
-        def to_iso_string(dt: str | datetime | None) -> str | None:
-            if dt is None:
-                return None
-            if isinstance(dt, datetime):
-                return dt.isoformat()
-            return dt
-
-        if tmin:
-            tmin_str = to_iso_string(tmin)
-            filters.append(f"obsdatum >= '{tmin_str}'")
-
-        if tmax:
-            tmax_str = to_iso_string(tmax)
-            filters.append(f"obsdatum <= '{tmax_str}'")
-
-        return filters
-
-    def _make_request(self, endpoint: str, params: dict[str, Any]) -> dict[str, Any]:
-        """Make HTTP request to SGU API.
-
-        Args:
-            endpoint: API endpoint path
-            params: Query parameters
-
-        Returns:
-            JSON response data
-
-        Raises:
-            Various HTTP and API exceptions via base client
-        """
-        return self._client.get(endpoint, params=params)

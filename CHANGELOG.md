@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `SGUNotFoundError` and `SGUAmbiguousError`, raised when a lookup matches no feature or several. Both subclass `ValueError`, so existing `except ValueError` code keeps working (#62)
+
+### Fixed
+
+- `get_station_by_name()` raises `SGUNotFoundError` instead of a bare `IndexError` when no station matches (#57)
+- Single quotes in station, site or parameter names are escaped in filters instead of producing an invalid query (#62)
+
+### BREAKING CHANGES
+
+- **`SGUConfig.base_url`** is now the root of SGU's open data APIs (`https://api.sgu.se/oppnadata/`) and applies to the observed, modeled and chemistry datasets alike. It used to be the full observed-levels URL and was ignored by the other two. If you set it, drop the `grundvattennivaer-observerade/ogc/features/v1/` suffix (#62)
+
 ## [0.6.0] - 2026-10-19
 
 ### Added
