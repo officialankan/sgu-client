@@ -1,6 +1,7 @@
 """Modeled groundwater level client endpoints."""
 
 import logging
+from datetime import datetime
 from typing import Any
 
 from sgu_client.client.base import BaseClient
@@ -40,6 +41,7 @@ class ModeledGroundwaterLevelClient:
             name="grundvattennivaer-tidigare",
             model=ModeledGroundwaterLevelCollection,
             label="Level",
+            date_field="datum",
         )
 
     def get_areas(
@@ -158,12 +160,18 @@ class ModeledGroundwaterLevelClient:
         return self._levels.get(level_id)
 
     def get_levels_by_area(
-        self, area_id: int, **kwargs: Any
+        self,
+        area_id: int,
+        tmin: str | datetime | None = None,
+        tmax: str | datetime | None = None,
+        **kwargs: Any,
     ) -> ModeledGroundwaterLevelCollection:
         """Get modeled groundwater levels for a specific area.
 
         Args:
             area_id: Area ID to filter by
+            tmin: Earliest date (ISO string or datetime object)
+            tmax: Latest date (ISO string or datetime object)
             **kwargs: Additional query parameters (limit, datetime, bbox, etc.)
 
         Returns:
@@ -181,18 +189,27 @@ class ModeledGroundwaterLevelClient:
             ...     # with time filtering
             ...     levels = client.levels.modeled.get_levels_by_area(
             ...         area_id=30125,
-            ...         datetime="2023-01-01/2024-01-01"
+            ...         tmin="2023-01-01",
+            ...         tmax="2024-01-01"
             ...     )
         """
-        return self._levels.query(where={"omrade_id": int(area_id)}, **kwargs)
+        return self._levels.query(
+            where={"omrade_id": int(area_id)}, tmin=tmin, tmax=tmax, **kwargs
+        )
 
     def get_levels_by_areas(
-        self, area_ids: list[int], **kwargs: Any
+        self,
+        area_ids: list[int],
+        tmin: str | datetime | None = None,
+        tmax: str | datetime | None = None,
+        **kwargs: Any,
     ) -> ModeledGroundwaterLevelCollection:
         """Get modeled groundwater levels for multiple areas.
 
         Args:
             area_ids: List of area IDs to filter by
+            tmin: Earliest date (ISO string or datetime object)
+            tmax: Latest date (ISO string or datetime object)
             **kwargs: Additional query parameters (limit, datetime, bbox, etc.)
 
         Returns:
@@ -204,7 +221,8 @@ class ModeledGroundwaterLevelClient:
             >>> with SGUClient() as client:
             ...     levels = client.levels.modeled.get_levels_by_areas(
             ...         area_ids=[30125, 30126],
-            ...         datetime="2024-09-30/2025-10-01"
+            ...         tmin="2024-09-30",
+            ...         tmax="2025-10-01"
             ...     )
             ...     print(f"Found {len(levels.features)} modeled levels")
         """
@@ -212,7 +230,10 @@ class ModeledGroundwaterLevelClient:
             raise ValueError("At least one area ID must be provided")
 
         return self._levels.query(
-            where={"omrade_id": [int(area_id) for area_id in area_ids]}, **kwargs
+            where={"omrade_id": [int(area_id) for area_id in area_ids]},
+            tmin=tmin,
+            tmax=tmax,
+            **kwargs,
         )
 
     def get_levels_by_coords(
@@ -220,6 +241,8 @@ class ModeledGroundwaterLevelClient:
         lat: float,
         lon: float,
         buffer: float = 0.01,
+        tmin: str | datetime | None = None,
+        tmax: str | datetime | None = None,
         **kwargs: Any,
     ) -> ModeledGroundwaterLevelCollection:
         """Get modeled groundwater levels for a specific coordinate.
@@ -231,6 +254,8 @@ class ModeledGroundwaterLevelClient:
             lat: Latitude coordinate (WGS84)
             lon: Longitude coordinate (WGS84)
             buffer: Buffer distance in degrees around the point (default 0.01 ≈ 1km)
+            tmin: Earliest date (ISO string or datetime object)
+            tmax: Latest date (ISO string or datetime object)
             **kwargs: Additional query parameters (limit, datetime, etc.)
 
         Returns:
@@ -254,7 +279,8 @@ class ModeledGroundwaterLevelClient:
             ...         lat=59.33,
             ...         lon=18.07,
             ...         buffer=0.05,  # ~5km radius
-            ...         datetime="2023-01-01/2024-01-01"
+            ...         tmin="2023-01-01",
+            ...         tmax="2024-01-01"
             ...     )
         """
         # Create bounding box around the point
@@ -294,4 +320,4 @@ class ModeledGroundwaterLevelClient:
             )
 
         # Get levels for all found areas
-        return self.get_levels_by_areas(area_ids, **kwargs)
+        return self.get_levels_by_areas(area_ids, tmin=tmin, tmax=tmax, **kwargs)

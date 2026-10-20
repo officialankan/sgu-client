@@ -905,3 +905,60 @@ def test_get_levels_by_areas_sends_area_ids_unquoted(area_ids, expected) -> None
         SGUClient().levels.modeled.get_levels_by_areas(area_ids)
 
     assert mock_request.call_args.kwargs["params"]["filter"] == expected
+
+
+DATUM_JAN_2024 = (
+    "datum >= '2024-01-01T00:00:00+00:00' AND datum <= '2024-01-31T00:00:00+00:00'"
+)
+
+
+@pytest.mark.parametrize(
+    ("call", "expected_area_filter"),
+    [
+        (
+            lambda modeled, **t: modeled.get_levels_by_area(30125, **t),
+            "omrade_id=30125",
+        ),
+        (
+            lambda modeled, **t: modeled.get_levels_by_areas([30125, 30126], **t),
+            "omrade_id in (30125, 30126)",
+        ),
+    ],
+)
+def test_get_levels_by_area_filters_on_date(call, expected_area_filter) -> None:
+    """tmin/tmax filter modeled levels on their date, like observed measurements."""
+    with patch("requests.Session.request") as mock_request:
+        mock_request.return_value = create_mock_response(
+            create_mock_empty_modeled_collection_response()
+        )
+        call(
+            SGUClient().levels.modeled,
+            tmin=datetime(2024, 1, 1, tzinfo=UTC),
+            tmax=datetime(2024, 1, 31, tzinfo=UTC),
+        )
+
+    assert mock_request.call_args.kwargs["params"]["filter"] == (
+        f"{expected_area_filter} AND {DATUM_JAN_2024}"
+    )
+
+
+def test_get_levels_by_coords_filters_on_date() -> None:
+    """tmin/tmax reach the levels request, not the area lookup."""
+    area = create_mock_single_modeled_area_response()
+    area_id = area["features"][0]["properties"]["omrade_id"]
+    with patch("requests.Session.request") as mock_request:
+        mock_request.side_effect = [
+            create_mock_response(area),
+            create_mock_response(create_mock_empty_modeled_collection_response()),
+        ]
+        SGUClient().levels.modeled.get_levels_by_coords(
+            lat=57.7, lon=11.97, tmin="2024-01-01", tmax="2024-01-31"
+        )
+
+    area_params, level_params = (
+        call.kwargs["params"] for call in mock_request.call_args_list
+    )
+    assert "filter" not in area_params
+    assert level_params["filter"] == (
+        f"omrade_id={area_id} AND datum >= '2024-01-01' AND datum <= '2024-01-31'"
+    )

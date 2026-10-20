@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - `SGUNotFoundError` and `SGUAmbiguousError`, raised when a lookup matches no feature or several. Both subclass `ValueError`, so existing `except ValueError` code keeps working (#62)
+- **Modeled levels**: `get_levels_by_area()`, `get_levels_by_areas()` and `get_levels_by_coords()` take `tmin` and `tmax` (ISO strings or `datetime` objects), filtering on the level's date like the observed measurement lookups
 
 ### Changed
 

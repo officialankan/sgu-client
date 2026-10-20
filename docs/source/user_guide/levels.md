@@ -71,14 +71,16 @@ ground (`water_level_below_ground_m`). See
 ## Modeled levels
 
 Modeled levels are published per model area. Find areas by location, then fetch their
-levels:
+levels, optionally limited to a date range with `tmin` and `tmax` as for observed
+measurements:
 
 ```python
 areas = client.levels.modeled.get_areas(bbox=[12.0, 55.0, 16.0, 58.0], limit=10)
 
 levels = client.levels.modeled.get_levels_by_areas(
     [area.properties.area_id for area in areas.features],
-    datetime="2024-01-01/2025-01-01",
+    tmin="2024-01-01",
+    tmax="2024-12-31",
 )
 ```
 
@@ -88,7 +90,9 @@ finds the areas near it for you:
 
 ```python
 # Gothenburg
-levels = client.levels.modeled.get_levels_by_coords(lat=57.7089, lon=11.9746)
+levels = client.levels.modeled.get_levels_by_coords(
+    lat=57.7089, lon=11.9746, tmin="2024-01-01"
+)
 ```
 
 Modeled values are given as percentiles (0–100), separately for small and large
