@@ -37,3 +37,21 @@ class SGUValidationError(SGUClientError):
     """Raised when data validation fails."""
 
     pass
+
+
+class SGUNotFoundError(SGUClientError, ValueError):
+    """Raised when a lookup matches no feature.
+
+    Subclasses ``ValueError`` so code that catches ``ValueError`` keeps working.
+    """
+
+    pass
+
+
+class SGUAmbiguousError(SGUClientError, ValueError):
+    """Raised when a lookup that expects one feature matches several.
+
+    Subclasses ``ValueError`` so code that catches ``ValueError`` keeps working.
+    """
+
+    pass
