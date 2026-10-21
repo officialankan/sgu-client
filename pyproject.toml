@@ -1,6 +1,6 @@
 [project]
 name = "sgu-client"
-version = "0.7.0"
+version = "0.8.0"
 description = "A modern Python client library for accessing Geological Survey of Sweden groundwater data APIs with type safety and pandas integration"
 readme = "README.md"
 authors = [{ name = "Anders Retzner", email = "anders.retzner@gmail.com" }]
@@ -36,6 +36,7 @@ dev = [
     "myst-nb>=1.4.0",
     "sphinx-copybutton>=0.5.2",
     "ty>=0.0.89",
+    "pytest-socket>=0.8.1",
 ]
 
 [tool.ruff]
@@ -80,5 +81,6 @@ known-first-party = ["sgu_client"]
 error-on-warning = true
 
 [tool.pytest.ini_options]
-addopts = ""
+# Tests use a fake transport; only tests/test_actual_api.py may reach SGU
+addopts = "--disable-socket"
 testpaths = ["tests"]

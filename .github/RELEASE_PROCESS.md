@@ -15,36 +15,34 @@ This repository uses a gitflow-lite workflow with automated releases. The releas
 - After review and testing, merge to `dev`
 - Feature PRs never change the version. They add their notes, including breaking changes, under `[Unreleased]` in `CHANGELOG.md`
 
-### 2. Release Preparation
+### 2. Release
 When ready to release accumulated changes from `dev`:
 
 1. **Pick the version**: see [Version Strategy](#version-strategy).
 
-2. **Open a release issue** titled `release vX.Y.Z`, listing the issues the release ships.
+2. **Create the release PR `dev` → `main`** with the template:
+   ```
+   https://github.com/officialankan/sgu-client/compare/main...dev?template=release.md
+   ```
+   **Fill out the template**. **Your PR description becomes the GitHub release notes**:
+   - Replace `[VERSION]` in the title and install command
+   - **Summary**: a short before/after of the change users will notice most
+   - **Added / Fixed / Changed / ⚠️ Breaking Changes**: copy them from the changelog, citing the issue and the PR for each entry (e.g. `(#49, #52)`)
+   - **Closes**: one `Closes #N` line for every issue the release ships. These close when the PR is merged
+   - **Merge Danger**: every release is a one-way door, because a PyPI version can't be uploaded again (a mistake means a new patch release). Describe the blast radius for users who upgrade, e.g. code that breaks because of a breaking change
 
-3. **Bump the version on a branch from that issue** (e.g. `56-release-vX-Y-Z`), never directly on `dev`:
+3. **Bump the version on `dev`** in a `chore: release vX.Y.Z` commit. Admins aren't held to `dev`'s branch protection, so they can commit the bump directly to `dev`. Otherwise, open a `release vX.Y.Z` issue, bump on a branch from it, and merge that into `dev` by PR. List the issue under **Closes** in the release PR. Either way, the release PR picks up the bump and CI runs again. The bump changes:
    - `version` in `pyproject.toml`
    - `__version__` in `src/sgu_client/__init__.py`
    - `release` in `docs/source/conf.py`
    - `uv.lock`: run `uv lock` so the `sgu-client` entry matches
    - `CHANGELOG.md`: rename `[Unreleased]` to `[X.Y.Z] - YYYY-MM-DD`, add a fresh empty `[Unreleased]` above it, and add anything merged without a changelog entry
-   - Run the checks with the optional dependencies installed: `uv sync --all-extras --all-groups`, then `uv run pytest`, `uv run ruff check`, `uv run ruff format --check` and `uv run ty check`
 
-4. **Open a PR from that branch → `dev`** (`chore: release vX.Y.Z`) and merge it. This doesn't close the release issue; the release PR into `main` does.
+   Before pushing, run the checks with the optional dependencies installed: `uv sync --all-extras --all-groups`, then `uv run pytest`, `uv run ruff check`, `uv run ruff format --check` and `uv run ty check`.
 
-### 3. Release Execution
-1. **Create the release PR `dev` → `main`** with the template:
-   ```
-   https://github.com/officialankan/sgu-client/compare/main...dev?template=release.md
-   ```
-2. **Fill out the template**. **Your PR description becomes the GitHub release notes**:
-   - Replace `[VERSION]` in the title and install command
-   - **Summary**: a short before/after of the change users will notice most
-   - **Added / Fixed / Changed / ⚠️ Breaking Changes**: copy them from the changelog, citing the issue and the PR for each entry (e.g. `(#49, #52)`)
-   - **Closes**: one `Closes #N` line for every issue the release ships, including the release issue. These close when the PR is merged
-   - **Merge Danger**: every release is a one-way door, because a PyPI version can't be uploaded again (a mistake means a new patch release). Describe the blast radius for users who upgrade, e.g. code that breaks because of a breaking change
-3. **Try the TestPyPI build**: CI publishes `X.Y.Z.devN` to TestPyPI on the PR and comments the install command.
-4. **Merge**: Merging closes every issue listed under **Closes**. When merged to `main`, the GitHub Action automatically:
+4. **Try the TestPyPI build**: CI publishes `X.Y.Z.devN` to TestPyPI on the PR and comments the install command.
+
+5. **Merge**: Merging closes every issue listed under **Closes**. When merged to `main`, the GitHub Action automatically:
    - Publishes to PyPI
    - Creates GitHub release with your PR description as release notes
    - Attaches distribution files

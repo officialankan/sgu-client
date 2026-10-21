@@ -93,11 +93,11 @@ def test_optional_pandas_method_preserves_metadata():
     assert dummy_method.__wrapped__.__name__ == "dummy_method"
 
 
-def test_base_response_to_dataframe_missing_pandas(monkeypatch):
-    """Test SGUResponse.to_dataframe when pandas is not available."""
-    from sgu_client.models.base import SGUResponse
+def test_collection_to_dataframe_missing_pandas(monkeypatch):
+    """Test FeatureCollection.to_dataframe when pandas is not available."""
+    from sgu_client.models.observed import GroundwaterStationCollection
 
-    response = SGUResponse()
+    response = GroundwaterStationCollection()
 
     # Mock check_pandas_available to raise our exception
     def mock_check_pandas(_feature):

@@ -1,24 +1,16 @@
-"""Tests for observed groundwater levels endpoints using mocked API responses.
+"""Tests for the observed groundwater levels client, served canned responses by a fake transport.
 
-These tests use mocked HTTP responses to ensure fast, reliable testing without
-depending on external API availability. For integration tests that verify the
-real API still works, see test_actual_api.py.
+They never touch the network. For canary tests that check the real SGU API still
+works, see test_actual_api.py.
 """
 
 from datetime import UTC, datetime
-from unittest.mock import Mock, patch
 
 import pytest
 from pandas.api.types import is_datetime64_any_dtype as is_datetime
-from requests import Response
 
 from sgu_client import SGUClient
-from sgu_client.exceptions import (
-    SGUAPIError,
-    SGUConnectionError,
-    SGUNotFoundError,
-    SGUTimeoutError,
-)
+from sgu_client.exceptions import SGUAmbiguousError, SGUNotFoundError
 from sgu_client.models.observed import (
     GroundwaterMeasurement,
     GroundwaterMeasurementCollection,
@@ -43,15 +35,6 @@ TEST_MEASUREMENT_METOD_FOR_M = "klucklod"
 TEST_STATIONS_FILTER = "platsbeteckning in ('95_2', '101_1')"
 
 
-def create_mock_response(response_data, status_code=200):
-    """Create a mock HTTP response object."""
-    mock_response = Mock(spec=Response)
-    mock_response.ok = True
-    mock_response.status_code = status_code
-    mock_response.json.return_value = response_data
-    return mock_response
-
-
 def test_create_basic_client() -> None:
     """Test that basic client creation works."""
     client = SGUClient()
@@ -59,17 +42,15 @@ def test_create_basic_client() -> None:
     assert hasattr(client.levels, "observed")
 
 
-@patch("requests.Session.request")
-def test_get_lagga_station_by_id(mock_request) -> None:
-    """Test getting a specific station by ID with mocked response."""
+def test_get_lagga_station_by_id(fake, client) -> None:
+    """Test getting a specific station by ID."""
     mock_response_data = create_mock_single_station_response(
         station_id=TEST_STATION_ID,
         platsbeteckning=TEST_STATION_PLATSBETECKNING,
         obsplatsnamn=TEST_STATION_OBSPLATSNAMN,
     )
-    mock_request.return_value = create_mock_response(mock_response_data)
+    fake.add("", mock_response_data)
 
-    client = SGUClient()
     station = client.levels.observed.get_station(TEST_STATION_ID)
 
     assert station is not None
@@ -79,17 +60,15 @@ def test_get_lagga_station_by_id(mock_request) -> None:
     assert station.properties.station_name == TEST_STATION_OBSPLATSNAMN
 
 
-@patch("requests.Session.request")
-def test_get_measurement_by_id(mock_request) -> None:
-    """Test getting a specific measurement by ID with mocked response."""
+def test_get_measurement_by_id(fake, client) -> None:
+    """Test getting a specific measurement by ID."""
     mock_response_data = create_mock_single_measurement_response(
         measurement_id=TEST_MEASUREMENT_ID,
         platsbeteckning=TEST_STATION_PLATSBETECKNING,
         metod=TEST_MEASUREMENT_METOD_FOR_M,
     )
-    mock_request.return_value = create_mock_response(mock_response_data)
+    fake.add("", mock_response_data)
 
-    client = SGUClient()
     measurement = client.levels.observed.get_measurement(TEST_MEASUREMENT_ID)
 
     assert isinstance(measurement, GroundwaterMeasurement)
@@ -98,15 +77,13 @@ def test_get_measurement_by_id(mock_request) -> None:
     assert isinstance(measurement.properties.observation_date, datetime)
 
 
-@patch("requests.Session.request")
-def test_stations_to_dataframe(mock_request) -> None:
-    """Test converting stations collection to DataFrame with mocked response."""
+def test_stations_to_dataframe(fake, client) -> None:
+    """Test converting stations collection to DataFrame."""
     mock_response_data = create_mock_multiple_stations_response(
         platsbeteckningar=["95_2", "101_1"], limit=10
     )
-    mock_request.return_value = create_mock_response(mock_response_data)
+    fake.add("", mock_response_data)
 
-    client = SGUClient()
     stations = client.levels.observed.get_stations(
         filter_expr=TEST_STATIONS_FILTER, limit=10
     )
@@ -118,15 +95,13 @@ def test_stations_to_dataframe(mock_request) -> None:
     assert all(station in df["station_id"].tolist() for station in ["95_2", "101_1"])
 
 
-@patch("requests.Session.request")
-def test_station_by_name_station_id(mock_request) -> None:
-    """Test getting station by station_id with mocked response."""
+def test_station_by_name_station_id(fake, client) -> None:
+    """Test getting station by station_id."""
     mock_response_data = create_mock_multiple_stations_response(
         platsbeteckningar=[TEST_STATION_PLATSBETECKNING], limit=1
     )
-    mock_request.return_value = create_mock_response(mock_response_data)
+    fake.add("", mock_response_data)
 
-    client = SGUClient()
     station = client.levels.observed.get_station_by_name(
         station_id=TEST_STATION_PLATSBETECKNING
     )
@@ -135,9 +110,8 @@ def test_station_by_name_station_id(mock_request) -> None:
     assert station.properties.station_id == TEST_STATION_PLATSBETECKNING
 
 
-@patch("requests.Session.request")
-def test_station_by_name_station_name(mock_request) -> None:
-    """Test getting station by station_name with mocked response."""
+def test_station_by_name_station_name(fake, client) -> None:
+    """Test getting station by station_name."""
     mock_response_data = create_mock_multiple_stations_response(
         platsbeteckningar=[TEST_STATION_PLATSBETECKNING], limit=1
     )
@@ -145,9 +119,8 @@ def test_station_by_name_station_name(mock_request) -> None:
     mock_response_data["features"][0]["properties"]["obsplatsnamn"] = (
         TEST_STATION_OBSPLATSNAMN
     )
-    mock_request.return_value = create_mock_response(mock_response_data)
+    fake.add("", mock_response_data)
 
-    client = SGUClient()
     station = client.levels.observed.get_station_by_name(
         station_name=TEST_STATION_OBSPLATSNAMN
     )
@@ -157,37 +130,13 @@ def test_station_by_name_station_name(mock_request) -> None:
     assert station.properties.station_name == TEST_STATION_OBSPLATSNAMN
 
 
-def test_station_by_name_no_args() -> None:
-    """Test that get_station_by_name raises error when no arguments provided."""
-    client = SGUClient()
-    with pytest.raises(
-        ValueError, match="Either 'station_id' or 'station_name' must be provided."
-    ):
-        client.levels.observed.get_station_by_name()
-
-
-def test_station_by_name_both_args() -> None:
-    """Test that get_station_by_name raises error when both arguments provided."""
-    client = SGUClient()
-    with pytest.raises(
-        ValueError,
-        match="Only one of 'station_id' or 'station_name' can be provided.",
-    ):
-        client.levels.observed.get_station_by_name(
-            station_id=TEST_STATION_PLATSBETECKNING,
-            station_name=TEST_STATION_OBSPLATSNAMN,
-        )
-
-
-@patch("requests.Session.request")
-def test_get_stations_by_names_station_id(mock_request) -> None:
-    """Test getting multiple stations by station_id with mocked response."""
+def test_get_stations_by_names_station_id(fake, client) -> None:
+    """Test getting multiple stations by station_id."""
     mock_response_data = create_mock_multiple_stations_response(
         platsbeteckningar=["95_2", "101_1"], limit=10
     )
-    mock_request.return_value = create_mock_response(mock_response_data)
+    fake.add("", mock_response_data)
 
-    client = SGUClient()
     stations = client.levels.observed.get_stations_by_names(
         station_id=["95_2", "101_1"], limit=10
     )
@@ -198,17 +147,15 @@ def test_get_stations_by_names_station_id(mock_request) -> None:
     assert "101_1" in platsbeteckning
 
 
-@patch("requests.Session.request")
-def test_get_stations_by_names_station_name(mock_request) -> None:
-    """Test getting multiple stations by station_name with mocked response."""
+def test_get_stations_by_names_station_name(fake, client) -> None:
+    """Test getting multiple stations by station_name."""
     mock_response_data = create_mock_multiple_stations_response(
         platsbeteckningar=[TEST_STATION_PLATSBETECKNING], limit=5
     )
     # Update obsplatsnamn in mock response
     mock_response_data["features"][0]["properties"]["obsplatsnamn"] = "Lagga_2"
-    mock_request.return_value = create_mock_response(mock_response_data)
+    fake.add("", mock_response_data)
 
-    client = SGUClient()
     stations = client.levels.observed.get_stations_by_names(
         station_name=["Lagga_2"], limit=5
     )
@@ -220,9 +167,8 @@ def test_get_stations_by_names_station_name(mock_request) -> None:
     assert "Lagga_2" in obsplatsnamn_list
 
 
-@patch("requests.Session.request")
-def test_get_stations_by_names_single_station(mock_request) -> None:
-    """Test getting single station by platsbeteckning list with mocked response."""
+def test_get_stations_by_names_single_station(fake, client) -> None:
+    """Test getting single station by platsbeteckning list."""
     mock_response_data = create_mock_multiple_stations_response(
         platsbeteckningar=[TEST_STATION_PLATSBETECKNING], limit=5
     )
@@ -230,9 +176,8 @@ def test_get_stations_by_names_single_station(mock_request) -> None:
     mock_response_data["features"][0]["properties"]["obsplatsnamn"] = (
         TEST_STATION_OBSPLATSNAMN
     )
-    mock_request.return_value = create_mock_response(mock_response_data)
+    fake.add("", mock_response_data)
 
-    client = SGUClient()
     stations = client.levels.observed.get_stations_by_names(
         station_id=[TEST_STATION_PLATSBETECKNING], limit=5
     )
@@ -243,47 +188,13 @@ def test_get_stations_by_names_single_station(mock_request) -> None:
     assert station.properties.station_name == TEST_STATION_OBSPLATSNAMN
 
 
-def test_get_stations_by_names_no_args() -> None:
-    """Test that get_stations_by_names raises error when no arguments provided."""
-    client = SGUClient()
-    with pytest.raises(
-        ValueError,
-        match="Either 'station_id' or 'station_name' must be provided.",
-    ):
-        client.levels.observed.get_stations_by_names()
-
-
-def test_get_stations_by_names_both_args() -> None:
-    """Test that get_stations_by_names raises error when both arguments provided."""
-    client = SGUClient()
-    with pytest.raises(
-        ValueError,
-        match="Only one of 'station_id' or 'station_name' can be provided.",
-    ):
-        client.levels.observed.get_stations_by_names(
-            station_id=["95_2"], station_name=["Lagga_2"]
-        )
-
-
-def test_get_stations_by_names_empty_list() -> None:
-    """Test that get_stations_by_names raises error when empty list provided."""
-    client = SGUClient()
-    with pytest.raises(
-        ValueError,
-        match="Either 'station_id' or 'station_name' must be provided.",
-    ):
-        client.levels.observed.get_stations_by_names(station_id=[])
-
-
-@patch("requests.Session.request")
-def test_get_stations_by_names_to_dataframe(mock_request) -> None:
-    """Test converting multiple stations to DataFrame with mocked response."""
+def test_get_stations_by_names_to_dataframe(fake, client) -> None:
+    """Test converting multiple stations to DataFrame."""
     mock_response_data = create_mock_multiple_stations_response(
         platsbeteckningar=["95_2", "101_1"], limit=10
     )
-    mock_request.return_value = create_mock_response(mock_response_data)
+    fake.add("", mock_response_data)
 
-    client = SGUClient()
     stations = client.levels.observed.get_stations_by_names(
         station_id=["95_2", "101_1"], limit=10
     )
@@ -297,15 +208,13 @@ def test_get_stations_by_names_to_dataframe(mock_request) -> None:
 
 
 # Tests for get_measurements_by_name() function
-@patch("requests.Session.request")
-def test_get_measurements_by_name_station_id(mock_request) -> None:
-    """Test getting measurements by station_id with mocked response."""
+def test_get_measurements_by_name_station_id(fake, client) -> None:
+    """Test getting measurements by station_id."""
     mock_response_data = create_mock_multiple_measurements_response(
         platsbeteckning=TEST_STATION_PLATSBETECKNING, count=5
     )
-    mock_request.return_value = create_mock_response(mock_response_data)
+    fake.add("", mock_response_data)
 
-    client = SGUClient()
     measurements = client.levels.observed.get_measurements_by_name(
         station_id=TEST_STATION_PLATSBETECKNING, limit=10
     )
@@ -317,20 +226,17 @@ def test_get_measurements_by_name_station_id(mock_request) -> None:
         assert measurement.properties.station_id == TEST_STATION_PLATSBETECKNING
 
 
-@patch("requests.Session.request")
-def test_get_measurements_by_name_station_name(mock_request) -> None:
-    """Test getting measurements by station_name with mocked response."""
+def test_get_measurements_by_name_station_name(fake, client) -> None:
+    """Test getting measurements by station_name."""
     # station_name lookup resolves the station first, then fetches measurements
-    mock_request.side_effect = [
-        create_mock_response(create_mock_single_station_response()),
-        create_mock_response(
-            create_mock_multiple_measurements_response(
-                platsbeteckning=TEST_STATION_PLATSBETECKNING, count=5
-            )
+    fake.add(
+        "",
+        create_mock_single_station_response(),
+        create_mock_multiple_measurements_response(
+            platsbeteckning=TEST_STATION_PLATSBETECKNING, count=5
         ),
-    ]
+    )
 
-    client = SGUClient()
     measurements = client.levels.observed.get_measurements_by_name(
         station_name=TEST_STATION_OBSPLATSNAMN, limit=10
     )
@@ -342,9 +248,8 @@ def test_get_measurements_by_name_station_name(mock_request) -> None:
         assert measurement.properties.station_id == TEST_STATION_PLATSBETECKNING
 
 
-@patch("requests.Session.request")
-def test_get_measurements_by_name_with_time_filter(mock_request) -> None:
-    """Test getting measurements with time filter using mocked response."""
+def test_get_measurements_by_name_with_time_filter(fake, client) -> None:
+    """Test getting measurements with time filter."""
     tmin = datetime(2020, 1, 1, tzinfo=UTC)
     tmax = datetime(2021, 1, 1, tzinfo=UTC)
 
@@ -354,9 +259,8 @@ def test_get_measurements_by_name_with_time_filter(mock_request) -> None:
         count=3,
         start_date=datetime(2020, 6, 1, tzinfo=UTC),
     )
-    mock_request.return_value = create_mock_response(mock_response_data)
+    fake.add("", mock_response_data)
 
-    client = SGUClient()
     measurements = client.levels.observed.get_measurements_by_name(
         station_id=TEST_STATION_PLATSBETECKNING, tmin=tmin, tmax=tmax, limit=10
     )
@@ -369,17 +273,15 @@ def test_get_measurements_by_name_with_time_filter(mock_request) -> None:
             assert tmin <= obs_date <= tmax
 
 
-@patch("requests.Session.request")
-def test_get_measurements_by_name_with_string_dates(mock_request) -> None:
-    """Test getting measurements with string date filters using mocked response."""
+def test_get_measurements_by_name_with_string_dates(fake, client) -> None:
+    """Test getting measurements with string date filters."""
     mock_response_data = create_mock_multiple_measurements_response(
         platsbeteckning=TEST_STATION_PLATSBETECKNING,
         count=3,
         start_date=datetime(2020, 6, 1, tzinfo=UTC),
     )
-    mock_request.return_value = create_mock_response(mock_response_data)
+    fake.add("", mock_response_data)
 
-    client = SGUClient()
     measurements = client.levels.observed.get_measurements_by_name(
         station_id=TEST_STATION_PLATSBETECKNING,
         tmin="2020-01-01T00:00:00Z",
@@ -390,32 +292,9 @@ def test_get_measurements_by_name_with_string_dates(mock_request) -> None:
     assert isinstance(measurements, GroundwaterMeasurementCollection)
 
 
-def test_get_measurements_by_name_no_args() -> None:
-    """Test that get_measurements_by_name raises error when no arguments provided."""
-    client = SGUClient()
-    with pytest.raises(
-        ValueError, match="Either 'station_id' or 'station_name' must be provided."
-    ):
-        client.levels.observed.get_measurements_by_name()
-
-
-def test_get_measurements_by_name_both_args() -> None:
-    """Test that get_measurements_by_name raises error when both arguments provided."""
-    client = SGUClient()
-    with pytest.raises(
-        ValueError,
-        match="Only one of 'station_id' or 'station_name' can be provided.",
-    ):
-        client.levels.observed.get_measurements_by_name(
-            station_id=TEST_STATION_PLATSBETECKNING,
-            station_name=TEST_STATION_OBSPLATSNAMN,
-        )
-
-
 # Tests for get_measurements_by_names() function
-@patch("requests.Session.request")
-def test_get_measurements_by_names_station_id(mock_request) -> None:
-    """Test getting measurements for multiple stations with mocked response."""
+def test_get_measurements_by_names_station_id(fake, client) -> None:
+    """Test getting measurements for multiple stations."""
     # Create measurements for both stations
     measurements_95_2 = create_mock_multiple_measurements_response(
         platsbeteckning="95_2", count=3
@@ -432,9 +311,8 @@ def test_get_measurements_by_names_station_id(mock_request) -> None:
     mock_response_data = create_mock_multiple_measurements_response(count=0)
     mock_response_data["features"] = all_measurements
     mock_response_data["numberReturned"] = len(all_measurements)
-    mock_request.return_value = create_mock_response(mock_response_data)
+    fake.add("", mock_response_data)
 
-    client = SGUClient()
     measurements = client.levels.observed.get_measurements_by_names(
         station_id=["95_2", "101_1"], limit=20
     )
@@ -448,15 +326,17 @@ def test_get_measurements_by_names_station_id(mock_request) -> None:
     assert "95_2" in station_ids or "101_1" in station_ids
 
 
-@patch("requests.Session.request")
-def test_get_measurements_by_names_station_name(mock_request) -> None:
-    """Test getting measurements by station_name with mocked response."""
-    mock_response_data = create_mock_multiple_measurements_response(
-        platsbeteckning=TEST_STATION_PLATSBETECKNING, count=5
+def test_get_measurements_by_names_station_name(fake, client) -> None:
+    """Test getting measurements by station_name."""
+    # station_name lookup resolves the stations first, then fetches measurements
+    fake.add("stationer/items", create_mock_single_station_response())
+    fake.add(
+        "nivaer/items",
+        create_mock_multiple_measurements_response(
+            platsbeteckning=TEST_STATION_PLATSBETECKNING, count=5
+        ),
     )
-    mock_request.return_value = create_mock_response(mock_response_data)
 
-    client = SGUClient()
     measurements = client.levels.observed.get_measurements_by_names(
         station_name=["Lagga_2"], limit=10
     )
@@ -468,18 +348,16 @@ def test_get_measurements_by_names_station_name(mock_request) -> None:
         assert measurement.properties.station_id == TEST_STATION_PLATSBETECKNING
 
 
-@patch("requests.Session.request")
-def test_get_measurements_by_names_with_time_filter(mock_request) -> None:
-    """Test getting measurements for multiple stations with time filter using mocked response."""
+def test_get_measurements_by_names_with_time_filter(fake, client) -> None:
+    """Test getting measurements for multiple stations with time filter."""
     tmin = datetime(2020, 1, 1, tzinfo=UTC)
     tmax = datetime(2021, 1, 1, tzinfo=UTC)
 
     mock_response_data = create_mock_multiple_measurements_response(
         platsbeteckning="95_2", count=3, start_date=datetime(2020, 6, 1, tzinfo=UTC)
     )
-    mock_request.return_value = create_mock_response(mock_response_data)
+    fake.add("", mock_response_data)
 
-    client = SGUClient()
     measurements = client.levels.observed.get_measurements_by_names(
         station_id=["95_2"], tmin=tmin, tmax=tmax, limit=10
     )
@@ -492,36 +370,13 @@ def test_get_measurements_by_names_with_time_filter(mock_request) -> None:
             assert tmin <= obs_date <= tmax
 
 
-def test_get_measurements_by_names_no_args() -> None:
-    """Test that get_measurements_by_names raises error when no arguments provided."""
-    client = SGUClient()
-    with pytest.raises(
-        ValueError, match="Either 'station_id' or 'station_name' must be provided."
-    ):
-        client.levels.observed.get_measurements_by_names()
-
-
-def test_get_measurements_by_names_both_args() -> None:
-    """Test that get_measurements_by_names raises error when both arguments provided."""
-    client = SGUClient()
-    with pytest.raises(
-        ValueError,
-        match="Only one of 'station_id' or 'station_name' can be provided.",
-    ):
-        client.levels.observed.get_measurements_by_names(
-            station_id=["95_2"], station_name=["Lagga_2"]
-        )
-
-
-@patch("requests.Session.request")
-def test_measurements_to_dataframe(mock_request) -> None:
-    """Test converting measurements to DataFrame with mocked response."""
+def test_measurements_to_dataframe(fake, client) -> None:
+    """Test converting measurements to DataFrame."""
     mock_response_data = create_mock_multiple_measurements_response(
         platsbeteckning=TEST_STATION_PLATSBETECKNING, count=5
     )
-    mock_request.return_value = create_mock_response(mock_response_data)
+    fake.add("", mock_response_data)
 
-    client = SGUClient()
     measurements = client.levels.observed.get_measurements_by_name(
         station_id=TEST_STATION_PLATSBETECKNING, limit=5
     )
@@ -541,15 +396,13 @@ def test_measurements_to_dataframe(mock_request) -> None:
     assert df["observation_date"].is_monotonic_increasing
 
 
-@patch("requests.Session.request")
-def test_measurements_to_series(mock_request) -> None:
-    """Test converting measurements to pandas Series with mocked response."""
+def test_measurements_to_series(fake, client) -> None:
+    """Test converting measurements to pandas Series."""
     mock_response_data = create_mock_multiple_measurements_response(
         platsbeteckning=TEST_STATION_PLATSBETECKNING, count=5
     )
-    mock_request.return_value = create_mock_response(mock_response_data)
+    fake.add("", mock_response_data)
 
-    client = SGUClient()
     measurements = client.levels.observed.get_measurements_by_name(
         station_id=TEST_STATION_PLATSBETECKNING, limit=5
     )
@@ -560,15 +413,13 @@ def test_measurements_to_series(mock_request) -> None:
     assert is_datetime(series.index)
 
 
-@patch("requests.Session.request")
-def test_measurements_to_series_custom_index_data(mock_request) -> None:
-    """Test converting measurements to Series with custom index/data columns using mocked response."""
+def test_measurements_to_series_custom_index_data(fake, client) -> None:
+    """Test converting measurements to Series with custom index/data columns."""
     mock_response_data = create_mock_multiple_measurements_response(
         platsbeteckning=TEST_STATION_PLATSBETECKNING, count=5
     )
-    mock_request.return_value = create_mock_response(mock_response_data)
+    fake.add("", mock_response_data)
 
-    client = SGUClient()
     measurements = client.levels.observed.get_measurements_by_name(
         station_id=TEST_STATION_PLATSBETECKNING, limit=5
     )
@@ -586,107 +437,31 @@ def test_measurements_to_series_custom_index_data(mock_request) -> None:
         measurements.to_series(index="observation_date", data="invalid_column")
 
 
-# Comprehensive error condition tests (enabled by mocking)
-def test_api_timeout_error() -> None:
-    """Test that API timeout errors are properly raised."""
-    import requests.exceptions
-
-    with patch("requests.Session.request") as mock_request:
-        mock_request.side_effect = requests.exceptions.ReadTimeout("Read timeout")
-
-        client = SGUClient()
-        with pytest.raises(SGUTimeoutError, match="Read timeout"):
-            client.levels.observed.get_station(TEST_STATION_ID)
-
-
-def test_api_connection_error() -> None:
-    """Test that API connection errors are properly raised."""
-    import requests.exceptions
-
-    with patch("requests.Session.request") as mock_request:
-        mock_request.side_effect = requests.exceptions.ConnectionError(
-            "Connection failed"
-        )
-
-        client = SGUClient()
-        with pytest.raises(SGUConnectionError, match="Connection failed"):
-            client.levels.observed.get_station(TEST_STATION_ID)
-
-
-def test_api_server_error() -> None:
-    """Test that API server errors are properly raised."""
-    with patch("requests.Session.request") as mock_request:
-        mock_response = Mock(spec=Response)
-        mock_response.ok = False
-        mock_response.status_code = 500
-        mock_response.json.return_value = {"error": "Internal Server Error"}
-        mock_request.return_value = mock_response
-
-        client = SGUClient()
-        with pytest.raises(SGUAPIError, match="API request failed with status 500"):
-            client.levels.observed.get_station(TEST_STATION_ID)
-
-
-def test_api_not_found_error() -> None:
-    """Test that API 404 errors are properly raised."""
-    with patch("requests.Session.request") as mock_request:
-        mock_response = Mock(spec=Response)
-        mock_response.ok = False
-        mock_response.status_code = 404
-        mock_response.json.return_value = {"error": "Station not found"}
-        mock_request.return_value = mock_response
-
-        client = SGUClient()
-        with pytest.raises(SGUAPIError, match="API request failed with status 404"):
-            client.levels.observed.get_station("nonexistent.station")
-
-
-def test_empty_station_response_handling() -> None:
+# Responses with no feature, or several where one was expected
+def test_empty_station_response_handling(fake, client) -> None:
     """Test handling of empty station responses."""
-    with patch("requests.Session.request") as mock_request:
-        mock_response_data = create_mock_empty_collection_response()
-        mock_request.return_value = create_mock_response(mock_response_data)
+    mock_response_data = create_mock_empty_collection_response()
+    fake.add("", mock_response_data)
 
-        client = SGUClient()
-        with pytest.raises(ValueError, match="Station .* not found"):
-            client.levels.observed.get_station("nonexistent.station")
+    with pytest.raises(ValueError, match="Station .* not found"):
+        client.levels.observed.get_station("nonexistent.station")
 
 
-def test_multiple_station_response_handling() -> None:
+def test_multiple_station_response_handling(fake, client) -> None:
     """Test handling of multiple stations returned for single ID (edge case)."""
-    with patch("requests.Session.request") as mock_request:
-        # Create response with multiple stations (should not happen but test edge case)
-        stations = [
-            create_mock_station_feature(station_id="duplicate.1"),
-            create_mock_station_feature(station_id="duplicate.2"),
-        ]
-        mock_response_data = create_mock_station_collection_response(stations)
-        mock_request.return_value = create_mock_response(mock_response_data)
+    # Create response with multiple stations (should not happen but test edge case)
+    stations = [
+        create_mock_station_feature(station_id="duplicate.1"),
+        create_mock_station_feature(station_id="duplicate.2"),
+    ]
+    mock_response_data = create_mock_station_collection_response(stations)
+    fake.add("", mock_response_data)
 
-        client = SGUClient()
-        with pytest.raises(ValueError, match="Multiple stations returned for ID"):
-            client.levels.observed.get_station("duplicate.station")
+    with pytest.raises(ValueError, match="Multiple stations returned for ID"):
+        client.levels.observed.get_station("duplicate.station")
 
 
-def test_malformed_json_response() -> None:
-    """Test handling of malformed JSON responses."""
-    with patch("requests.Session.request") as mock_request:
-        mock_response = Mock(spec=Response)
-        mock_response.ok = False
-        mock_response.status_code = 500
-        mock_response.json.side_effect = ValueError("Invalid JSON")
-        mock_response.text = "Internal Server Error - HTML response"
-        mock_request.return_value = mock_response
-
-        client = SGUClient()
-        with pytest.raises(SGUAPIError) as exc_info:
-            client.levels.observed.get_station(TEST_STATION_ID)
-
-        # Should raise SGUAPIError when JSON parsing fails
-        assert "API request failed with status 500" in str(exc_info.value)
-
-
-def test_station_with_float_idiam() -> None:
+def test_station_with_float_idiam(fake, client) -> None:
     """Test that stations with float idiam values are handled correctly.
 
     This addresses the bug where idiam field was expected to be int but
@@ -703,84 +478,83 @@ def test_station_with_float_idiam() -> None:
 
     collection_data = create_mock_station_collection_response([station_data])
 
-    with patch("requests.Session.request") as mock_request:
-        mock_request.return_value = create_mock_response(collection_data)
+    fake.add("", collection_data)
 
-        client = SGUClient()
+    # This should not raise a ValidationError anymore
+    stations = client.levels.observed.get_stations(
+        filter_expr="stationsanmarkning='markanvändningspåverkad'"
+    )
 
-        # This should not raise a ValidationError anymore
-        stations = client.levels.observed.get_stations(
-            filter_expr="stationsanmarkning='markanvändningspåverkad'"
-        )
+    assert len(stations.features) == 1
+    station = stations.features[0]
 
-        assert len(stations.features) == 1
-        station = stations.features[0]
-
-        # Verify the float idiam value is preserved correctly
-        assert station.properties.inner_diameter == 50.8
-        assert isinstance(station.properties.inner_diameter, float)
-        assert station.properties.station_remark == "markanvändningspåverkad"
+    # Verify the float idiam value is preserved correctly
+    assert station.properties.inner_diameter == 50.8
+    assert isinstance(station.properties.inner_diameter, float)
+    assert station.properties.station_remark == "markanvändningspåverkad"
 
 
-def test_get_measurement_by_id_not_found():
+def test_get_measurement_by_id_not_found(fake, client):
     """Test that get_measurement returns ValueError when measurement not found."""
-    with patch("sgu_client.client.base.BaseClient._make_request") as mock_request:
-        # Mock empty response (no features found)
-        mock_request.return_value = create_mock_empty_collection_response()
+    # Mock empty response (no features found)
+    fake.add("", create_mock_empty_collection_response())
 
-        client = SGUClient()
+    with pytest.raises(ValueError) as exc_info:
+        client.levels.observed.get_measurement("nonexistent_id")
 
-        with pytest.raises(ValueError) as exc_info:
-            client.levels.observed.get_measurement("nonexistent_id")
-
-        assert "not found" in str(exc_info.value).lower()
+    assert "not found" in str(exc_info.value).lower()
 
 
-def test_get_measurement_by_id_multiple_results():
+def test_get_measurement_by_id_multiple_results(fake, client):
     """Test that get_measurement returns ValueError when multiple measurements found."""
-    with patch("sgu_client.client.base.BaseClient._make_request") as mock_request:
-        # Mock response with multiple measurements (should never happen in practice)
-        mock_request.return_value = create_mock_multiple_measurements_response(
+    # Mock response with multiple measurements (should never happen in practice)
+    fake.add(
+        "",
+        create_mock_multiple_measurements_response(
             count=2  # No start_id parameter
-        )
+        ),
+    )
 
-        client = SGUClient()
+    with pytest.raises(ValueError) as exc_info:
+        client.levels.observed.get_measurement("duplicate_id")
 
-        with pytest.raises(ValueError) as exc_info:
-            client.levels.observed.get_measurement("duplicate_id")
-
-        assert "multiple" in str(exc_info.value).lower()
+    assert "multiple" in str(exc_info.value).lower()
 
 
-def test_get_station_by_name_multiple_results():
+def test_get_station_by_name_multiple_results(fake, client):
     """Test that get_station_by_name returns ValueError when multiple stations found."""
-    with patch("sgu_client.client.base.BaseClient._make_request") as mock_request:
-        # Mock response with multiple stations having the same obsplatsnamn
-        mock_request.return_value = create_mock_multiple_stations_response(
-            platsbeteckningar=["Station1", "Station2"]
-        )
+    # Mock response with multiple stations having the same obsplatsnamn
+    fake.add(
+        "",
+        create_mock_station_collection_response(
+            stations=[
+                create_mock_station_feature(
+                    station_id=f"stationer.{i}",
+                    platsbeteckning=station_id,
+                    obsplatsnamn="DuplicateName",
+                )
+                for i, station_id in enumerate(["Station1", "Station2"])
+            ]
+        ),
+    )
 
-        client = SGUClient()
-
-        with pytest.raises(ValueError) as exc_info:
-            client.levels.observed.get_station_by_name(station_name="DuplicateName")
-
-        assert "multiple" in str(exc_info.value).lower()
+    with pytest.raises(SGUAmbiguousError, match="Multiple stations found"):
+        client.levels.observed.get_station_by_name(station_name="DuplicateName")
 
 
-@patch("requests.Session.request")
-def test_get_stations_parses_active_dates(mock_request) -> None:
+def test_get_stations_parses_active_dates(fake, client) -> None:
     """Station dates come back as UTC datetimes; a live station has no end date."""
-    mock_request.return_value = create_mock_response(
+    fake.add(
+        "",
         create_mock_station_collection_response(
             stations=[
                 create_mock_station_feature(fdat="1996-04-29Z", tdat="2018-12-10Z"),
                 create_mock_station_feature(station_id="stationer.1", tdat=None),
             ]
-        )
+        ),
     )
 
-    stations = SGUClient().levels.observed.get_stations(limit=10)
+    stations = client.levels.observed.get_stations(limit=10)
 
     closed, live = (station.properties for station in stations.features)
     assert closed.active_since == datetime(1996, 4, 29, tzinfo=UTC)
@@ -788,26 +562,93 @@ def test_get_stations_parses_active_dates(mock_request) -> None:
     assert live.active_until is None
 
 
-def test_get_station_by_name_not_found():
+def test_get_station_by_name_not_found(fake, client):
     """Test that get_station_by_name raises SGUNotFoundError when nothing matches."""
-    with patch("sgu_client.client.base.BaseClient._make_request") as mock_request:
-        mock_request.return_value = create_mock_empty_collection_response()
+    fake.add("", create_mock_empty_collection_response())
 
-        client = SGUClient()
-
-        with pytest.raises(SGUNotFoundError, match="No stations found for"):
-            client.levels.observed.get_station_by_name(station_name="Nope")
+    with pytest.raises(SGUNotFoundError, match="No stations found for"):
+        client.levels.observed.get_station_by_name(station_name="Nope")
 
 
-@patch("requests.Session.request")
-def test_get_measurements_filters_on_observation_date(mock_request) -> None:
-    mock_request.return_value = create_mock_response(
-        create_mock_empty_collection_response()
-    )
-    SGUClient().levels.observed.get_measurements(
+def test_get_measurements_filters_on_observation_date(fake, client) -> None:
+    fake.add("", create_mock_empty_collection_response())
+    client.levels.observed.get_measurements(
         tmin=datetime(2020, 1, 1, tzinfo=UTC), tmax="2021-01-01"
     )
 
-    assert mock_request.call_args.kwargs["params"]["filter"] == (
+    assert fake.params["filter"] == (
         "obsdatum >= '2020-01-01T00:00:00+00:00' AND obsdatum <= '2021-01-01'"
     )
+
+
+@pytest.mark.parametrize(
+    "method",
+    [
+        "get_station_by_name",
+        "get_stations_by_names",
+        "get_measurements_by_name",
+        "get_measurements_by_names",
+    ],
+)
+def test_station_lookups_require_exactly_one_identifier(fake, client, method):
+    """Every station lookup requires exactly one of station_id or station_name."""
+    with pytest.raises(
+        ValueError,
+        match="Exactly one of 'station_id' or 'station_name' must be provided.",
+    ):
+        getattr(client.levels.observed, method)()
+
+    assert fake.requests == []
+
+
+@pytest.mark.parametrize(
+    ("kwargs", "missing"),
+    [
+        ({"station_id": ["95_2", "NOPE"]}, "station_id: \\['NOPE'\\]"),
+        ({"station_name": ["Lagga_2", "Nope"]}, "station_name: \\['Nope'\\]"),
+    ],
+)
+def test_get_stations_by_names_raises_for_missing_stations(
+    fake, client, kwargs, missing
+):
+    """Stations that are not found are named instead of silently left out."""
+    fake.add("", create_mock_single_station_response())
+
+    with pytest.raises(SGUNotFoundError, match=f"No stations found for {missing}"):
+        client.levels.observed.get_stations_by_names(**kwargs)
+
+
+def test_get_measurements_by_names_raises_for_missing_station_names(fake, client):
+    """A missing station_name raises before any measurements are fetched."""
+    fake.add("stationer/items", create_mock_single_station_response())
+
+    with pytest.raises(
+        SGUNotFoundError, match="No stations found for station_name: \\['Nope'\\]"
+    ):
+        client.levels.observed.get_measurements_by_names(
+            station_name=["Lagga_2", "Nope"]
+        )
+
+    assert len(fake.requests) == 1
+
+
+def test_get_measurements_by_name_raises_for_an_ambiguous_station_name(fake, client):
+    """A station_name shared by several stations is ambiguous for one station."""
+    fake.add(
+        "stationer/items",
+        create_mock_station_collection_response(
+            stations=[
+                create_mock_station_feature(
+                    station_id=f"stationer.{i}",
+                    platsbeteckning=station_id,
+                    obsplatsnamn="Lagga",
+                )
+                for i, station_id in enumerate(["95_2", "95_3"])
+            ]
+        ),
+    )
+
+    with pytest.raises(SGUAmbiguousError, match="Multiple stations found"):
+        client.levels.observed.get_measurements_by_name(station_name="Lagga")
+
+    assert len(fake.requests) == 1

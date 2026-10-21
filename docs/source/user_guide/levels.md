@@ -64,6 +64,12 @@ measurements = client.levels.observed.get_measurements_by_names(
 )
 ```
 
+Measurements refer to their station by `station_id`, so that is the fastest way to fetch
+them. Passing `station_name` instead works, but costs an extra request to look up the
+station and logs a warning. If any of the station names, or any of the stations passed to
+`get_stations_by_names()`, is not found, the lookup raises
+{class}`~sgu_client.SGUNotFoundError` naming them instead of returning partial results.
+
 Each measurement has levels in meters above sea level (`water_level_masl_m`) and below
 ground (`water_level_below_ground_m`). See
 {class}`~sgu_client.models.observed.GroundwaterMeasurementProperties` for all fields.
