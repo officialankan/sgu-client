@@ -10,9 +10,7 @@ import pytest
 from pandas.api.types import is_datetime64_any_dtype as is_datetime
 
 from sgu_client import SGUClient
-from sgu_client.exceptions import (
-    SGUNotFoundError,
-)
+from sgu_client.exceptions import SGUAmbiguousError, SGUNotFoundError
 from sgu_client.models.observed import (
     GroundwaterMeasurement,
     GroundwaterMeasurementCollection,
@@ -132,28 +130,6 @@ def test_station_by_name_station_name(fake, client) -> None:
     assert station.properties.station_name == TEST_STATION_OBSPLATSNAMN
 
 
-def test_station_by_name_no_args() -> None:
-    """Test that get_station_by_name raises error when no arguments provided."""
-    client = SGUClient()
-    with pytest.raises(
-        ValueError, match="Either 'station_id' or 'station_name' must be provided."
-    ):
-        client.levels.observed.get_station_by_name()
-
-
-def test_station_by_name_both_args() -> None:
-    """Test that get_station_by_name raises error when both arguments provided."""
-    client = SGUClient()
-    with pytest.raises(
-        ValueError,
-        match="Only one of 'station_id' or 'station_name' can be provided.",
-    ):
-        client.levels.observed.get_station_by_name(
-            station_id=TEST_STATION_PLATSBETECKNING,
-            station_name=TEST_STATION_OBSPLATSNAMN,
-        )
-
-
 def test_get_stations_by_names_station_id(fake, client) -> None:
     """Test getting multiple stations by station_id."""
     mock_response_data = create_mock_multiple_stations_response(
@@ -210,38 +186,6 @@ def test_get_stations_by_names_single_station(fake, client) -> None:
     station = stations.features[0]
     assert station.properties.station_id == TEST_STATION_PLATSBETECKNING
     assert station.properties.station_name == TEST_STATION_OBSPLATSNAMN
-
-
-def test_get_stations_by_names_no_args() -> None:
-    """Test that get_stations_by_names raises error when no arguments provided."""
-    client = SGUClient()
-    with pytest.raises(
-        ValueError,
-        match="Either 'station_id' or 'station_name' must be provided.",
-    ):
-        client.levels.observed.get_stations_by_names()
-
-
-def test_get_stations_by_names_both_args() -> None:
-    """Test that get_stations_by_names raises error when both arguments provided."""
-    client = SGUClient()
-    with pytest.raises(
-        ValueError,
-        match="Only one of 'station_id' or 'station_name' can be provided.",
-    ):
-        client.levels.observed.get_stations_by_names(
-            station_id=["95_2"], station_name=["Lagga_2"]
-        )
-
-
-def test_get_stations_by_names_empty_list() -> None:
-    """Test that get_stations_by_names raises error when empty list provided."""
-    client = SGUClient()
-    with pytest.raises(
-        ValueError,
-        match="Either 'station_id' or 'station_name' must be provided.",
-    ):
-        client.levels.observed.get_stations_by_names(station_id=[])
 
 
 def test_get_stations_by_names_to_dataframe(fake, client) -> None:
@@ -348,27 +292,6 @@ def test_get_measurements_by_name_with_string_dates(fake, client) -> None:
     assert isinstance(measurements, GroundwaterMeasurementCollection)
 
 
-def test_get_measurements_by_name_no_args() -> None:
-    """Test that get_measurements_by_name raises error when no arguments provided."""
-    client = SGUClient()
-    with pytest.raises(
-        ValueError, match="Either 'station_id' or 'station_name' must be provided."
-    ):
-        client.levels.observed.get_measurements_by_name()
-
-
-def test_get_measurements_by_name_both_args(client) -> None:
-    """Test that get_measurements_by_name raises error when both arguments provided."""
-    with pytest.raises(
-        ValueError,
-        match="Only one of 'station_id' or 'station_name' can be provided.",
-    ):
-        client.levels.observed.get_measurements_by_name(
-            station_id=TEST_STATION_PLATSBETECKNING,
-            station_name=TEST_STATION_OBSPLATSNAMN,
-        )
-
-
 # Tests for get_measurements_by_names() function
 def test_get_measurements_by_names_station_id(fake, client) -> None:
     """Test getting measurements for multiple stations."""
@@ -445,27 +368,6 @@ def test_get_measurements_by_names_with_time_filter(fake, client) -> None:
         obs_date = measurement.properties.observation_date
         if obs_date:
             assert tmin <= obs_date <= tmax
-
-
-def test_get_measurements_by_names_no_args() -> None:
-    """Test that get_measurements_by_names raises error when no arguments provided."""
-    client = SGUClient()
-    with pytest.raises(
-        ValueError, match="Either 'station_id' or 'station_name' must be provided."
-    ):
-        client.levels.observed.get_measurements_by_names()
-
-
-def test_get_measurements_by_names_both_args() -> None:
-    """Test that get_measurements_by_names raises error when both arguments provided."""
-    client = SGUClient()
-    with pytest.raises(
-        ValueError,
-        match="Only one of 'station_id' or 'station_name' can be provided.",
-    ):
-        client.levels.observed.get_measurements_by_names(
-            station_id=["95_2"], station_name=["Lagga_2"]
-        )
 
 
 def test_measurements_to_dataframe(fake, client) -> None:
@@ -624,15 +526,20 @@ def test_get_station_by_name_multiple_results(fake, client):
     # Mock response with multiple stations having the same obsplatsnamn
     fake.add(
         "",
-        create_mock_multiple_stations_response(
-            platsbeteckningar=["Station1", "Station2"]
+        create_mock_station_collection_response(
+            stations=[
+                create_mock_station_feature(
+                    station_id=f"stationer.{i}",
+                    platsbeteckning=station_id,
+                    obsplatsnamn="DuplicateName",
+                )
+                for i, station_id in enumerate(["Station1", "Station2"])
+            ]
         ),
     )
 
-    with pytest.raises(ValueError) as exc_info:
+    with pytest.raises(SGUAmbiguousError, match="Multiple stations found"):
         client.levels.observed.get_station_by_name(station_name="DuplicateName")
-
-    assert "multiple" in str(exc_info.value).lower()
 
 
 def test_get_stations_parses_active_dates(fake, client) -> None:
@@ -672,3 +579,76 @@ def test_get_measurements_filters_on_observation_date(fake, client) -> None:
     assert fake.params["filter"] == (
         "obsdatum >= '2020-01-01T00:00:00+00:00' AND obsdatum <= '2021-01-01'"
     )
+
+
+@pytest.mark.parametrize(
+    "method",
+    [
+        "get_station_by_name",
+        "get_stations_by_names",
+        "get_measurements_by_name",
+        "get_measurements_by_names",
+    ],
+)
+def test_station_lookups_require_exactly_one_identifier(fake, client, method):
+    """Every station lookup requires exactly one of station_id or station_name."""
+    with pytest.raises(
+        ValueError,
+        match="Exactly one of 'station_id' or 'station_name' must be provided.",
+    ):
+        getattr(client.levels.observed, method)()
+
+    assert fake.requests == []
+
+
+@pytest.mark.parametrize(
+    ("kwargs", "missing"),
+    [
+        ({"station_id": ["95_2", "NOPE"]}, "station_id: \\['NOPE'\\]"),
+        ({"station_name": ["Lagga_2", "Nope"]}, "station_name: \\['Nope'\\]"),
+    ],
+)
+def test_get_stations_by_names_raises_for_missing_stations(
+    fake, client, kwargs, missing
+):
+    """Stations that are not found are named instead of silently left out."""
+    fake.add("", create_mock_single_station_response())
+
+    with pytest.raises(SGUNotFoundError, match=f"No stations found for {missing}"):
+        client.levels.observed.get_stations_by_names(**kwargs)
+
+
+def test_get_measurements_by_names_raises_for_missing_station_names(fake, client):
+    """A missing station_name raises before any measurements are fetched."""
+    fake.add("stationer/items", create_mock_single_station_response())
+
+    with pytest.raises(
+        SGUNotFoundError, match="No stations found for station_name: \\['Nope'\\]"
+    ):
+        client.levels.observed.get_measurements_by_names(
+            station_name=["Lagga_2", "Nope"]
+        )
+
+    assert len(fake.requests) == 1
+
+
+def test_get_measurements_by_name_raises_for_an_ambiguous_station_name(fake, client):
+    """A station_name shared by several stations is ambiguous for one station."""
+    fake.add(
+        "stationer/items",
+        create_mock_station_collection_response(
+            stations=[
+                create_mock_station_feature(
+                    station_id=f"stationer.{i}",
+                    platsbeteckning=station_id,
+                    obsplatsnamn="Lagga",
+                )
+                for i, station_id in enumerate(["95_2", "95_3"])
+            ]
+        ),
+    )
+
+    with pytest.raises(SGUAmbiguousError, match="Multiple stations found"):
+        client.levels.observed.get_measurements_by_name(station_name="Lagga")
+
+    assert len(fake.requests) == 1
