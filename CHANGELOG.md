@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-10-21
+
 ### Added
 
 - `SGUClient(transport=...)` sends requests through a transport of your own, for example canned responses in your tests. `Transport`, `TransportResponse` and the default `RequestsTransport` are exported from `sgu_client` (#59)
