@@ -43,7 +43,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../_static/documentation_options.js?v=fe7df9b0"></script>
+    <script src="../_static/documentation_options.js?v=486e5634"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -457,7 +457,8 @@ request to look up the site and logs a warning.</p>
 <code class="docutils literal notranslate"><span class="pre">established_date</span></code>, <code class="docutils literal notranslate"><span class="pre">first_sample_date</span></code> and <code class="docutils literal notranslate"><span class="pre">latest_sample_date</span></code>. See
 <a class="reference internal" href="getting_started.html#dates-and-times"><span class="std std-ref">Dates and times</span></a>.</p>
 <p>When sites are given by <code class="docutils literal notranslate"><span class="pre">site_id</span></code> or <code class="docutils literal notranslate"><span class="pre">site_name</span></code>, a lookup that misses any requested
-site raises <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> instead of returning partial results.</p>
+site raises <a class="reference internal" href="../api/config.html#sgu_client.SGUNotFoundError" title="sgu_client.SGUNotFoundError"><code class="xref py py-class docutils literal notranslate"><span class="pre">SGUNotFoundError</span></code></a> naming them instead of returning
+partial results.</p>
 </section>
 <section id="filtering-by-parameter">
 <h2>Filtering by parameter<a class="headerlink" href="#filtering-by-parameter" title="Link to this heading">#</a></h2>

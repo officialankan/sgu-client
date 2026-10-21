@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=fe7df9b0"></script>
+    <script src="../../../_static/documentation_options.js?v=486e5634"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -376,17 +376,11 @@
   <h1>Source code for sgu_client.models.observed</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;Pydantic models for groundwater data from SGU API.&quot;&quot;&quot;</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Literal</span>
-
 <span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">Field</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">sgu_client.models.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">SGUBaseModel</span><span class="p">,</span> <span class="n">SGUResponse</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">sgu_client.models.dates</span><span class="w"> </span><span class="kn">import</span> <span class="n">ApiDatetime</span><span class="p">,</span> <span class="n">convert_datetime_columns</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">sgu_client.models.shared</span><span class="w"> </span><span class="kn">import</span> <span class="n">CRS</span><span class="p">,</span> <span class="n">Geometry</span><span class="p">,</span> <span class="n">Link</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">sgu_client.utils.pandas_helpers</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_pandas</span><span class="p">,</span> <span class="n">optional_pandas_method</span>
-
-<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
-    <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sgu_client.models.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">SGUBaseModel</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sgu_client.models.dates</span><span class="w"> </span><span class="kn">import</span> <span class="n">ApiDatetime</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sgu_client.models.features</span><span class="w"> </span><span class="kn">import</span> <span class="n">Feature</span><span class="p">,</span> <span class="n">FeatureCollection</span><span class="p">,</span> <span class="n">TimeSeriesCollection</span>
 
 
 <span class="c1"># Groundwater station properties (English field names with Swedish API aliases)</span>
@@ -518,17 +512,11 @@
 
 <div class="viewcode-block" id="GroundwaterStation">
 <a class="viewcode-back" href="../../../api/observed.html#sgu_client.models.observed.GroundwaterStation">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">GroundwaterStation</span><span class="p">(</span><span class="n">SGUBaseModel</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A groundwater monitoring station (GeoJSON Feature).&quot;&quot;&quot;</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">GroundwaterStation</span><span class="p">(</span><span class="n">Feature</span><span class="p">[</span><span class="n">GroundwaterStationProperties</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A groundwater monitoring station (GeoJSON Feature).</span>
 
-    <span class="nb">type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;Feature&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;Feature&quot;</span>
-    <span class="nb">id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Station ID&quot;</span><span class="p">)</span>
-    <span class="n">geometry</span><span class="p">:</span> <span class="n">Geometry</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
-        <span class="kc">None</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Station geometry (null for stations without location)&quot;</span>
-    <span class="p">)</span>
-    <span class="n">properties</span><span class="p">:</span> <span class="n">GroundwaterStationProperties</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
-        <span class="o">...</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Station properties&quot;</span>
-    <span class="p">)</span></div>
+<span class="sd">    ``geometry`` is null for stations without a location.</span>
+<span class="sd">    &quot;&quot;&quot;</span></div>
 
 
 
@@ -581,221 +569,55 @@
 
 <div class="viewcode-block" id="GroundwaterMeasurement">
 <a class="viewcode-back" href="../../../api/observed.html#sgu_client.models.observed.GroundwaterMeasurement">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">GroundwaterMeasurement</span><span class="p">(</span><span class="n">SGUBaseModel</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A groundwater level measurement (GeoJSON Feature).&quot;&quot;&quot;</span>
-
-    <span class="nb">type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;Feature&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;Feature&quot;</span>
-    <span class="nb">id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Measurement ID&quot;</span><span class="p">)</span>
-    <span class="n">geometry</span><span class="p">:</span> <span class="n">Geometry</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Measurement geometry&quot;</span><span class="p">)</span>
-    <span class="n">properties</span><span class="p">:</span> <span class="n">GroundwaterMeasurementProperties</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
-        <span class="o">...</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Measurement properties&quot;</span>
-    <span class="p">)</span></div>
+<span class="k">class</span><span class="w"> </span><span class="nc">GroundwaterMeasurement</span><span class="p">(</span><span class="n">Feature</span><span class="p">[</span><span class="n">GroundwaterMeasurementProperties</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A groundwater level measurement (GeoJSON Feature).&quot;&quot;&quot;</span></div>
 
 
 
 <span class="c1"># Collection response models</span>
 <div class="viewcode-block" id="GroundwaterStationCollection">
 <a class="viewcode-back" href="../../../api/observed.html#sgu_client.models.observed.GroundwaterStationCollection">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">GroundwaterStationCollection</span><span class="p">(</span><span class="n">SGUResponse</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Collection of groundwater monitoring stations (GeoJSON FeatureCollection).&quot;&quot;&quot;</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">GroundwaterStationCollection</span><span class="p">(</span><span class="n">FeatureCollection</span><span class="p">[</span><span class="n">GroundwaterStation</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Collection of groundwater monitoring stations (GeoJSON FeatureCollection).</span>
 
-    <span class="nb">type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;FeatureCollection&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;FeatureCollection&quot;</span>
-    <span class="n">features</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">GroundwaterStation</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
-        <span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Station features&quot;</span>
-    <span class="p">)</span>
+<span class="sd">    Its DataFrame has ``longitude`` and ``latitude`` columns, null for stations</span>
+<span class="sd">    without a location.</span>
 
-    <span class="c1"># OGC API Features metadata</span>
-    <span class="n">totalFeatures</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Total number of features&quot;</span><span class="p">)</span>
-    <span class="n">numberMatched</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
-        <span class="kc">None</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Number of features matching query&quot;</span>
-    <span class="p">)</span>
-    <span class="n">numberReturned</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Number of features returned&quot;</span><span class="p">)</span>
-    <span class="n">timeStamp</span><span class="p">:</span> <span class="n">ApiDatetime</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Response timestamp (UTC)&quot;</span><span class="p">)</span>
+<span class="sd">    Examples:</span>
 
-    <span class="c1"># Links and CRS</span>
-    <span class="n">links</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Link</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Related links&quot;</span><span class="p">)</span>
-    <span class="n">crs</span><span class="p">:</span> <span class="n">CRS</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Coordinate reference system&quot;</span><span class="p">)</span>
+<span class="sd">        &gt;&gt;&gt; from sgu_client import SGUClient</span>
+<span class="sd">        &gt;&gt;&gt; with SGUClient() as client:</span>
+<span class="sd">        ...     stations = client.levels.observed.get_stations(limit=10)</span>
+<span class="sd">        ...     df = stations.to_dataframe()</span>
+<span class="sd">        ...     print(df[[&#39;station_id&#39;, &#39;station_name&#39;, &#39;longitude&#39;, &#39;latitude&#39;]].head())</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="GroundwaterStationCollection.to_dataframe">
-<a class="viewcode-back" href="../../../api/observed.html#sgu_client.models.observed.GroundwaterStationCollection.to_dataframe">[docs]</a>
-    <span class="nd">@optional_pandas_method</span><span class="p">(</span><span class="s2">&quot;to_dataframe() method&quot;</span><span class="p">)</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">to_dataframe</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;pd.DataFrame&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert to pandas DataFrame with flattened station properties.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            DataFrame containing station data with geometry columns.</span>
-
-<span class="sd">        Examples:</span>
-
-<span class="sd">            &gt;&gt;&gt; from sgu_client import SGUClient</span>
-<span class="sd">            &gt;&gt;&gt; with SGUClient() as client:</span>
-<span class="sd">            ...     stations = client.levels.observed.get_stations(limit=10)</span>
-<span class="sd">            ...     df = stations.to_dataframe()</span>
-<span class="sd">            ...     # dataFrame includes flattened properties and geometry coordinates</span>
-<span class="sd">            ...     print(df.columns)  # station_id, longitude, latitude, station_name, municipality, etc.</span>
-<span class="sd">            ...     print(df[[&#39;station_id&#39;, &#39;station_name&#39;, &#39;municipality&#39;, &#39;longitude&#39;, &#39;latitude&#39;]].head())</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">feature</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">features</span><span class="p">:</span>
-            <span class="n">geometry</span> <span class="o">=</span> <span class="n">feature</span><span class="o">.</span><span class="n">geometry</span>
-            <span class="n">coordinates</span> <span class="o">=</span> <span class="n">geometry</span><span class="o">.</span><span class="n">coordinates</span> <span class="k">if</span> <span class="n">geometry</span> <span class="k">else</span> <span class="p">[]</span>
-            <span class="c1"># stations without geometry keep the columns, with null values</span>
-            <span class="n">row</span> <span class="o">=</span> <span class="p">{</span>
-                <span class="s2">&quot;station_id&quot;</span><span class="p">:</span> <span class="n">feature</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
-                <span class="s2">&quot;geometry_type&quot;</span><span class="p">:</span> <span class="n">geometry</span><span class="o">.</span><span class="n">type</span> <span class="k">if</span> <span class="n">geometry</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
-                <span class="s2">&quot;longitude&quot;</span><span class="p">:</span> <span class="n">coordinates</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">coordinates</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
-                <span class="s2">&quot;latitude&quot;</span><span class="p">:</span> <span class="n">coordinates</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">coordinates</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="p">}</span>
-            <span class="c1"># Add all properties</span>
-            <span class="n">row</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">feature</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">model_dump</span><span class="p">())</span>
-            <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
-
-        <span class="n">pd</span> <span class="o">=</span> <span class="n">get_pandas</span><span class="p">()</span>
-        <span class="k">return</span> <span class="n">convert_datetime_columns</span><span class="p">(</span>
-            <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">),</span> <span class="n">GroundwaterStationProperties</span>
-        <span class="p">)</span></div>
-</div>
+    <span class="n">_geometry</span> <span class="o">=</span> <span class="s2">&quot;point&quot;</span></div>
 
 
 
 <div class="viewcode-block" id="GroundwaterMeasurementCollection">
 <a class="viewcode-back" href="../../../api/observed.html#sgu_client.models.observed.GroundwaterMeasurementCollection">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">GroundwaterMeasurementCollection</span><span class="p">(</span><span class="n">SGUResponse</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Collection of groundwater level measurements (GeoJSON FeatureCollection).&quot;&quot;&quot;</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">GroundwaterMeasurementCollection</span><span class="p">(</span><span class="n">TimeSeriesCollection</span><span class="p">[</span><span class="n">GroundwaterMeasurement</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Collection of groundwater level measurements (GeoJSON FeatureCollection).</span>
 
-    <span class="nb">type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;FeatureCollection&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;FeatureCollection&quot;</span>
-    <span class="n">features</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">GroundwaterMeasurement</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
-        <span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Measurement features&quot;</span>
-    <span class="p">)</span>
+<span class="sd">    Its DataFrame has no geometry columns. Sorted by ``observation_date``;</span>
+<span class="sd">    ``to_series()`` defaults to ``water_level_masl_m``.</span>
 
-    <span class="c1"># OGC API Features metadata</span>
-    <span class="n">totalFeatures</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Total number of features&quot;</span><span class="p">)</span>
-    <span class="n">numberMatched</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
-        <span class="kc">None</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Number of features matching query&quot;</span>
-    <span class="p">)</span>
-    <span class="n">numberReturned</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Number of features returned&quot;</span><span class="p">)</span>
-    <span class="n">timeStamp</span><span class="p">:</span> <span class="n">ApiDatetime</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Response timestamp (UTC)&quot;</span><span class="p">)</span>
+<span class="sd">    Examples:</span>
 
-    <span class="c1"># Links and CRS</span>
-    <span class="n">links</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Link</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Related links&quot;</span><span class="p">)</span>
-    <span class="n">crs</span><span class="p">:</span> <span class="n">CRS</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Coordinate reference system&quot;</span><span class="p">)</span>
+<span class="sd">        &gt;&gt;&gt; from sgu_client import SGUClient</span>
+<span class="sd">        &gt;&gt;&gt; with SGUClient() as client:</span>
+<span class="sd">        ...     measurements = client.levels.observed.get_measurements_by_name(</span>
+<span class="sd">        ...         station_id=&quot;95_2&quot;, limit=100</span>
+<span class="sd">        ...     )</span>
+<span class="sd">        ...     df = measurements.to_dataframe()</span>
+<span class="sd">        ...     print(df[[&#39;observation_date&#39;, &#39;water_level_masl_m&#39;, &#39;station_id&#39;]].head())</span>
+<span class="sd">        ...     series = measurements.to_series()</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="GroundwaterMeasurementCollection.to_dataframe">
-<a class="viewcode-back" href="../../../api/observed.html#sgu_client.models.observed.GroundwaterMeasurementCollection.to_dataframe">[docs]</a>
-    <span class="nd">@optional_pandas_method</span><span class="p">(</span><span class="s2">&quot;to_dataframe() method&quot;</span><span class="p">)</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">to_dataframe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sort_by_date</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;pd.DataFrame&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert to pandas DataFrame with measurement data.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            sort_by_date: Whether to sort the DataFrame by observation date.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            DataFrame containing measurement data.</span>
-
-<span class="sd">        Examples:</span>
-
-<span class="sd">            &gt;&gt;&gt; from sgu_client import SGUClient</span>
-<span class="sd">            &gt;&gt;&gt; with SGUClient() as client:</span>
-<span class="sd">            ...     measurements = client.levels.observed.get_measurements(limit=100)</span>
-<span class="sd">            ...     df = measurements.to_dataframe()</span>
-<span class="sd">            ...     # dataFrame is sorted by observation_date by default</span>
-<span class="sd">            ...     print(df[[&#39;observation_date&#39;, &#39;water_level_masl_m&#39;, &#39;station_id&#39;]].head())</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">feature</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">features</span><span class="p">:</span>
-            <span class="c1"># observation_date stays the second column, as before</span>
-            <span class="n">row</span> <span class="o">=</span> <span class="p">{</span>
-                <span class="s2">&quot;measurement_id&quot;</span><span class="p">:</span> <span class="n">feature</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
-                <span class="s2">&quot;observation_date&quot;</span><span class="p">:</span> <span class="n">feature</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">observation_date</span><span class="p">,</span>
-            <span class="p">}</span>
-            <span class="c1"># Add geometry if present</span>
-            <span class="k">if</span> <span class="n">feature</span><span class="o">.</span><span class="n">geometry</span><span class="p">:</span>
-                <span class="n">row</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
-                    <span class="p">{</span>
-                        <span class="s2">&quot;geometry_type&quot;</span><span class="p">:</span> <span class="n">feature</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">type</span><span class="p">,</span>
-                        <span class="s2">&quot;longitude&quot;</span><span class="p">:</span> <span class="n">feature</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">coordinates</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-                        <span class="k">if</span> <span class="n">feature</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">coordinates</span>
-                        <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
-                        <span class="s2">&quot;latitude&quot;</span><span class="p">:</span> <span class="n">feature</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">coordinates</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-                        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">feature</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">coordinates</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span>
-                        <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
-                    <span class="p">}</span>
-                <span class="p">)</span>
-
-            <span class="c1"># Add all properties</span>
-            <span class="n">row</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">feature</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">model_dump</span><span class="p">())</span>
-            <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
-
-        <span class="n">pd</span> <span class="o">=</span> <span class="n">get_pandas</span><span class="p">()</span>
-        <span class="n">df</span> <span class="o">=</span> <span class="n">convert_datetime_columns</span><span class="p">(</span>
-            <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">),</span> <span class="n">GroundwaterMeasurementProperties</span>
-        <span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">sort_by_date</span><span class="p">:</span>
-            <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="s2">&quot;observation_date&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">df</span></div>
-
-
-<div class="viewcode-block" id="GroundwaterMeasurementCollection.to_series">
-<a class="viewcode-back" href="../../../api/observed.html#sgu_client.models.observed.GroundwaterMeasurementCollection.to_series">[docs]</a>
-    <span class="nd">@optional_pandas_method</span><span class="p">(</span><span class="s2">&quot;to_series() method&quot;</span><span class="p">)</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">to_series</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">index</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">data</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">sort_by_date</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;pd.Series&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert to pandas Series with measurement data.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            index: Column name to use as index. If None, `observation_date` is used.</span>
-<span class="sd">            data: Column name to use as data. If None, `water_level_masl_m` is used.</span>
-<span class="sd">            sort_by_date: Whether to sort the data by observation date before creating the Series.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            Series containing measurement data.</span>
-
-<span class="sd">        Examples:</span>
-
-<span class="sd">            &gt;&gt;&gt; from sgu_client import SGUClient</span>
-<span class="sd">            &gt;&gt;&gt; with SGUClient() as client:</span>
-<span class="sd">            ...     measurements = client.levels.observed.get_measurements_by_name(</span>
-<span class="sd">            ...         station_id=&quot;95_2&quot;, limit=100</span>
-<span class="sd">            ...     )</span>
-<span class="sd">            ...     # create time series with default columns (observation_date, water_level_masl_m)</span>
-<span class="sd">            ...     series = measurements.to_series()</span>
-<span class="sd">            ...     print(series.head())</span>
-<span class="sd">            ...     # use custom columns for index and data</span>
-<span class="sd">            ...     series_custom = measurements.to_series(</span>
-<span class="sd">            ...         index=&quot;observation_date&quot;,</span>
-<span class="sd">            ...         data=&quot;water_level_below_ground_m&quot;</span>
-<span class="sd">            ...     )</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_dataframe</span><span class="p">(</span><span class="n">sort_by_date</span><span class="o">=</span><span class="n">sort_by_date</span><span class="p">)</span>
-        <span class="n">pd</span> <span class="o">=</span> <span class="n">get_pandas</span><span class="p">()</span>
-
-        <span class="k">if</span> <span class="n">data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">data</span> <span class="o">=</span> <span class="s2">&quot;water_level_masl_m&quot;</span>
-        <span class="k">if</span> <span class="n">index</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">index</span> <span class="o">=</span> <span class="s2">&quot;observation_date&quot;</span>
-
-        <span class="k">if</span> <span class="n">df</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">index</span> <span class="ow">and</span> <span class="n">index</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Index column &#39;</span><span class="si">{</span><span class="n">index</span><span class="si">}</span><span class="s2">&#39; not found in DataFrame.&quot;</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">data</span> <span class="ow">and</span> <span class="n">data</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Data column &#39;</span><span class="si">{</span><span class="n">data</span><span class="si">}</span><span class="s2">&#39; not found in DataFrame.&quot;</span><span class="p">)</span>
-
-        <span class="n">series</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">df</span><span class="p">[</span><span class="n">data</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">df</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="k">if</span> <span class="n">index</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
-        <span class="n">series</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">data</span>
-        <span class="k">return</span> <span class="n">series</span></div>
-</div>
+    <span class="n">_date_column</span> <span class="o">=</span> <span class="s2">&quot;observation_date&quot;</span>
+    <span class="n">_series_column</span> <span class="o">=</span> <span class="s2">&quot;water_level_masl_m&quot;</span></div>
 
 </pre></div>
 

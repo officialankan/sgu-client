@@ -43,7 +43,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../_static/documentation_options.js?v=fe7df9b0"></script>
+    <script src="../_static/documentation_options.js?v=486e5634"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -428,7 +428,7 @@ on its attributes:</p>
 <h2>SGUClient<a class="headerlink" href="#sguclient" title="Link to this heading">#</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="sgu_client.SGUClient">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SGUClient</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sgu_client/sgu_client.html#SGUClient"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sgu_client.SGUClient" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SGUClient</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">transport</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sgu_client/sgu_client.html#SGUClient"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sgu_client.SGUClient" title="Link to this definition">#</a></dt>
 <dd><p>Main client for interacting with SGU API.</p>
 <p>This is the primary interface users will interact with.</p>
 <p>Use it as a context manager so the HTTP session is closed when you are done.
@@ -447,11 +447,18 @@ If the client has to outlive a <code class="docutils literal notranslate"><span 
 </div>
 <dl class="py method">
 <dt class="sig sig-object py" id="sgu_client.SGUClient.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sgu_client/sgu_client.html#SGUClient.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sgu_client.SGUClient.__init__" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">transport</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sgu_client/sgu_client.html#SGUClient.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sgu_client.SGUClient.__init__" title="Link to this definition">#</a></dt>
 <dd><p>Initialize the SGU client.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>config</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="config.html#sgu_client.SGUConfig" title="sgu_client.config.SGUConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">SGUConfig</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span>) – Configuration object. If None, uses default config.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>config</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="config.html#sgu_client.SGUConfig" title="sgu_client.config.SGUConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">SGUConfig</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span>) – Configuration object. If None, uses default config.</p></li>
+<li><p><strong>transport</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#sgu_client.Transport" title="sgu_client.transport.Transport"><code class="xref py py-class docutils literal notranslate"><span class="pre">Transport</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span>) – Where requests go. If None, the client talks to SGU over the
+network with a <a class="reference internal" href="#sgu_client.RequestsTransport" title="sgu_client.RequestsTransport"><code class="xref py py-class docutils literal notranslate"><span class="pre">RequestsTransport</span></code></a> built from
+<code class="docutils literal notranslate"><span class="pre">config</span></code>, and closes it in <a class="reference internal" href="#sgu_client.SGUClient.close" title="sgu_client.SGUClient.close"><code class="xref py py-meth docutils literal notranslate"><span class="pre">close()</span></code></a>. A transport you pass in
+is yours to close, and the network settings in <code class="docutils literal notranslate"><span class="pre">config</span></code>
+(<code class="docutils literal notranslate"><span class="pre">timeout</span></code>, <code class="docutils literal notranslate"><span class="pre">max_retries</span></code>, <code class="docutils literal notranslate"><span class="pre">user_agent</span></code>) don’t apply to it.</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
@@ -516,6 +523,114 @@ through a hierarchical API structure.</p>
 </dd></dl>
 
 </section>
+<section id="transports">
+<h2>Transports<a class="headerlink" href="#transports" title="Link to this heading">#</a></h2>
+<p>Every request goes through a <a class="reference internal" href="#sgu_client.Transport" title="sgu_client.Transport"><code class="xref py py-class docutils literal notranslate"><span class="pre">Transport</span></code></a>. By default that’s a
+<a class="reference internal" href="#sgu_client.RequestsTransport" title="sgu_client.RequestsTransport"><code class="xref py py-class docutils literal notranslate"><span class="pre">RequestsTransport</span></code></a>, which talks to SGU over the network using the <code class="docutils literal notranslate"><span class="pre">timeout</span></code>,
+<code class="docutils literal notranslate"><span class="pre">max_retries</span></code> and <code class="docutils literal notranslate"><span class="pre">user_agent</span></code> from <a class="reference internal" href="config.html#sgu_client.SGUConfig" title="sgu_client.SGUConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">SGUConfig</span></code></a>.</p>
+<p>Pass your own transport to serve responses from somewhere else, for example canned
+pages in your tests. A transport has one method, <code class="docutils literal notranslate"><span class="pre">fetch</span></code>, which returns the status and
+body of one response; the client still handles errors, JSON and pagination:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">sgu_client</span><span class="w"> </span><span class="kn">import</span> <span class="n">SGUClient</span><span class="p">,</span> <span class="n">TransportResponse</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">CannedTransport</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">page</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">page</span> <span class="o">=</span> <span class="n">page</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">fetch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">TransportResponse</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">page</span><span class="p">))</span>
+
+<span class="n">client</span> <span class="o">=</span> <span class="n">SGUClient</span><span class="p">(</span><span class="n">transport</span><span class="o">=</span><span class="n">CannedTransport</span><span class="p">(</span><span class="n">my_station_page</span><span class="p">))</span>
+<span class="n">stations</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">levels</span><span class="o">.</span><span class="n">observed</span><span class="o">.</span><span class="n">get_stations</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>A transport you pass in is yours to close; <a class="reference internal" href="#sgu_client.SGUClient.close" title="sgu_client.SGUClient.close"><code class="xref py py-meth docutils literal notranslate"><span class="pre">SGUClient.close()</span></code></a> only closes the
+transport the client created.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="sgu_client.Transport">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Transport</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sgu_client/transport.html#Transport"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sgu_client.Transport" title="Link to this definition">#</a></dt>
+<dd><p>Fetches one response from SGU.</p>
+<p>The client builds the URL and query params, then decides what the response
+means: it turns error statuses into <a class="reference internal" href="config.html#sgu_client.SGUAPIError" title="sgu_client.SGUAPIError"><code class="xref py py-class docutils literal notranslate"><span class="pre">SGUAPIError</span></code></a>, parses
+the JSON and requests further pages.</p>
+<p>A transport raises <a class="reference internal" href="config.html#sgu_client.SGUTimeoutError" title="sgu_client.SGUTimeoutError"><code class="xref py py-class docutils literal notranslate"><span class="pre">SGUTimeoutError</span></code></a> or
+<a class="reference internal" href="config.html#sgu_client.SGUConnectionError" title="sgu_client.SGUConnectionError"><code class="xref py py-class docutils literal notranslate"><span class="pre">SGUConnectionError</span></code></a> when it can’t get a response at all.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="sgu_client.Transport.fetch">
+<span class="sig-name descname"><span class="pre">fetch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">url</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sgu_client/transport.html#Transport.fetch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sgu_client.Transport.fetch" title="Link to this definition">#</a></dt>
+<dd><p>GET <code class="docutils literal notranslate"><span class="pre">url</span></code> with query <code class="docutils literal notranslate"><span class="pre">params</span></code> and return the response.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#sgu_client.TransportResponse" title="sgu_client.transport.TransportResponse"><code class="xref py py-class docutils literal notranslate"><span class="pre">TransportResponse</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sgu_client.TransportResponse">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">TransportResponse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">status_code</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">text</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sgu_client/transport.html#TransportResponse"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sgu_client.TransportResponse" title="Link to this definition">#</a></dt>
+<dd><p>What SGU sent back for one request.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sgu_client.TransportResponse.status_code">
+<span class="sig-name descname"><span class="pre">status_code</span></span><a class="headerlink" href="#sgu_client.TransportResponse.status_code" title="Link to this definition">#</a></dt>
+<dd><p>HTTP status code, e.g. <code class="docutils literal notranslate"><span class="pre">200</span></code> or <code class="docutils literal notranslate"><span class="pre">404</span></code></p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sgu_client.TransportResponse.text">
+<span class="sig-name descname"><span class="pre">text</span></span><a class="headerlink" href="#sgu_client.TransportResponse.text" title="Link to this definition">#</a></dt>
+<dd><p>Response body, usually JSON</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sgu_client.RequestsTransport">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">RequestsTransport</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sgu_client/transport.html#RequestsTransport"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sgu_client.RequestsTransport" title="Link to this definition">#</a></dt>
+<dd><p>The default transport: GET requests to SGU with the <code class="docutils literal notranslate"><span class="pre">requests</span></code> library.</p>
+<p>Uses <code class="docutils literal notranslate"><span class="pre">timeout</span></code>, <code class="docutils literal notranslate"><span class="pre">max_retries</span></code> and <code class="docutils literal notranslate"><span class="pre">user_agent</span></code> from the config.
+Retries on 429 and 5xx responses with exponential backoff.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>config</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="config.html#sgu_client.SGUConfig" title="sgu_client.config.SGUConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">SGUConfig</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span>) – Configuration object. If None, uses default config.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="sgu_client.RequestsTransport.fetch">
+<span class="sig-name descname"><span class="pre">fetch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">url</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sgu_client/transport.html#RequestsTransport.fetch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sgu_client.RequestsTransport.fetch" title="Link to this definition">#</a></dt>
+<dd><p>GET <code class="docutils literal notranslate"><span class="pre">url</span></code> with query <code class="docutils literal notranslate"><span class="pre">params</span></code> and return the response.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="config.html#sgu_client.SGUTimeoutError" title="sgu_client.SGUTimeoutError"><strong>SGUTimeoutError</strong></a> – If connecting or reading times out.</p></li>
+<li><p><a class="reference internal" href="config.html#sgu_client.SGUConnectionError" title="sgu_client.SGUConnectionError"><strong>SGUConnectionError</strong></a> – If SGU can’t be reached.</p></li>
+<li><p><a class="reference internal" href="config.html#sgu_client.SGUAPIError" title="sgu_client.SGUAPIError"><strong>SGUAPIError</strong></a> – If the request fails in any other way.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#sgu_client.TransportResponse" title="sgu_client.transport.TransportResponse"><code class="xref py py-class docutils literal notranslate"><span class="pre">TransportResponse</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sgu_client.RequestsTransport.close">
+<span class="sig-name descname"><span class="pre">close</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sgu_client/transport.html#RequestsTransport.close"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sgu_client.RequestsTransport.close" title="Link to this definition">#</a></dt>
+<dd><p>Close the HTTP session and its pooled connections.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
 </section>
 
 
@@ -567,6 +682,7 @@ through a hierarchical API structure.</p>
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#sguclient">SGUClient</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#levelsclient">LevelsClient</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#transports">Transports</a></li>
 </ul>
   </nav></div>
 

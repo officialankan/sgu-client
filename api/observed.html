@@ -43,7 +43,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../_static/documentation_options.js?v=fe7df9b0"></script>
+    <script src="../_static/documentation_options.js?v=486e5634"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -592,8 +592,12 @@ but likely not used by any user.</p>
 <dd class="field-odd"><p>Typed groundwater monitoring station</p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If neither parameter is provided, both are provided,
-    or if multiple stations are found</p>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference internal" href="config.html#sgu_client.SGUNotFoundError" title="sgu_client.SGUNotFoundError"><strong>SGUNotFoundError</strong></a> – If no station matches.</p></li>
+<li><p><a class="reference internal" href="config.html#sgu_client.SGUAmbiguousError" title="sgu_client.SGUAmbiguousError"><strong>SGUAmbiguousError</strong></a> – If several stations match.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If not exactly one of station_id or station_name is
+    provided.</p></li>
+</ul>
 </dd>
 </dl>
 <p class="rubric">Example</p>
@@ -629,7 +633,11 @@ but likely not used by any user.</p>
 <dd class="field-odd"><p>Typed collection of groundwater monitoring stations</p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If neither parameter is provided or both are provided</p>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference internal" href="config.html#sgu_client.SGUNotFoundError" title="sgu_client.SGUNotFoundError"><strong>SGUNotFoundError</strong></a> – If any of the requested stations is not found.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If not exactly one of station_id or station_name is
+    provided.</p></li>
+</ul>
 </dd>
 </dl>
 <p class="rubric">Example</p>
@@ -667,8 +675,12 @@ but likely not used by any user.</p>
 <dd class="field-odd"><p>Typed collection of groundwater level measurements</p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If neither or both name parameters are provided,
-    or if station lookup fails</p>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference internal" href="config.html#sgu_client.SGUNotFoundError" title="sgu_client.SGUNotFoundError"><strong>SGUNotFoundError</strong></a> – If a station_name matches no station.</p></li>
+<li><p><a class="reference internal" href="config.html#sgu_client.SGUAmbiguousError" title="sgu_client.SGUAmbiguousError"><strong>SGUAmbiguousError</strong></a> – If a station_name matches several stations.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If not exactly one of station_id or station_name is
+    provided, or if the looked-up station has no station_id.</p></li>
+</ul>
 </dd>
 </dl>
 <p class="rubric">Example</p>
@@ -718,8 +730,11 @@ but likely not used by any user.</p>
 <dd class="field-odd"><p>Typed collection of groundwater level measurements</p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If neither or both name parameters are provided,
-    or if station lookup fails</p>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference internal" href="config.html#sgu_client.SGUNotFoundError" title="sgu_client.SGUNotFoundError"><strong>SGUNotFoundError</strong></a> – If any station_name matches no station.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If not exactly one of station_id or station_name is
+    provided, or if a looked-up station has no station_id.</p></li>
+</ul>
 </dd>
 </dl>
 <p class="rubric">Example</p>
@@ -778,7 +793,7 @@ but likely not used by any user.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Constraints<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>func</strong> = &lt;function _parse_api_datetime at 0x7f03d1f4c7c0&gt;</p></li>
+<li><p><strong>func</strong> = &lt;function _parse_api_datetime at 0x7fa47d9d60c0&gt;</p></li>
 <li><p><strong>json_schema_input_type</strong> = PydanticUndefined</p></li>
 </ul>
 </dd>
@@ -792,7 +807,7 @@ but likely not used by any user.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Constraints<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>func</strong> = &lt;function _parse_api_datetime at 0x7f03d1f4c7c0&gt;</p></li>
+<li><p><strong>func</strong> = &lt;function _parse_api_datetime at 0x7fa47d9d60c0&gt;</p></li>
 <li><p><strong>json_schema_input_type</strong> = PydanticUndefined</p></li>
 </ul>
 </dd>
@@ -1003,29 +1018,7 @@ but likely not used by any user.</p>
 <dt class="sig sig-object py" id="sgu_client.models.observed.GroundwaterStation">
 <em class="property"><span class="pre">pydantic</span> <span class="pre">model</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">GroundwaterStation</span></span><a class="reference internal" href="../_modules/sgu_client/models/observed.html#GroundwaterStation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sgu_client.models.observed.GroundwaterStation" title="Link to this definition">#</a></dt>
 <dd><p>A groundwater monitoring station (GeoJSON Feature).</p>
-<dl class="py attribute pydantic_field">
-<dt class="sig sig-object py" id="sgu_client.models.observed.GroundwaterStation.type">
-<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Literal</span></code></a><span class="pre">[</span><code class="docutils literal notranslate"><span class="pre">'Feature'</span></code><span class="pre">]</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Feature'</span></em><a class="headerlink" href="#sgu_client.models.observed.GroundwaterStation.type" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute pydantic_field">
-<dt class="sig sig-object py" id="sgu_client.models.observed.GroundwaterStation.id">
-<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></em><em class="property"> <span class="pre">[Required]</span></em><a class="headerlink" href="#sgu_client.models.observed.GroundwaterStation.id" title="Link to this definition">#</a></dt>
-<dd><p>Station ID</p>
-</dd></dl>
-
-<dl class="py attribute pydantic_field">
-<dt class="sig sig-object py" id="sgu_client.models.observed.GroundwaterStation.geometry">
-<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">geometry</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="models.html#sgu_client.models.shared.Point" title="sgu_client.models.shared.Point"><code class="xref py py-class docutils literal notranslate"><span class="pre">Point</span></code></a> <span class="pre">|</span> <a class="reference internal" href="models.html#sgu_client.models.shared.MultiPoint" title="sgu_client.models.shared.MultiPoint"><code class="xref py py-class docutils literal notranslate"><span class="pre">MultiPoint</span></code></a> <span class="pre">|</span> <a class="reference internal" href="models.html#sgu_client.models.shared.LineString" title="sgu_client.models.shared.LineString"><code class="xref py py-class docutils literal notranslate"><span class="pre">LineString</span></code></a> <span class="pre">|</span> <a class="reference internal" href="models.html#sgu_client.models.shared.Polygon" title="sgu_client.models.shared.Polygon"><code class="xref py py-class docutils literal notranslate"><span class="pre">Polygon</span></code></a> <span class="pre">|</span> <a class="reference internal" href="models.html#sgu_client.models.shared.MultiPolygon" title="sgu_client.models.shared.MultiPolygon"><code class="xref py py-class docutils literal notranslate"><span class="pre">MultiPolygon</span></code></a> <span class="pre">|</span> <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#sgu_client.models.observed.GroundwaterStation.geometry" title="Link to this definition">#</a></dt>
-<dd><p>Station geometry (null for stations without location)</p>
-</dd></dl>
-
-<dl class="py attribute pydantic_field">
-<dt class="sig sig-object py" id="sgu_client.models.observed.GroundwaterStation.properties">
-<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">properties</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#sgu_client.models.observed.GroundwaterStationProperties" title="sgu_client.models.observed.GroundwaterStationProperties"><code class="xref py py-class docutils literal notranslate"><span class="pre">GroundwaterStationProperties</span></code></a></em><em class="property"> <span class="pre">[Required]</span></em><a class="headerlink" href="#sgu_client.models.observed.GroundwaterStation.properties" title="Link to this definition">#</a></dt>
-<dd><p>Station properties</p>
-</dd></dl>
-
+<p><code class="docutils literal notranslate"><span class="pre">geometry</span></code> is null for stations without a location.</p>
 </dd></dl>
 
 <dl class="py class pydantic_model">
@@ -1051,7 +1044,7 @@ but likely not used by any user.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Constraints<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>func</strong> = &lt;function _parse_api_datetime at 0x7f03d1f4c7c0&gt;</p></li>
+<li><p><strong>func</strong> = &lt;function _parse_api_datetime at 0x7fa47d9d60c0&gt;</p></li>
 <li><p><strong>json_schema_input_type</strong> = PydanticUndefined</p></li>
 </ul>
 </dd>
@@ -1095,7 +1088,7 @@ but likely not used by any user.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Constraints<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>func</strong> = &lt;function _parse_api_datetime at 0x7f03d1f4c7c0&gt;</p></li>
+<li><p><strong>func</strong> = &lt;function _parse_api_datetime at 0x7fa47d9d60c0&gt;</p></li>
 <li><p><strong>json_schema_input_type</strong> = PydanticUndefined</p></li>
 </ul>
 </dd>
@@ -1108,238 +1101,41 @@ but likely not used by any user.</p>
 <dt class="sig sig-object py" id="sgu_client.models.observed.GroundwaterMeasurement">
 <em class="property"><span class="pre">pydantic</span> <span class="pre">model</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">GroundwaterMeasurement</span></span><a class="reference internal" href="../_modules/sgu_client/models/observed.html#GroundwaterMeasurement"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sgu_client.models.observed.GroundwaterMeasurement" title="Link to this definition">#</a></dt>
 <dd><p>A groundwater level measurement (GeoJSON Feature).</p>
-<dl class="py attribute pydantic_field">
-<dt class="sig sig-object py" id="sgu_client.models.observed.GroundwaterMeasurement.type">
-<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Literal</span></code></a><span class="pre">[</span><code class="docutils literal notranslate"><span class="pre">'Feature'</span></code><span class="pre">]</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Feature'</span></em><a class="headerlink" href="#sgu_client.models.observed.GroundwaterMeasurement.type" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute pydantic_field">
-<dt class="sig sig-object py" id="sgu_client.models.observed.GroundwaterMeasurement.id">
-<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></em><em class="property"> <span class="pre">[Required]</span></em><a class="headerlink" href="#sgu_client.models.observed.GroundwaterMeasurement.id" title="Link to this definition">#</a></dt>
-<dd><p>Measurement ID</p>
-</dd></dl>
-
-<dl class="py attribute pydantic_field">
-<dt class="sig sig-object py" id="sgu_client.models.observed.GroundwaterMeasurement.geometry">
-<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">geometry</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="models.html#sgu_client.models.shared.Point" title="sgu_client.models.shared.Point"><code class="xref py py-class docutils literal notranslate"><span class="pre">Point</span></code></a> <span class="pre">|</span> <a class="reference internal" href="models.html#sgu_client.models.shared.MultiPoint" title="sgu_client.models.shared.MultiPoint"><code class="xref py py-class docutils literal notranslate"><span class="pre">MultiPoint</span></code></a> <span class="pre">|</span> <a class="reference internal" href="models.html#sgu_client.models.shared.LineString" title="sgu_client.models.shared.LineString"><code class="xref py py-class docutils literal notranslate"><span class="pre">LineString</span></code></a> <span class="pre">|</span> <a class="reference internal" href="models.html#sgu_client.models.shared.Polygon" title="sgu_client.models.shared.Polygon"><code class="xref py py-class docutils literal notranslate"><span class="pre">Polygon</span></code></a> <span class="pre">|</span> <a class="reference internal" href="models.html#sgu_client.models.shared.MultiPolygon" title="sgu_client.models.shared.MultiPolygon"><code class="xref py py-class docutils literal notranslate"><span class="pre">MultiPolygon</span></code></a> <span class="pre">|</span> <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#sgu_client.models.observed.GroundwaterMeasurement.geometry" title="Link to this definition">#</a></dt>
-<dd><p>Measurement geometry</p>
-</dd></dl>
-
-<dl class="py attribute pydantic_field">
-<dt class="sig sig-object py" id="sgu_client.models.observed.GroundwaterMeasurement.properties">
-<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">properties</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#sgu_client.models.observed.GroundwaterMeasurementProperties" title="sgu_client.models.observed.GroundwaterMeasurementProperties"><code class="xref py py-class docutils literal notranslate"><span class="pre">GroundwaterMeasurementProperties</span></code></a></em><em class="property"> <span class="pre">[Required]</span></em><a class="headerlink" href="#sgu_client.models.observed.GroundwaterMeasurement.properties" title="Link to this definition">#</a></dt>
-<dd><p>Measurement properties</p>
-</dd></dl>
-
 </dd></dl>
 
 <dl class="py class pydantic_model">
 <dt class="sig sig-object py" id="sgu_client.models.observed.GroundwaterStationCollection">
 <em class="property"><span class="pre">pydantic</span> <span class="pre">model</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">GroundwaterStationCollection</span></span><a class="reference internal" href="../_modules/sgu_client/models/observed.html#GroundwaterStationCollection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sgu_client.models.observed.GroundwaterStationCollection" title="Link to this definition">#</a></dt>
 <dd><p>Collection of groundwater monitoring stations (GeoJSON FeatureCollection).</p>
-<dl class="py attribute pydantic_field">
-<dt class="sig sig-object py" id="sgu_client.models.observed.GroundwaterStationCollection.type">
-<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Literal</span></code></a><span class="pre">[</span><code class="docutils literal notranslate"><span class="pre">'FeatureCollection'</span></code><span class="pre">]</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'FeatureCollection'</span></em><a class="headerlink" href="#sgu_client.models.observed.GroundwaterStationCollection.type" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute pydantic_field">
-<dt class="sig sig-object py" id="sgu_client.models.observed.GroundwaterStationCollection.features">
-<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">features</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a><span class="pre">[</span><a class="reference internal" href="#sgu_client.models.observed.GroundwaterStation" title="sgu_client.models.observed.GroundwaterStation"><code class="xref py py-class docutils literal notranslate"><span class="pre">GroundwaterStation</span></code></a><span class="pre">]</span></em><em class="property"> <span class="pre">[Optional]</span></em><a class="headerlink" href="#sgu_client.models.observed.GroundwaterStationCollection.features" title="Link to this definition">#</a></dt>
-<dd><p>Station features</p>
-</dd></dl>
-
-<dl class="py attribute pydantic_field">
-<dt class="sig sig-object py" id="sgu_client.models.observed.GroundwaterStationCollection.totalFeatures">
-<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">totalFeatures</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a> <span class="pre">|</span> <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#sgu_client.models.observed.GroundwaterStationCollection.totalFeatures" title="Link to this definition">#</a></dt>
-<dd><p>Total number of features</p>
-</dd></dl>
-
-<dl class="py attribute pydantic_field">
-<dt class="sig sig-object py" id="sgu_client.models.observed.GroundwaterStationCollection.numberMatched">
-<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">numberMatched</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a> <span class="pre">|</span> <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#sgu_client.models.observed.GroundwaterStationCollection.numberMatched" title="Link to this definition">#</a></dt>
-<dd><p>Number of features matching query</p>
-</dd></dl>
-
-<dl class="py attribute pydantic_field">
-<dt class="sig sig-object py" id="sgu_client.models.observed.GroundwaterStationCollection.numberReturned">
-<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">numberReturned</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a> <span class="pre">|</span> <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#sgu_client.models.observed.GroundwaterStationCollection.numberReturned" title="Link to this definition">#</a></dt>
-<dd><p>Number of features returned</p>
-</dd></dl>
-
-<dl class="py attribute pydantic_field">
-<dt class="sig sig-object py" id="sgu_client.models.observed.GroundwaterStationCollection.timeStamp">
-<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">timeStamp</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">Annotated</span></code><span class="pre">[</span><a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">datetime</span></code></a> <span class="pre">|</span> <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a><span class="pre">]</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#sgu_client.models.observed.GroundwaterStationCollection.timeStamp" title="Link to this definition">#</a></dt>
-<dd><p>Response timestamp (UTC)</p>
-<dl class="field-list simple">
-<dt class="field-odd">Constraints<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>func</strong> = &lt;function _parse_api_datetime at 0x7f03d1f4c7c0&gt;</p></li>
-<li><p><strong>json_schema_input_type</strong> = PydanticUndefined</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute pydantic_field">
-<dt class="sig sig-object py" id="sgu_client.models.observed.GroundwaterStationCollection.links">
-<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">links</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a><span class="pre">[</span><a class="reference internal" href="models.html#sgu_client.models.shared.Link" title="sgu_client.models.shared.Link"><code class="xref py py-class docutils literal notranslate"><span class="pre">Link</span></code></a><span class="pre">]</span> <span class="pre">|</span> <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#sgu_client.models.observed.GroundwaterStationCollection.links" title="Link to this definition">#</a></dt>
-<dd><p>Related links</p>
-</dd></dl>
-
-<dl class="py attribute pydantic_field">
-<dt class="sig sig-object py" id="sgu_client.models.observed.GroundwaterStationCollection.crs">
-<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">crs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="models.html#sgu_client.models.shared.CRS" title="sgu_client.models.shared.CRS"><code class="xref py py-class docutils literal notranslate"><span class="pre">CRS</span></code></a> <span class="pre">|</span> <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#sgu_client.models.observed.GroundwaterStationCollection.crs" title="Link to this definition">#</a></dt>
-<dd><p>Coordinate reference system</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="sgu_client.models.observed.GroundwaterStationCollection.to_dataframe">
-<span class="sig-name descname"><span class="pre">to_dataframe</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sgu_client/models/observed.html#GroundwaterStationCollection.to_dataframe"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sgu_client.models.observed.GroundwaterStationCollection.to_dataframe" title="Link to this definition">#</a></dt>
-<dd><p>Convert to pandas DataFrame with flattened station properties.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v3.0.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a></span></p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>DataFrame containing station data with geometry columns.</p>
-</dd>
-</dl>
+<p>Its DataFrame has <code class="docutils literal notranslate"><span class="pre">longitude</span></code> and <code class="docutils literal notranslate"><span class="pre">latitude</span></code> columns, null for stations
+without a location.</p>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">sgu_client</span><span class="w"> </span><span class="kn">import</span> <span class="n">SGUClient</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">SGUClient</span><span class="p">()</span> <span class="k">as</span> <span class="n">client</span><span class="p">:</span>
 <span class="gp">... </span>    <span class="n">stations</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">levels</span><span class="o">.</span><span class="n">observed</span><span class="o">.</span><span class="n">get_stations</span><span class="p">(</span><span class="n">limit</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
 <span class="gp">... </span>    <span class="n">df</span> <span class="o">=</span> <span class="n">stations</span><span class="o">.</span><span class="n">to_dataframe</span><span class="p">()</span>
-<span class="gp">... </span>    <span class="c1"># dataFrame includes flattened properties and geometry coordinates</span>
-<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>  <span class="c1"># station_id, longitude, latitude, station_name, municipality, etc.</span>
-<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="n">df</span><span class="p">[[</span><span class="s1">&#39;station_id&#39;</span><span class="p">,</span> <span class="s1">&#39;station_name&#39;</span><span class="p">,</span> <span class="s1">&#39;municipality&#39;</span><span class="p">,</span> <span class="s1">&#39;longitude&#39;</span><span class="p">,</span> <span class="s1">&#39;latitude&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
+<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="n">df</span><span class="p">[[</span><span class="s1">&#39;station_id&#39;</span><span class="p">,</span> <span class="s1">&#39;station_name&#39;</span><span class="p">,</span> <span class="s1">&#39;longitude&#39;</span><span class="p">,</span> <span class="s1">&#39;latitude&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
 </pre></div>
 </div>
-</dd></dl>
-
 </dd></dl>
 
 <dl class="py class pydantic_model">
 <dt class="sig sig-object py" id="sgu_client.models.observed.GroundwaterMeasurementCollection">
 <em class="property"><span class="pre">pydantic</span> <span class="pre">model</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">GroundwaterMeasurementCollection</span></span><a class="reference internal" href="../_modules/sgu_client/models/observed.html#GroundwaterMeasurementCollection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sgu_client.models.observed.GroundwaterMeasurementCollection" title="Link to this definition">#</a></dt>
 <dd><p>Collection of groundwater level measurements (GeoJSON FeatureCollection).</p>
-<dl class="py attribute pydantic_field">
-<dt class="sig sig-object py" id="sgu_client.models.observed.GroundwaterMeasurementCollection.type">
-<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Literal</span></code></a><span class="pre">[</span><code class="docutils literal notranslate"><span class="pre">'FeatureCollection'</span></code><span class="pre">]</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'FeatureCollection'</span></em><a class="headerlink" href="#sgu_client.models.observed.GroundwaterMeasurementCollection.type" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute pydantic_field">
-<dt class="sig sig-object py" id="sgu_client.models.observed.GroundwaterMeasurementCollection.features">
-<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">features</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a><span class="pre">[</span><a class="reference internal" href="#sgu_client.models.observed.GroundwaterMeasurement" title="sgu_client.models.observed.GroundwaterMeasurement"><code class="xref py py-class docutils literal notranslate"><span class="pre">GroundwaterMeasurement</span></code></a><span class="pre">]</span></em><em class="property"> <span class="pre">[Optional]</span></em><a class="headerlink" href="#sgu_client.models.observed.GroundwaterMeasurementCollection.features" title="Link to this definition">#</a></dt>
-<dd><p>Measurement features</p>
-</dd></dl>
-
-<dl class="py attribute pydantic_field">
-<dt class="sig sig-object py" id="sgu_client.models.observed.GroundwaterMeasurementCollection.totalFeatures">
-<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">totalFeatures</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a> <span class="pre">|</span> <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#sgu_client.models.observed.GroundwaterMeasurementCollection.totalFeatures" title="Link to this definition">#</a></dt>
-<dd><p>Total number of features</p>
-</dd></dl>
-
-<dl class="py attribute pydantic_field">
-<dt class="sig sig-object py" id="sgu_client.models.observed.GroundwaterMeasurementCollection.numberMatched">
-<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">numberMatched</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a> <span class="pre">|</span> <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#sgu_client.models.observed.GroundwaterMeasurementCollection.numberMatched" title="Link to this definition">#</a></dt>
-<dd><p>Number of features matching query</p>
-</dd></dl>
-
-<dl class="py attribute pydantic_field">
-<dt class="sig sig-object py" id="sgu_client.models.observed.GroundwaterMeasurementCollection.numberReturned">
-<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">numberReturned</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a> <span class="pre">|</span> <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#sgu_client.models.observed.GroundwaterMeasurementCollection.numberReturned" title="Link to this definition">#</a></dt>
-<dd><p>Number of features returned</p>
-</dd></dl>
-
-<dl class="py attribute pydantic_field">
-<dt class="sig sig-object py" id="sgu_client.models.observed.GroundwaterMeasurementCollection.timeStamp">
-<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">timeStamp</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">Annotated</span></code><span class="pre">[</span><a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">datetime</span></code></a> <span class="pre">|</span> <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a><span class="pre">]</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#sgu_client.models.observed.GroundwaterMeasurementCollection.timeStamp" title="Link to this definition">#</a></dt>
-<dd><p>Response timestamp (UTC)</p>
-<dl class="field-list simple">
-<dt class="field-odd">Constraints<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>func</strong> = &lt;function _parse_api_datetime at 0x7f03d1f4c7c0&gt;</p></li>
-<li><p><strong>json_schema_input_type</strong> = PydanticUndefined</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute pydantic_field">
-<dt class="sig sig-object py" id="sgu_client.models.observed.GroundwaterMeasurementCollection.links">
-<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">links</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a><span class="pre">[</span><a class="reference internal" href="models.html#sgu_client.models.shared.Link" title="sgu_client.models.shared.Link"><code class="xref py py-class docutils literal notranslate"><span class="pre">Link</span></code></a><span class="pre">]</span> <span class="pre">|</span> <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#sgu_client.models.observed.GroundwaterMeasurementCollection.links" title="Link to this definition">#</a></dt>
-<dd><p>Related links</p>
-</dd></dl>
-
-<dl class="py attribute pydantic_field">
-<dt class="sig sig-object py" id="sgu_client.models.observed.GroundwaterMeasurementCollection.crs">
-<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">crs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="models.html#sgu_client.models.shared.CRS" title="sgu_client.models.shared.CRS"><code class="xref py py-class docutils literal notranslate"><span class="pre">CRS</span></code></a> <span class="pre">|</span> <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#sgu_client.models.observed.GroundwaterMeasurementCollection.crs" title="Link to this definition">#</a></dt>
-<dd><p>Coordinate reference system</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="sgu_client.models.observed.GroundwaterMeasurementCollection.to_dataframe">
-<span class="sig-name descname"><span class="pre">to_dataframe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sort_by_date</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sgu_client/models/observed.html#GroundwaterMeasurementCollection.to_dataframe"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sgu_client.models.observed.GroundwaterMeasurementCollection.to_dataframe" title="Link to this definition">#</a></dt>
-<dd><p>Convert to pandas DataFrame with measurement data.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>sort_by_date</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – Whether to sort the DataFrame by observation date.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v3.0.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a></span></p>
-</dd>
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>DataFrame containing measurement data.</p>
-</dd>
-</dl>
-<p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">sgu_client</span><span class="w"> </span><span class="kn">import</span> <span class="n">SGUClient</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">SGUClient</span><span class="p">()</span> <span class="k">as</span> <span class="n">client</span><span class="p">:</span>
-<span class="gp">... </span>    <span class="n">measurements</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">levels</span><span class="o">.</span><span class="n">observed</span><span class="o">.</span><span class="n">get_measurements</span><span class="p">(</span><span class="n">limit</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
-<span class="gp">... </span>    <span class="n">df</span> <span class="o">=</span> <span class="n">measurements</span><span class="o">.</span><span class="n">to_dataframe</span><span class="p">()</span>
-<span class="gp">... </span>    <span class="c1"># dataFrame is sorted by observation_date by default</span>
-<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="n">df</span><span class="p">[[</span><span class="s1">&#39;observation_date&#39;</span><span class="p">,</span> <span class="s1">&#39;water_level_masl_m&#39;</span><span class="p">,</span> <span class="s1">&#39;station_id&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="sgu_client.models.observed.GroundwaterMeasurementCollection.to_series">
-<span class="sig-name descname"><span class="pre">to_series</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sort_by_date</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sgu_client/models/observed.html#GroundwaterMeasurementCollection.to_series"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sgu_client.models.observed.GroundwaterMeasurementCollection.to_series" title="Link to this definition">#</a></dt>
-<dd><p>Convert to pandas Series with measurement data.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>index</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span>) – Column name to use as index. If None, <cite>observation_date</cite> is used.</p></li>
-<li><p><strong>data</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span>) – Column name to use as data. If None, <cite>water_level_masl_m</cite> is used.</p></li>
-<li><p><strong>sort_by_date</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – Whether to sort the data by observation date before creating the Series.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.Series.html#pandas.Series" title="(in pandas v3.0.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Series</span></code></a></span></p>
-</dd>
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Series containing measurement data.</p>
-</dd>
-</dl>
+<p>Its DataFrame has no geometry columns. Sorted by <code class="docutils literal notranslate"><span class="pre">observation_date</span></code>;
+<code class="docutils literal notranslate"><span class="pre">to_series()</span></code> defaults to <code class="docutils literal notranslate"><span class="pre">water_level_masl_m</span></code>.</p>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">sgu_client</span><span class="w"> </span><span class="kn">import</span> <span class="n">SGUClient</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">SGUClient</span><span class="p">()</span> <span class="k">as</span> <span class="n">client</span><span class="p">:</span>
 <span class="gp">... </span>    <span class="n">measurements</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">levels</span><span class="o">.</span><span class="n">observed</span><span class="o">.</span><span class="n">get_measurements_by_name</span><span class="p">(</span>
 <span class="gp">... </span>        <span class="n">station_id</span><span class="o">=</span><span class="s2">&quot;95_2&quot;</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="mi">100</span>
 <span class="gp">... </span>    <span class="p">)</span>
-<span class="gp">... </span>    <span class="c1"># create time series with default columns (observation_date, water_level_masl_m)</span>
+<span class="gp">... </span>    <span class="n">df</span> <span class="o">=</span> <span class="n">measurements</span><span class="o">.</span><span class="n">to_dataframe</span><span class="p">()</span>
+<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="n">df</span><span class="p">[[</span><span class="s1">&#39;observation_date&#39;</span><span class="p">,</span> <span class="s1">&#39;water_level_masl_m&#39;</span><span class="p">,</span> <span class="s1">&#39;station_id&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
 <span class="gp">... </span>    <span class="n">series</span> <span class="o">=</span> <span class="n">measurements</span><span class="o">.</span><span class="n">to_series</span><span class="p">()</span>
-<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="n">series</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
-<span class="gp">... </span>    <span class="c1"># use custom columns for index and data</span>
-<span class="gp">... </span>    <span class="n">series_custom</span> <span class="o">=</span> <span class="n">measurements</span><span class="o">.</span><span class="n">to_series</span><span class="p">(</span>
-<span class="gp">... </span>        <span class="n">index</span><span class="o">=</span><span class="s2">&quot;observation_date&quot;</span><span class="p">,</span>
-<span class="gp">... </span>        <span class="n">data</span><span class="o">=</span><span class="s2">&quot;water_level_below_ground_m&quot;</span>
-<span class="gp">... </span>    <span class="p">)</span>
 </pre></div>
 </div>
-</dd></dl>
-
 </dd></dl>
 
 </section>

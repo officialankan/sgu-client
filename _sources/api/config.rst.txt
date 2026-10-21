@@ -21,6 +21,10 @@ Configuration
 Pass an :class:`SGUConfig` to :class:`SGUClient` to change timeouts, retries or logging.
 The configuration is immutable once created.
 
+``timeout``, ``max_retries`` and ``user_agent`` configure the default
+:class:`RequestsTransport`. A transport you pass to ``SGUClient(transport=...)`` doesn't
+use them (see :doc:`client`).
+
 .. autopydantic_model:: SGUConfig
 
 Exceptions

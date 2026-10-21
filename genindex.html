@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="_static/documentation_options.js?v=fe7df9b0"></script>
+    <script src="_static/documentation_options.js?v=486e5634"></script>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -463,6 +463,8 @@
       <li><a href="api/internals.html#sgu_client.client.base.BaseClient.close">close() (BaseClient method)</a>
 
       <ul>
+        <li><a href="api/client.html#sgu_client.RequestsTransport.close">(RequestsTransport method)</a>
+</li>
         <li><a href="api/client.html#sgu_client.SGUClient.close">(SGUClient method)</a>
 </li>
       </ul></li>
@@ -506,20 +508,8 @@
         <li><a href="api/chemistry.html#sgu_client.models.chemistry.SamplingSiteProperties.county_code">(SamplingSiteProperties attribute)</a>
 </li>
       </ul></li>
-      <li><a href="api/chemistry.html#sgu_client.models.chemistry.AnalysisResultCollection.crs">crs (AnalysisResultCollection attribute)</a>
-
-      <ul>
-        <li><a href="api/observed.html#sgu_client.models.observed.GroundwaterMeasurementCollection.crs">(GroundwaterMeasurementCollection attribute)</a>
+      <li><a href="api/models.html#sgu_client.models.features.FeatureCollection.crs">crs (FeatureCollection attribute)</a>
 </li>
-        <li><a href="api/observed.html#sgu_client.models.observed.GroundwaterStationCollection.crs">(GroundwaterStationCollection attribute)</a>
-</li>
-        <li><a href="api/modeled.html#sgu_client.models.modeled.ModeledAreaCollection.crs">(ModeledAreaCollection attribute)</a>
-</li>
-        <li><a href="api/modeled.html#sgu_client.models.modeled.ModeledGroundwaterLevelCollection.crs">(ModeledGroundwaterLevelCollection attribute)</a>
-</li>
-        <li><a href="api/chemistry.html#sgu_client.models.chemistry.SamplingSiteCollection.crs">(SamplingSiteCollection attribute)</a>
-</li>
-      </ul></li>
   </ul></td>
 </tr></table>
 
@@ -590,18 +580,12 @@
 <h2 id="F">F</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/chemistry.html#sgu_client.models.chemistry.AnalysisResultCollection.features">features (AnalysisResultCollection attribute)</a>
+      <li><a href="api/models.html#sgu_client.models.features.FeatureCollection.features">features (FeatureCollection attribute)</a>
+</li>
+      <li><a href="api/client.html#sgu_client.RequestsTransport.fetch">fetch() (RequestsTransport method)</a>
 
       <ul>
-        <li><a href="api/observed.html#sgu_client.models.observed.GroundwaterMeasurementCollection.features">(GroundwaterMeasurementCollection attribute)</a>
-</li>
-        <li><a href="api/observed.html#sgu_client.models.observed.GroundwaterStationCollection.features">(GroundwaterStationCollection attribute)</a>
-</li>
-        <li><a href="api/modeled.html#sgu_client.models.modeled.ModeledAreaCollection.features">(ModeledAreaCollection attribute)</a>
-</li>
-        <li><a href="api/modeled.html#sgu_client.models.modeled.ModeledGroundwaterLevelCollection.features">(ModeledGroundwaterLevelCollection attribute)</a>
-</li>
-        <li><a href="api/chemistry.html#sgu_client.models.chemistry.SamplingSiteCollection.features">(SamplingSiteCollection attribute)</a>
+        <li><a href="api/client.html#sgu_client.Transport.fetch">(Transport method)</a>
 </li>
       </ul></li>
   </ul></td>
@@ -622,20 +606,8 @@
 </li>
       <li><a href="api/chemistry.html#sgu_client.models.chemistry.SamplingSiteProperties.geohydrological_position_description">geohydrological_position_description (SamplingSiteProperties attribute)</a>
 </li>
-      <li><a href="api/chemistry.html#sgu_client.models.chemistry.AnalysisResult.geometry">geometry (AnalysisResult attribute)</a>
-
-      <ul>
-        <li><a href="api/observed.html#sgu_client.models.observed.GroundwaterMeasurement.geometry">(GroundwaterMeasurement attribute)</a>
+      <li><a href="api/models.html#sgu_client.models.features.Feature.geometry">geometry (Feature attribute)</a>
 </li>
-        <li><a href="api/observed.html#sgu_client.models.observed.GroundwaterStation.geometry">(GroundwaterStation attribute)</a>
-</li>
-        <li><a href="api/modeled.html#sgu_client.models.modeled.ModeledArea.geometry">(ModeledArea attribute)</a>
-</li>
-        <li><a href="api/modeled.html#sgu_client.models.modeled.ModeledGroundwaterLevel.geometry">(ModeledGroundwaterLevel attribute)</a>
-</li>
-        <li><a href="api/chemistry.html#sgu_client.models.chemistry.SamplingSite.geometry">(SamplingSite attribute)</a>
-</li>
-      </ul></li>
       <li><a href="api/internals.html#sgu_client.client.base.BaseClient.get">get() (BaseClient method)</a>
 </li>
       <li><a href="api/chemistry.html#sgu_client.client.chemistry.chemistry.GroundwaterChemistryClient.get_analysis_result">get_analysis_result() (GroundwaterChemistryClient method)</a>
@@ -656,14 +628,14 @@
 </li>
       <li><a href="api/modeled.html#sgu_client.client.levels.modeled.ModeledGroundwaterLevelClient.get_levels_by_coords">get_levels_by_coords() (ModeledGroundwaterLevelClient method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/observed.html#sgu_client.client.levels.observed.ObservedGroundwaterLevelClient.get_measurement">get_measurement() (ObservedGroundwaterLevelClient method)</a>
 </li>
       <li><a href="api/observed.html#sgu_client.client.levels.observed.ObservedGroundwaterLevelClient.get_measurements">get_measurements() (ObservedGroundwaterLevelClient method)</a>
 </li>
       <li><a href="api/observed.html#sgu_client.client.levels.observed.ObservedGroundwaterLevelClient.get_measurements_by_name">get_measurements_by_name() (ObservedGroundwaterLevelClient method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/observed.html#sgu_client.client.levels.observed.ObservedGroundwaterLevelClient.get_measurements_by_names">get_measurements_by_names() (ObservedGroundwaterLevelClient method)</a>
 </li>
       <li><a href="api/internals.html#sgu_client.utils.pandas_helpers.get_pandas">get_pandas() (in module sgu_client.utils.pandas_helpers)</a>
@@ -716,24 +688,12 @@
 <h2 id="I">I</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/chemistry.html#sgu_client.models.chemistry.AnalysisResult.id">id (AnalysisResult attribute)</a>
-
-      <ul>
-        <li><a href="api/observed.html#sgu_client.models.observed.GroundwaterMeasurement.id">(GroundwaterMeasurement attribute)</a>
+      <li><a href="api/models.html#sgu_client.models.features.Feature.id">id (Feature attribute)</a>
 </li>
-        <li><a href="api/observed.html#sgu_client.models.observed.GroundwaterStation.id">(GroundwaterStation attribute)</a>
-</li>
-        <li><a href="api/modeled.html#sgu_client.models.modeled.ModeledArea.id">(ModeledArea attribute)</a>
-</li>
-        <li><a href="api/modeled.html#sgu_client.models.modeled.ModeledGroundwaterLevel.id">(ModeledGroundwaterLevel attribute)</a>
-</li>
-        <li><a href="api/chemistry.html#sgu_client.models.chemistry.SamplingSite.id">(SamplingSite attribute)</a>
-</li>
-      </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/observed.html#sgu_client.models.observed.GroundwaterStationProperties.impact_symbol">impact_symbol (GroundwaterStationProperties attribute)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/observed.html#sgu_client.models.observed.GroundwaterStationProperties.inner_diameter">inner_diameter (GroundwaterStationProperties attribute)</a>
 
       <ul>
@@ -754,28 +714,16 @@
 </li>
       <li><a href="api/observed.html#sgu_client.models.observed.GroundwaterMeasurementProperties.last_updated">last_updated (GroundwaterMeasurementProperties attribute)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/chemistry.html#sgu_client.models.chemistry.SamplingSiteProperties.latest_sample_date">latest_sample_date (SamplingSiteProperties attribute)</a>
 </li>
       <li><a href="api/observed.html#sgu_client.models.observed.GroundwaterMeasurementProperties.level_remark">level_remark (GroundwaterMeasurementProperties attribute)</a>
 </li>
       <li><a href="api/client.html#sgu_client.client.levels.LevelsClient">LevelsClient (class in sgu_client.client.levels)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/chemistry.html#sgu_client.models.chemistry.AnalysisResultCollection.links">links (AnalysisResultCollection attribute)</a>
-
-      <ul>
-        <li><a href="api/observed.html#sgu_client.models.observed.GroundwaterMeasurementCollection.links">(GroundwaterMeasurementCollection attribute)</a>
+      <li><a href="api/models.html#sgu_client.models.features.FeatureCollection.links">links (FeatureCollection attribute)</a>
 </li>
-        <li><a href="api/observed.html#sgu_client.models.observed.GroundwaterStationCollection.links">(GroundwaterStationCollection attribute)</a>
-</li>
-        <li><a href="api/modeled.html#sgu_client.models.modeled.ModeledAreaCollection.links">(ModeledAreaCollection attribute)</a>
-</li>
-        <li><a href="api/modeled.html#sgu_client.models.modeled.ModeledGroundwaterLevelCollection.links">(ModeledGroundwaterLevelCollection attribute)</a>
-</li>
-        <li><a href="api/chemistry.html#sgu_client.models.chemistry.SamplingSiteCollection.links">(SamplingSiteCollection attribute)</a>
-</li>
-      </ul></li>
       <li><a href="api/config.html#sgu_client.SGUConfig.log_level">log_level (SGUConfig attribute)</a>
 </li>
   </ul></td>
@@ -840,6 +788,8 @@
 </li>
         <li><a href="api/chemistry.html#module-sgu_client.models.chemistry">sgu_client.models.chemistry</a>
 </li>
+        <li><a href="api/models.html#module-sgu_client.models.features">sgu_client.models.features</a>
+</li>
         <li><a href="api/modeled.html#module-sgu_client.models.modeled">sgu_client.models.modeled</a>
 </li>
         <li><a href="api/observed.html#module-sgu_client.models.observed">sgu_client.models.observed</a>
@@ -893,36 +843,12 @@
         <li><a href="api/chemistry.html#sgu_client.models.chemistry.SamplingSiteProperties.north_coordinate">(SamplingSiteProperties attribute)</a>
 </li>
       </ul></li>
-      <li><a href="api/chemistry.html#sgu_client.models.chemistry.AnalysisResultCollection.numberMatched">numberMatched (AnalysisResultCollection attribute)</a>
-
-      <ul>
-        <li><a href="api/observed.html#sgu_client.models.observed.GroundwaterMeasurementCollection.numberMatched">(GroundwaterMeasurementCollection attribute)</a>
-</li>
-        <li><a href="api/observed.html#sgu_client.models.observed.GroundwaterStationCollection.numberMatched">(GroundwaterStationCollection attribute)</a>
-</li>
-        <li><a href="api/modeled.html#sgu_client.models.modeled.ModeledAreaCollection.numberMatched">(ModeledAreaCollection attribute)</a>
-</li>
-        <li><a href="api/modeled.html#sgu_client.models.modeled.ModeledGroundwaterLevelCollection.numberMatched">(ModeledGroundwaterLevelCollection attribute)</a>
-</li>
-        <li><a href="api/chemistry.html#sgu_client.models.chemistry.SamplingSiteCollection.numberMatched">(SamplingSiteCollection attribute)</a>
-</li>
-      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/chemistry.html#sgu_client.models.chemistry.AnalysisResultCollection.numberReturned">numberReturned (AnalysisResultCollection attribute)</a>
-
-      <ul>
-        <li><a href="api/observed.html#sgu_client.models.observed.GroundwaterMeasurementCollection.numberReturned">(GroundwaterMeasurementCollection attribute)</a>
+      <li><a href="api/models.html#sgu_client.models.features.FeatureCollection.numberMatched">numberMatched (FeatureCollection attribute)</a>
 </li>
-        <li><a href="api/observed.html#sgu_client.models.observed.GroundwaterStationCollection.numberReturned">(GroundwaterStationCollection attribute)</a>
+      <li><a href="api/models.html#sgu_client.models.features.FeatureCollection.numberReturned">numberReturned (FeatureCollection attribute)</a>
 </li>
-        <li><a href="api/modeled.html#sgu_client.models.modeled.ModeledAreaCollection.numberReturned">(ModeledAreaCollection attribute)</a>
-</li>
-        <li><a href="api/modeled.html#sgu_client.models.modeled.ModeledGroundwaterLevelCollection.numberReturned">(ModeledGroundwaterLevelCollection attribute)</a>
-</li>
-        <li><a href="api/chemistry.html#sgu_client.models.chemistry.SamplingSiteCollection.numberReturned">(SamplingSiteCollection attribute)</a>
-</li>
-      </ul></li>
   </ul></td>
 </tr></table>
 
@@ -989,36 +915,24 @@
 </li>
       <li><a href="api/chemistry.html#sgu_client.models.chemistry.SamplingSiteProperties.pipe_height">pipe_height (SamplingSiteProperties attribute)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/chemistry.html#sgu_client.models.chemistry.SamplingSiteProperties.pipe_length">pipe_length (SamplingSiteProperties attribute)</a>
 </li>
       <li><a href="api/chemistry.html#sgu_client.models.chemistry.AnalysisResultCollection.pivot_by_parameter">pivot_by_parameter() (AnalysisResultCollection method)</a>
 </li>
       <li><a href="api/chemistry.html#sgu_client.models.chemistry.SamplingSiteProperties.position_quality_code">position_quality_code (SamplingSiteProperties attribute)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/chemistry.html#sgu_client.models.chemistry.SamplingSiteProperties.position_quality_description">position_quality_description (SamplingSiteProperties attribute)</a>
 </li>
       <li><a href="api/chemistry.html#sgu_client.models.chemistry.SamplingSiteProperties.positioning_method_code">positioning_method_code (SamplingSiteProperties attribute)</a>
 </li>
       <li><a href="api/chemistry.html#sgu_client.models.chemistry.SamplingSiteProperties.positioning_method_description">positioning_method_description (SamplingSiteProperties attribute)</a>
 </li>
-      <li><a href="api/internals.html#sgu_client.client.base.BaseClient.post">post() (BaseClient method)</a>
-</li>
-      <li><a href="api/chemistry.html#sgu_client.models.chemistry.AnalysisResult.properties">properties (AnalysisResult attribute)</a>
+      <li><a href="api/models.html#sgu_client.models.shared.CRS.properties">properties (CRS attribute)</a>
 
       <ul>
-        <li><a href="api/models.html#sgu_client.models.shared.CRS.properties">(CRS attribute)</a>
-</li>
-        <li><a href="api/observed.html#sgu_client.models.observed.GroundwaterMeasurement.properties">(GroundwaterMeasurement attribute)</a>
-</li>
-        <li><a href="api/observed.html#sgu_client.models.observed.GroundwaterStation.properties">(GroundwaterStation attribute)</a>
-</li>
-        <li><a href="api/modeled.html#sgu_client.models.modeled.ModeledArea.properties">(ModeledArea attribute)</a>
-</li>
-        <li><a href="api/modeled.html#sgu_client.models.modeled.ModeledGroundwaterLevel.properties">(ModeledGroundwaterLevel attribute)</a>
-</li>
-        <li><a href="api/chemistry.html#sgu_client.models.chemistry.SamplingSite.properties">(SamplingSite attribute)</a>
+        <li><a href="api/models.html#sgu_client.models.features.Feature.properties">(Feature attribute)</a>
 </li>
       </ul></li>
       <li><a href="api/chemistry.html#sgu_client.models.chemistry.AnalysisResultProperties.purge_time">purge_time (AnalysisResultProperties attribute)</a>
@@ -1063,13 +977,15 @@
 </li>
       <li><a href="api/modeled.html#sgu_client.models.modeled.ModeledGroundwaterLevelProperties.relative_level_large_resources">relative_level_large_resources (ModeledGroundwaterLevelProperties attribute)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/modeled.html#sgu_client.models.modeled.ModeledGroundwaterLevelProperties.relative_level_small_resources">relative_level_small_resources (ModeledGroundwaterLevelProperties attribute)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/chemistry.html#sgu_client.models.chemistry.AnalysisResultProperties.report_name">report_name (AnalysisResultProperties attribute)</a>
 </li>
       <li><a href="api/chemistry.html#sgu_client.models.chemistry.AnalysisResultProperties.report_name_diva">report_name_diva (AnalysisResultProperties attribute)</a>
+</li>
+      <li><a href="api/client.html#sgu_client.RequestsTransport">RequestsTransport (class in sgu_client)</a>
 </li>
       <li><a href="api/chemistry.html#sgu_client.models.chemistry.AnalysisResultProperties.result_id">result_id (AnalysisResultProperties attribute)</a>
 </li>
@@ -1160,6 +1076,13 @@
 </li>
       </ul></li>
       <li>
+    sgu_client.models.features
+
+      <ul>
+        <li><a href="api/models.html#module-sgu_client.models.features">module</a>
+</li>
+      </ul></li>
+      <li>
     sgu_client.models.modeled
 
       <ul>
@@ -1189,10 +1112,10 @@
       </ul></li>
       <li><a href="api/config.html#sgu_client.SGUAmbiguousError">SGUAmbiguousError</a>
 </li>
-      <li><a href="api/config.html#sgu_client.SGUAPIError">SGUAPIError</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/config.html#sgu_client.SGUAPIError">SGUAPIError</a>
+</li>
       <li><a href="api/client.html#sgu_client.SGUClient">SGUClient (class in sgu_client)</a>
 </li>
       <li><a href="api/config.html#sgu_client.SGUClientError">SGUClientError</a>
@@ -1275,6 +1198,8 @@
 </li>
       <li><a href="api/observed.html#sgu_client.models.observed.GroundwaterStationProperties.station_remark">station_remark (GroundwaterStationProperties attribute)</a>
 </li>
+      <li><a href="api/client.html#sgu_client.TransportResponse.status_code">status_code (TransportResponse attribute)</a>
+</li>
       <li><a href="api/chemistry.html#sgu_client.models.chemistry.SamplingSiteProperties.sub_catchment_code">sub_catchment_code (SamplingSiteProperties attribute)</a>
 </li>
       <li><a href="api/chemistry.html#sgu_client.models.chemistry.SamplingSiteProperties.sub_catchment_name">sub_catchment_name (SamplingSiteProperties attribute)</a>
@@ -1291,94 +1216,44 @@
 <h2 id="T">T</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/client.html#sgu_client.TransportResponse.text">text (TransportResponse attribute)</a>
+</li>
       <li><a href="api/modeled.html#sgu_client.models.modeled.ModeledAreaProperties.time_series_url">time_series_url (ModeledAreaProperties attribute)</a>
 </li>
       <li><a href="api/config.html#sgu_client.SGUConfig.timeout">timeout (SGUConfig attribute)</a>
 </li>
-      <li><a href="api/chemistry.html#sgu_client.models.chemistry.AnalysisResultCollection.timeStamp">timeStamp (AnalysisResultCollection attribute)</a>
-
-      <ul>
-        <li><a href="api/observed.html#sgu_client.models.observed.GroundwaterMeasurementCollection.timeStamp">(GroundwaterMeasurementCollection attribute)</a>
+      <li><a href="api/models.html#sgu_client.models.features.FeatureCollection.timeStamp">timeStamp (FeatureCollection attribute)</a>
 </li>
-        <li><a href="api/observed.html#sgu_client.models.observed.GroundwaterStationCollection.timeStamp">(GroundwaterStationCollection attribute)</a>
-</li>
-        <li><a href="api/modeled.html#sgu_client.models.modeled.ModeledAreaCollection.timeStamp">(ModeledAreaCollection attribute)</a>
-</li>
-        <li><a href="api/modeled.html#sgu_client.models.modeled.ModeledGroundwaterLevelCollection.timeStamp">(ModeledGroundwaterLevelCollection attribute)</a>
-</li>
-        <li><a href="api/chemistry.html#sgu_client.models.chemistry.SamplingSiteCollection.timeStamp">(SamplingSiteCollection attribute)</a>
-</li>
-      </ul></li>
       <li><a href="api/models.html#sgu_client.models.shared.Link.title">title (Link attribute)</a>
 </li>
-      <li><a href="api/chemistry.html#sgu_client.models.chemistry.AnalysisResultCollection.to_dataframe">to_dataframe() (AnalysisResultCollection method)</a>
+      <li><a href="api/models.html#sgu_client.models.features.FeatureCollection.to_dataframe">to_dataframe() (FeatureCollection method)</a>
 
       <ul>
-        <li><a href="api/observed.html#sgu_client.models.observed.GroundwaterMeasurementCollection.to_dataframe">(GroundwaterMeasurementCollection method)</a>
-</li>
-        <li><a href="api/observed.html#sgu_client.models.observed.GroundwaterStationCollection.to_dataframe">(GroundwaterStationCollection method)</a>
-</li>
-        <li><a href="api/modeled.html#sgu_client.models.modeled.ModeledAreaCollection.to_dataframe">(ModeledAreaCollection method)</a>
-</li>
-        <li><a href="api/modeled.html#sgu_client.models.modeled.ModeledGroundwaterLevelCollection.to_dataframe">(ModeledGroundwaterLevelCollection method)</a>
-</li>
-        <li><a href="api/chemistry.html#sgu_client.models.chemistry.SamplingSiteCollection.to_dataframe">(SamplingSiteCollection method)</a>
-</li>
-        <li><a href="api/models.html#sgu_client.models.base.SGUResponse.to_dataframe">(SGUResponse method)</a>
+        <li><a href="api/models.html#sgu_client.models.features.TimeSeriesCollection.to_dataframe">(TimeSeriesCollection method)</a>
 </li>
       </ul></li>
       <li><a href="api/models.html#sgu_client.models.base.SGUResponse.to_dict">to_dict() (SGUResponse method)</a>
 </li>
-      <li><a href="api/chemistry.html#sgu_client.models.chemistry.AnalysisResultCollection.to_series">to_series() (AnalysisResultCollection method)</a>
-
-      <ul>
-        <li><a href="api/observed.html#sgu_client.models.observed.GroundwaterMeasurementCollection.to_series">(GroundwaterMeasurementCollection method)</a>
+      <li><a href="api/models.html#sgu_client.models.features.TimeSeriesCollection.to_series">to_series() (TimeSeriesCollection method)</a>
 </li>
-        <li><a href="api/modeled.html#sgu_client.models.modeled.ModeledGroundwaterLevelCollection.to_series">(ModeledGroundwaterLevelCollection method)</a>
+      <li><a href="api/models.html#sgu_client.models.features.FeatureCollection.totalFeatures">totalFeatures (FeatureCollection attribute)</a>
 </li>
-      </ul></li>
-      <li><a href="api/chemistry.html#sgu_client.models.chemistry.AnalysisResultCollection.totalFeatures">totalFeatures (AnalysisResultCollection attribute)</a>
-
-      <ul>
-        <li><a href="api/observed.html#sgu_client.models.observed.GroundwaterMeasurementCollection.totalFeatures">(GroundwaterMeasurementCollection attribute)</a>
-</li>
-        <li><a href="api/observed.html#sgu_client.models.observed.GroundwaterStationCollection.totalFeatures">(GroundwaterStationCollection attribute)</a>
-</li>
-        <li><a href="api/modeled.html#sgu_client.models.modeled.ModeledAreaCollection.totalFeatures">(ModeledAreaCollection attribute)</a>
-</li>
-        <li><a href="api/modeled.html#sgu_client.models.modeled.ModeledGroundwaterLevelCollection.totalFeatures">(ModeledGroundwaterLevelCollection attribute)</a>
-</li>
-        <li><a href="api/chemistry.html#sgu_client.models.chemistry.SamplingSiteCollection.totalFeatures">(SamplingSiteCollection attribute)</a>
-</li>
-      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/chemistry.html#sgu_client.models.chemistry.AnalysisResult.type">type (AnalysisResult attribute)</a>
+      <li><a href="api/client.html#sgu_client.Transport">Transport (class in sgu_client)</a>
+</li>
+      <li><a href="api/client.html#sgu_client.TransportResponse">TransportResponse (class in sgu_client)</a>
+</li>
+      <li><a href="api/models.html#sgu_client.models.shared.CRS.type">type (CRS attribute)</a>
 
       <ul>
-        <li><a href="api/chemistry.html#sgu_client.models.chemistry.AnalysisResultCollection.type">(AnalysisResultCollection attribute)</a>
+        <li><a href="api/models.html#sgu_client.models.features.Feature.type">(Feature attribute)</a>
 </li>
-        <li><a href="api/models.html#sgu_client.models.shared.CRS.type">(CRS attribute)</a>
-</li>
-        <li><a href="api/observed.html#sgu_client.models.observed.GroundwaterMeasurement.type">(GroundwaterMeasurement attribute)</a>
-</li>
-        <li><a href="api/observed.html#sgu_client.models.observed.GroundwaterMeasurementCollection.type">(GroundwaterMeasurementCollection attribute)</a>
-</li>
-        <li><a href="api/observed.html#sgu_client.models.observed.GroundwaterStation.type">(GroundwaterStation attribute)</a>
-</li>
-        <li><a href="api/observed.html#sgu_client.models.observed.GroundwaterStationCollection.type">(GroundwaterStationCollection attribute)</a>
+        <li><a href="api/models.html#sgu_client.models.features.FeatureCollection.type">(FeatureCollection attribute)</a>
 </li>
         <li><a href="api/models.html#sgu_client.models.shared.LineString.type">(LineString attribute)</a>
 </li>
         <li><a href="api/models.html#sgu_client.models.shared.Link.type">(Link attribute)</a>
-</li>
-        <li><a href="api/modeled.html#sgu_client.models.modeled.ModeledArea.type">(ModeledArea attribute)</a>
-</li>
-        <li><a href="api/modeled.html#sgu_client.models.modeled.ModeledAreaCollection.type">(ModeledAreaCollection attribute)</a>
-</li>
-        <li><a href="api/modeled.html#sgu_client.models.modeled.ModeledGroundwaterLevel.type">(ModeledGroundwaterLevel attribute)</a>
-</li>
-        <li><a href="api/modeled.html#sgu_client.models.modeled.ModeledGroundwaterLevelCollection.type">(ModeledGroundwaterLevelCollection attribute)</a>
 </li>
         <li><a href="api/models.html#sgu_client.models.shared.MultiPoint.type">(MultiPoint attribute)</a>
 </li>
@@ -1387,10 +1262,6 @@
         <li><a href="api/models.html#sgu_client.models.shared.Point.type">(Point attribute)</a>
 </li>
         <li><a href="api/models.html#sgu_client.models.shared.Polygon.type">(Polygon attribute)</a>
-</li>
-        <li><a href="api/chemistry.html#sgu_client.models.chemistry.SamplingSite.type">(SamplingSite attribute)</a>
-</li>
-        <li><a href="api/chemistry.html#sgu_client.models.chemistry.SamplingSiteCollection.type">(SamplingSiteCollection attribute)</a>
 </li>
       </ul></li>
   </ul></td>

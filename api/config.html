@@ -43,7 +43,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../_static/documentation_options.js?v=fe7df9b0"></script>
+    <script src="../_static/documentation_options.js?v=486e5634"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -431,6 +431,9 @@
 <h2>Configuration<a class="headerlink" href="#configuration" title="Link to this heading">#</a></h2>
 <p>Pass an <a class="reference internal" href="#sgu_client.SGUConfig" title="sgu_client.SGUConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">SGUConfig</span></code></a> to <a class="reference internal" href="client.html#sgu_client.SGUClient" title="sgu_client.SGUClient"><code class="xref py py-class docutils literal notranslate"><span class="pre">SGUClient</span></code></a> to change timeouts, retries or logging.
 The configuration is immutable once created.</p>
+<p><code class="docutils literal notranslate"><span class="pre">timeout</span></code>, <code class="docutils literal notranslate"><span class="pre">max_retries</span></code> and <code class="docutils literal notranslate"><span class="pre">user_agent</span></code> configure the default
+<a class="reference internal" href="client.html#sgu_client.RequestsTransport" title="sgu_client.RequestsTransport"><code class="xref py py-class docutils literal notranslate"><span class="pre">RequestsTransport</span></code></a>. A transport you pass to <code class="docutils literal notranslate"><span class="pre">SGUClient(transport=...)</span></code> doesn’t
+use them (see <a class="reference internal" href="client.html"><span class="doc">Client</span></a>).</p>
 <dl class="py class pydantic_model">
 <dt class="sig sig-object py" id="sgu_client.SGUConfig">
 <em class="property"><span class="pre">pydantic</span> <span class="pre">model</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SGUConfig</span></span><a class="reference internal" href="../_modules/sgu_client/config.html#SGUConfig"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sgu_client.SGUConfig" title="Link to this definition">#</a></dt>

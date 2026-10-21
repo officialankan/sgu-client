@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=fe7df9b0"></script>
+    <script src="../../../_static/documentation_options.js?v=486e5634"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -376,13 +376,13 @@
   <h1>Source code for sgu_client.models.chemistry</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;Pydantic models for groundwater chemistry data from SGU API.&quot;&quot;&quot;</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Literal</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">Field</span><span class="p">,</span> <span class="n">field_validator</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">sgu_client.models.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">SGUBaseModel</span><span class="p">,</span> <span class="n">SGUResponse</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">sgu_client.models.dates</span><span class="w"> </span><span class="kn">import</span> <span class="n">ApiDatetime</span><span class="p">,</span> <span class="n">convert_datetime_columns</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">sgu_client.models.shared</span><span class="w"> </span><span class="kn">import</span> <span class="n">CRS</span><span class="p">,</span> <span class="n">Geometry</span><span class="p">,</span> <span class="n">Link</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sgu_client.models.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">SGUBaseModel</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sgu_client.models.dates</span><span class="w"> </span><span class="kn">import</span> <span class="n">ApiDatetime</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sgu_client.models.features</span><span class="w"> </span><span class="kn">import</span> <span class="n">Feature</span><span class="p">,</span> <span class="n">FeatureCollection</span><span class="p">,</span> <span class="n">TimeSeriesCollection</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">sgu_client.utils.pandas_helpers</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_pandas</span><span class="p">,</span> <span class="n">optional_pandas_method</span>
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
@@ -663,13 +663,8 @@
 
 <div class="viewcode-block" id="SamplingSite">
 <a class="viewcode-back" href="../../../api/chemistry.html#sgu_client.models.chemistry.SamplingSite">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">SamplingSite</span><span class="p">(</span><span class="n">SGUBaseModel</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A groundwater chemistry sampling site (GeoJSON Feature).&quot;&quot;&quot;</span>
-
-    <span class="nb">type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;Feature&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;Feature&quot;</span>
-    <span class="nb">id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Site ID&quot;</span><span class="p">)</span>
-    <span class="n">geometry</span><span class="p">:</span> <span class="n">Geometry</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Site geometry&quot;</span><span class="p">)</span>
-    <span class="n">properties</span><span class="p">:</span> <span class="n">SamplingSiteProperties</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Site properties&quot;</span><span class="p">)</span></div>
+<span class="k">class</span><span class="w"> </span><span class="nc">SamplingSite</span><span class="p">(</span><span class="n">Feature</span><span class="p">[</span><span class="n">SamplingSiteProperties</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A groundwater chemistry sampling site (GeoJSON Feature).&quot;&quot;&quot;</span></div>
 
 
 
@@ -961,225 +956,53 @@
 
 <div class="viewcode-block" id="AnalysisResult">
 <a class="viewcode-back" href="../../../api/chemistry.html#sgu_client.models.chemistry.AnalysisResult">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">AnalysisResult</span><span class="p">(</span><span class="n">SGUBaseModel</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A groundwater chemistry analysis result (GeoJSON Feature).&quot;&quot;&quot;</span>
-
-    <span class="nb">type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;Feature&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;Feature&quot;</span>
-    <span class="nb">id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Result ID&quot;</span><span class="p">)</span>
-    <span class="n">geometry</span><span class="p">:</span> <span class="n">Geometry</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Result geometry&quot;</span><span class="p">)</span>
-    <span class="n">properties</span><span class="p">:</span> <span class="n">AnalysisResultProperties</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
-        <span class="o">...</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Analysis result properties&quot;</span>
-    <span class="p">)</span></div>
+<span class="k">class</span><span class="w"> </span><span class="nc">AnalysisResult</span><span class="p">(</span><span class="n">Feature</span><span class="p">[</span><span class="n">AnalysisResultProperties</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A groundwater chemistry analysis result (GeoJSON Feature).&quot;&quot;&quot;</span></div>
 
 
 
 <span class="c1"># Collection response models</span>
 <div class="viewcode-block" id="SamplingSiteCollection">
 <a class="viewcode-back" href="../../../api/chemistry.html#sgu_client.models.chemistry.SamplingSiteCollection">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">SamplingSiteCollection</span><span class="p">(</span><span class="n">SGUResponse</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Collection of groundwater chemistry sampling sites (GeoJSON).</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">SamplingSiteCollection</span><span class="p">(</span><span class="n">FeatureCollection</span><span class="p">[</span><span class="n">SamplingSite</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Collection of groundwater chemistry sampling sites (GeoJSON FeatureCollection).</span>
 
-<span class="sd">    A GeoJSON FeatureCollection of sampling sites.</span>
+<span class="sd">    Its DataFrame has ``longitude`` and ``latitude`` columns, null for sites without</span>
+<span class="sd">    a geometry.</span>
+
+<span class="sd">    Examples:</span>
+
+<span class="sd">        &gt;&gt;&gt; from sgu_client import SGUClient</span>
+<span class="sd">        &gt;&gt;&gt; with SGUClient() as client:</span>
+<span class="sd">        ...     sites = client.chemistry.get_sampling_sites(limit=10)</span>
+<span class="sd">        ...     df = sites.to_dataframe()</span>
+<span class="sd">        ...     print(df[[&#39;national_site_id&#39;, &#39;station_id&#39;, &#39;site_name&#39;]].head())</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="nb">type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;FeatureCollection&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;FeatureCollection&quot;</span>
-    <span class="n">features</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">SamplingSite</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
-        <span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Sampling site features&quot;</span>
-    <span class="p">)</span>
-
-    <span class="c1"># OGC API Features metadata</span>
-    <span class="n">totalFeatures</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Total number of features&quot;</span><span class="p">)</span>
-    <span class="n">numberMatched</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
-        <span class="kc">None</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Number of features matching query&quot;</span>
-    <span class="p">)</span>
-    <span class="n">numberReturned</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Number of features returned&quot;</span><span class="p">)</span>
-    <span class="n">timeStamp</span><span class="p">:</span> <span class="n">ApiDatetime</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Response timestamp (UTC)&quot;</span><span class="p">)</span>
-
-    <span class="c1"># Links and CRS</span>
-    <span class="n">links</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Link</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Related links&quot;</span><span class="p">)</span>
-    <span class="n">crs</span><span class="p">:</span> <span class="n">CRS</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Coordinate reference system&quot;</span><span class="p">)</span>
-
-<div class="viewcode-block" id="SamplingSiteCollection.to_dataframe">
-<a class="viewcode-back" href="../../../api/chemistry.html#sgu_client.models.chemistry.SamplingSiteCollection.to_dataframe">[docs]</a>
-    <span class="nd">@optional_pandas_method</span><span class="p">(</span><span class="s2">&quot;to_dataframe() method&quot;</span><span class="p">)</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">to_dataframe</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;pd.DataFrame&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert to pandas DataFrame with flattened sampling site properties.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            DataFrame containing sampling site data with parsed datetime columns.</span>
-
-<span class="sd">        Examples:</span>
-
-<span class="sd">            &gt;&gt;&gt; from sgu_client import SGUClient</span>
-<span class="sd">            &gt;&gt;&gt; with SGUClient() as client:</span>
-<span class="sd">            ...     sites = client.chemistry.get_sampling_sites(limit=10)</span>
-<span class="sd">            ...     df = sites.to_dataframe()</span>
-<span class="sd">            ...     # one row per site, with the feature ID in &#39;feature_id&#39;</span>
-<span class="sd">            ...     print(df[[&#39;national_site_id&#39;, &#39;station_id&#39;, &#39;site_name&#39;]].head())</span>
-<span class="sd">            ...     # established_date, first_sample_date and latest_sample_date</span>
-<span class="sd">            ...     # are parsed as UTC datetimes</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">feature</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">features</span><span class="p">:</span>
-            <span class="n">row</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;feature_id&quot;</span><span class="p">:</span> <span class="n">feature</span><span class="o">.</span><span class="n">id</span><span class="p">}</span>
-            <span class="c1"># Add geometry if present</span>
-            <span class="k">if</span> <span class="n">feature</span><span class="o">.</span><span class="n">geometry</span><span class="p">:</span>
-                <span class="n">row</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
-                    <span class="p">{</span>
-                        <span class="s2">&quot;geometry_type&quot;</span><span class="p">:</span> <span class="n">feature</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">type</span><span class="p">,</span>
-                        <span class="s2">&quot;longitude&quot;</span><span class="p">:</span> <span class="n">feature</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">coordinates</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-                        <span class="k">if</span> <span class="n">feature</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">coordinates</span>
-                        <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
-                        <span class="s2">&quot;latitude&quot;</span><span class="p">:</span> <span class="n">feature</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">coordinates</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-                        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">feature</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">coordinates</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span>
-                        <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
-                    <span class="p">}</span>
-                <span class="p">)</span>
-
-            <span class="c1"># Add all properties</span>
-            <span class="n">row</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">feature</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">model_dump</span><span class="p">())</span>
-            <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
-
-        <span class="n">pd</span> <span class="o">=</span> <span class="n">get_pandas</span><span class="p">()</span>
-        <span class="k">return</span> <span class="n">convert_datetime_columns</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">),</span> <span class="n">SamplingSiteProperties</span><span class="p">)</span></div>
-</div>
+    <span class="n">_geometry</span> <span class="o">=</span> <span class="s2">&quot;point&quot;</span></div>
 
 
 
 <div class="viewcode-block" id="AnalysisResultCollection">
 <a class="viewcode-back" href="../../../api/chemistry.html#sgu_client.models.chemistry.AnalysisResultCollection">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">AnalysisResultCollection</span><span class="p">(</span><span class="n">SGUResponse</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Collection of groundwater chemistry analysis results (GeoJSON).</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">AnalysisResultCollection</span><span class="p">(</span><span class="n">TimeSeriesCollection</span><span class="p">[</span><span class="n">AnalysisResult</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Collection of groundwater chemistry analysis results (GeoJSON FeatureCollection).</span>
 
-<span class="sd">    A GeoJSON FeatureCollection of analysis results.</span>
+<span class="sd">    Its DataFrame has no geometry columns. Sorted by ``sampling_date``;</span>
+<span class="sd">    ``to_series()`` defaults to ``measurement_value``. ``pivot_by_parameter()``</span>
+<span class="sd">    gives one column per chemical parameter.</span>
+
+<span class="sd">    Examples:</span>
+
+<span class="sd">        &gt;&gt;&gt; from sgu_client import SGUClient</span>
+<span class="sd">        &gt;&gt;&gt; with SGUClient() as client:</span>
+<span class="sd">        ...     results = client.chemistry.get_results_by_site(359366, limit=100)</span>
+<span class="sd">        ...     df = results.to_dataframe()</span>
+<span class="sd">        ...     print(df[[&#39;sampling_date&#39;, &#39;parameter_name&#39;, &#39;measurement_value&#39;]])</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="nb">type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;FeatureCollection&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;FeatureCollection&quot;</span>
-    <span class="n">features</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">AnalysisResult</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
-        <span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Analysis result features&quot;</span>
-    <span class="p">)</span>
-
-    <span class="c1"># OGC API Features metadata</span>
-    <span class="n">totalFeatures</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Total number of features&quot;</span><span class="p">)</span>
-    <span class="n">numberMatched</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
-        <span class="kc">None</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Number of features matching query&quot;</span>
-    <span class="p">)</span>
-    <span class="n">numberReturned</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Number of features returned&quot;</span><span class="p">)</span>
-    <span class="n">timeStamp</span><span class="p">:</span> <span class="n">ApiDatetime</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Response timestamp (UTC)&quot;</span><span class="p">)</span>
-
-    <span class="c1"># Links and CRS</span>
-    <span class="n">links</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Link</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Related links&quot;</span><span class="p">)</span>
-    <span class="n">crs</span><span class="p">:</span> <span class="n">CRS</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Coordinate reference system&quot;</span><span class="p">)</span>
-
-<div class="viewcode-block" id="AnalysisResultCollection.to_dataframe">
-<a class="viewcode-back" href="../../../api/chemistry.html#sgu_client.models.chemistry.AnalysisResultCollection.to_dataframe">[docs]</a>
-    <span class="nd">@optional_pandas_method</span><span class="p">(</span><span class="s2">&quot;to_dataframe() method&quot;</span><span class="p">)</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">to_dataframe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sort_by_date</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;pd.DataFrame&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert to pandas DataFrame with analysis result data.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            sort_by_date: Whether to sort the DataFrame by sampling date.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            DataFrame containing analysis result data.</span>
-
-<span class="sd">        Examples:</span>
-
-<span class="sd">            &gt;&gt;&gt; from sgu_client import SGUClient</span>
-<span class="sd">            &gt;&gt;&gt; with SGUClient() as client:</span>
-<span class="sd">            ...     results = client.chemistry.get_results_by_site(359366, limit=100)</span>
-<span class="sd">            ...     df = results.to_dataframe()</span>
-<span class="sd">            ...     # one row per result, with the feature ID in &#39;feature_id&#39;</span>
-<span class="sd">            ...     print(df[[&#39;sampling_date&#39;, &#39;parameter_name&#39;, &#39;measurement_value&#39;]])</span>
-<span class="sd">            ...     # sampling_date, sampling_end_date, registration_date and</span>
-<span class="sd">            ...     # analysis_date are parsed as UTC datetimes</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">feature</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">features</span><span class="p">:</span>
-            <span class="n">row</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;feature_id&quot;</span><span class="p">:</span> <span class="n">feature</span><span class="o">.</span><span class="n">id</span><span class="p">}</span>
-
-            <span class="c1"># Add geometry if present</span>
-            <span class="k">if</span> <span class="n">feature</span><span class="o">.</span><span class="n">geometry</span><span class="p">:</span>
-                <span class="n">row</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
-                    <span class="p">{</span>
-                        <span class="s2">&quot;geometry_type&quot;</span><span class="p">:</span> <span class="n">feature</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">type</span><span class="p">,</span>
-                        <span class="s2">&quot;longitude&quot;</span><span class="p">:</span> <span class="n">feature</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">coordinates</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-                        <span class="k">if</span> <span class="n">feature</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">coordinates</span>
-                        <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
-                        <span class="s2">&quot;latitude&quot;</span><span class="p">:</span> <span class="n">feature</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">coordinates</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-                        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">feature</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">coordinates</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span>
-                        <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
-                    <span class="p">}</span>
-                <span class="p">)</span>
-
-            <span class="c1"># Add all properties</span>
-            <span class="n">row</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">feature</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">model_dump</span><span class="p">())</span>
-            <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
-
-        <span class="n">pd</span> <span class="o">=</span> <span class="n">get_pandas</span><span class="p">()</span>
-        <span class="n">df</span> <span class="o">=</span> <span class="n">convert_datetime_columns</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">),</span> <span class="n">AnalysisResultProperties</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">sort_by_date</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">df</span><span class="o">.</span><span class="n">empty</span> <span class="ow">and</span> <span class="s2">&quot;sampling_date&quot;</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
-            <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="s2">&quot;sampling_date&quot;</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">df</span></div>
-
-
-<div class="viewcode-block" id="AnalysisResultCollection.to_series">
-<a class="viewcode-back" href="../../../api/chemistry.html#sgu_client.models.chemistry.AnalysisResultCollection.to_series">[docs]</a>
-    <span class="nd">@optional_pandas_method</span><span class="p">(</span><span class="s2">&quot;to_series() method&quot;</span><span class="p">)</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">to_series</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">index</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">data</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">sort_by_date</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;pd.Series&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert to pandas Series with analysis result data.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            index: Column name to use as index. If None, `sampling_date` is used.</span>
-<span class="sd">            data: Column name to use as data. If None, `measurement_value` is used.</span>
-<span class="sd">            sort_by_date: Whether to sort the data by sampling date before</span>
-<span class="sd">                creating the Series.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            Series containing analysis result data.</span>
-
-<span class="sd">        Examples:</span>
-
-<span class="sd">            &gt;&gt;&gt; from sgu_client import SGUClient</span>
-<span class="sd">            &gt;&gt;&gt; with SGUClient() as client:</span>
-<span class="sd">            ...     results = client.chemistry.get_results_by_site(359366, limit=100)</span>
-<span class="sd">            ...     # time series with default columns (sampling_date, measurement_value)</span>
-<span class="sd">            ...     series = results.to_series()</span>
-<span class="sd">            ...     print(series.head())</span>
-<span class="sd">            ...     # use custom columns - e.g., parameter names as data</span>
-<span class="sd">            ...     series_params = results.to_series(</span>
-<span class="sd">            ...         index=&quot;sampling_date&quot;,</span>
-<span class="sd">            ...         data=&quot;parameter_name&quot;</span>
-<span class="sd">            ...     )</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_dataframe</span><span class="p">(</span><span class="n">sort_by_date</span><span class="o">=</span><span class="n">sort_by_date</span><span class="p">)</span>
-        <span class="n">pd</span> <span class="o">=</span> <span class="n">get_pandas</span><span class="p">()</span>
-
-        <span class="k">if</span> <span class="n">data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">data</span> <span class="o">=</span> <span class="s2">&quot;measurement_value&quot;</span>
-        <span class="k">if</span> <span class="n">index</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">index</span> <span class="o">=</span> <span class="s2">&quot;sampling_date&quot;</span>
-
-        <span class="k">if</span> <span class="n">df</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">index</span> <span class="ow">and</span> <span class="n">index</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Index column &#39;</span><span class="si">{</span><span class="n">index</span><span class="si">}</span><span class="s2">&#39; not found in DataFrame.&quot;</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">data</span> <span class="ow">and</span> <span class="n">data</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Data column &#39;</span><span class="si">{</span><span class="n">data</span><span class="si">}</span><span class="s2">&#39; not found in DataFrame.&quot;</span><span class="p">)</span>
-
-        <span class="n">series</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">df</span><span class="p">[</span><span class="n">data</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">df</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="k">if</span> <span class="n">index</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
-        <span class="n">series</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">data</span>
-        <span class="k">return</span> <span class="n">series</span></div>
-
+    <span class="n">_date_column</span> <span class="o">=</span> <span class="s2">&quot;sampling_date&quot;</span>
+    <span class="n">_series_column</span> <span class="o">=</span> <span class="s2">&quot;measurement_value&quot;</span>
 
 <div class="viewcode-block" id="AnalysisResultCollection.pivot_by_parameter">
 <a class="viewcode-back" href="../../../api/chemistry.html#sgu_client.models.chemistry.AnalysisResultCollection.pivot_by_parameter">[docs]</a>

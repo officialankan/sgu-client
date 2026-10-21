@@ -43,7 +43,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../_static/documentation_options.js?v=fe7df9b0"></script>
+    <script src="../_static/documentation_options.js?v=486e5634"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -452,6 +452,11 @@ is logged then):</p>
 <span class="p">)</span>
 </pre></div>
 </div>
+<p>Measurements refer to their station by <code class="docutils literal notranslate"><span class="pre">station_id</span></code>, so that is the fastest way to fetch
+them. Passing <code class="docutils literal notranslate"><span class="pre">station_name</span></code> instead works, but costs an extra request to look up the
+station and logs a warning. If any of the station names, or any of the stations passed to
+<code class="docutils literal notranslate"><span class="pre">get_stations_by_names()</span></code>, is not found, the lookup raises
+<a class="reference internal" href="../api/config.html#sgu_client.SGUNotFoundError" title="sgu_client.SGUNotFoundError"><code class="xref py py-class docutils literal notranslate"><span class="pre">SGUNotFoundError</span></code></a> naming them instead of returning partial results.</p>
 <p>Each measurement has levels in meters above sea level (<code class="docutils literal notranslate"><span class="pre">water_level_masl_m</span></code>) and below
 ground (<code class="docutils literal notranslate"><span class="pre">water_level_below_ground_m</span></code>). See
 <a class="reference internal" href="../api/observed.html#sgu_client.models.observed.GroundwaterMeasurementProperties" title="sgu_client.models.observed.GroundwaterMeasurementProperties"><code class="xref py py-class docutils literal notranslate"><span class="pre">GroundwaterMeasurementProperties</span></code></a> for all fields.</p>

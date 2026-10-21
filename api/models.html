@@ -43,7 +43,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../_static/documentation_options.js?v=fe7df9b0"></script>
+    <script src="../_static/documentation_options.js?v=486e5634"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -402,40 +402,218 @@
 next to their client: <a class="reference internal" href="observed.html"><span class="doc">Observed groundwater levels</span></a>, <a class="reference internal" href="modeled.html"><span class="doc">Modeled groundwater levels</span></a> and <a class="reference internal" href="chemistry.html"><span class="doc">Groundwater chemistry</span></a>.</p>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#sgu_client.models.base.SGUBaseModel" title="sgu_client.models.base.SGUBaseModel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SGUBaseModel</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#sgu_client.models.features.FeatureCollection" title="sgu_client.models.features.FeatureCollection"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FeatureCollection</span></code></a></p></td>
+<td><p>A collection of features (GeoJSON FeatureCollection).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#sgu_client.models.features.TimeSeriesCollection" title="sgu_client.models.features.TimeSeriesCollection"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TimeSeriesCollection</span></code></a></p></td>
+<td><p>A feature collection with a date per feature.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#sgu_client.models.features.Feature" title="sgu_client.models.features.Feature"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Feature</span></code></a></p></td>
+<td><p>One feature of a collection (GeoJSON Feature).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#sgu_client.models.base.SGUBaseModel" title="sgu_client.models.base.SGUBaseModel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SGUBaseModel</span></code></a></p></td>
 <td><p>Base model for all SGU data structures.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#sgu_client.models.base.SGUResponse" title="sgu_client.models.base.SGUResponse"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SGUResponse</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#sgu_client.models.base.SGUResponse" title="sgu_client.models.base.SGUResponse"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SGUResponse</span></code></a></p></td>
 <td><p>Base response wrapper for SGU API responses.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#sgu_client.models.shared.Point" title="sgu_client.models.shared.Point"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Point</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#sgu_client.models.shared.Point" title="sgu_client.models.shared.Point"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Point</span></code></a></p></td>
 <td><p>GeoJSON Point geometry.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#sgu_client.models.shared.MultiPoint" title="sgu_client.models.shared.MultiPoint"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MultiPoint</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#sgu_client.models.shared.MultiPoint" title="sgu_client.models.shared.MultiPoint"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MultiPoint</span></code></a></p></td>
 <td><p>GeoJSON MultiPoint geometry.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#sgu_client.models.shared.LineString" title="sgu_client.models.shared.LineString"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LineString</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#sgu_client.models.shared.LineString" title="sgu_client.models.shared.LineString"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LineString</span></code></a></p></td>
 <td><p>GeoJSON LineString geometry.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#sgu_client.models.shared.Polygon" title="sgu_client.models.shared.Polygon"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Polygon</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#sgu_client.models.shared.Polygon" title="sgu_client.models.shared.Polygon"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Polygon</span></code></a></p></td>
 <td><p>GeoJSON Polygon geometry.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#sgu_client.models.shared.MultiPolygon" title="sgu_client.models.shared.MultiPolygon"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MultiPolygon</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#sgu_client.models.shared.MultiPolygon" title="sgu_client.models.shared.MultiPolygon"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MultiPolygon</span></code></a></p></td>
 <td><p>GeoJSON MultiPolygon geometry.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#sgu_client.models.shared.Link" title="sgu_client.models.shared.Link"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Link</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#sgu_client.models.shared.Link" title="sgu_client.models.shared.Link"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Link</span></code></a></p></td>
 <td><p>A link in a GeoJSON response.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#sgu_client.models.shared.CRS" title="sgu_client.models.shared.CRS"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CRS</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#sgu_client.models.shared.CRS" title="sgu_client.models.shared.CRS"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CRS</span></code></a></p></td>
 <td><p>Coordinate Reference System.</p></td>
 </tr>
 </tbody>
 </table>
 </div>
+<section id="collections-and-features">
+<h2>Collections and features<a class="headerlink" href="#collections-and-features" title="Link to this heading">#</a></h2>
+<p>Every collection model inherits from
+<a class="reference internal" href="#sgu_client.models.features.FeatureCollection" title="sgu_client.models.features.FeatureCollection"><code class="xref py py-class docutils literal notranslate"><span class="pre">FeatureCollection</span></code></a>, which owns the GeoJSON fields
+and the conversion to a DataFrame. Collections with a date per feature (measurements,
+modeled levels and analysis results) inherit from
+<a class="reference internal" href="#sgu_client.models.features.TimeSeriesCollection" title="sgu_client.models.features.TimeSeriesCollection"><code class="xref py py-class docutils literal notranslate"><span class="pre">TimeSeriesCollection</span></code></a>, which adds sorting by date
+and <code class="docutils literal notranslate"><span class="pre">to_series()</span></code>. See <a class="reference internal" href="../user_guide/pandas.html"><span class="doc">Working with pandas</span></a> for how the collections’
+DataFrames differ.</p>
+<p id="module-sgu_client.models.features">GeoJSON features and feature collections, and their conversion to pandas.</p>
+<dl class="py class pydantic_model">
+<dt class="sig sig-object py" id="sgu_client.models.features.Feature">
+<em class="property"><span class="pre">pydantic</span> <span class="pre">model</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Feature</span></span><a class="reference internal" href="../_modules/sgu_client/models/features.html#Feature"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sgu_client.models.features.Feature" title="Link to this definition">#</a></dt>
+<dd><p>One feature of a collection (GeoJSON Feature).</p>
+<dl class="py attribute pydantic_field">
+<dt class="sig sig-object py" id="sgu_client.models.features.Feature.type">
+<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Literal</span></code></a><span class="pre">[</span><code class="docutils literal notranslate"><span class="pre">'Feature'</span></code><span class="pre">]</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Feature'</span></em><a class="headerlink" href="#sgu_client.models.features.Feature.type" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute pydantic_field">
+<dt class="sig sig-object py" id="sgu_client.models.features.Feature.id">
+<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></em><em class="property"> <span class="pre">[Required]</span></em><a class="headerlink" href="#sgu_client.models.features.Feature.id" title="Link to this definition">#</a></dt>
+<dd><p>Feature id, e.g. <code class="docutils literal notranslate"><span class="pre">stationer.4086</span></code></p>
+</dd></dl>
+
+<dl class="py attribute pydantic_field">
+<dt class="sig sig-object py" id="sgu_client.models.features.Feature.geometry">
+<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">geometry</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#sgu_client.models.shared.Point" title="sgu_client.models.shared.Point"><code class="xref py py-class docutils literal notranslate"><span class="pre">Point</span></code></a> <span class="pre">|</span> <a class="reference internal" href="#sgu_client.models.shared.MultiPoint" title="sgu_client.models.shared.MultiPoint"><code class="xref py py-class docutils literal notranslate"><span class="pre">MultiPoint</span></code></a> <span class="pre">|</span> <a class="reference internal" href="#sgu_client.models.shared.LineString" title="sgu_client.models.shared.LineString"><code class="xref py py-class docutils literal notranslate"><span class="pre">LineString</span></code></a> <span class="pre">|</span> <a class="reference internal" href="#sgu_client.models.shared.Polygon" title="sgu_client.models.shared.Polygon"><code class="xref py py-class docutils literal notranslate"><span class="pre">Polygon</span></code></a> <span class="pre">|</span> <a class="reference internal" href="#sgu_client.models.shared.MultiPolygon" title="sgu_client.models.shared.MultiPolygon"><code class="xref py py-class docutils literal notranslate"><span class="pre">MultiPolygon</span></code></a> <span class="pre">|</span> <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#sgu_client.models.features.Feature.geometry" title="Link to this definition">#</a></dt>
+<dd><p>Feature geometry</p>
+</dd></dl>
+
+<dl class="py attribute pydantic_field">
+<dt class="sig sig-object py" id="sgu_client.models.features.Feature.properties">
+<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">properties</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.TypeVar" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeVar</span></code></a><span class="pre">(</span><code class="docutils literal notranslate"><span class="pre">P</span></code><span class="pre">,</span> <span class="pre">bound=</span> <a class="reference internal" href="#sgu_client.models.base.SGUBaseModel" title="sgu_client.models.base.SGUBaseModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">SGUBaseModel</span></code></a><span class="pre">)</span></em><em class="property"> <span class="pre">[Required]</span></em><a class="headerlink" href="#sgu_client.models.features.Feature.properties" title="Link to this definition">#</a></dt>
+<dd><p>Feature properties</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class pydantic_model">
+<dt class="sig sig-object py" id="sgu_client.models.features.FeatureCollection">
+<em class="property"><span class="pre">pydantic</span> <span class="pre">model</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">FeatureCollection</span></span><a class="reference internal" href="../_modules/sgu_client/models/features.html#FeatureCollection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sgu_client.models.features.FeatureCollection" title="Link to this definition">#</a></dt>
+<dd><p>A collection of features (GeoJSON FeatureCollection).</p>
+<p><code class="docutils literal notranslate"><span class="pre">to_dataframe()</span></code> gives one row per feature: <code class="docutils literal notranslate"><span class="pre">feature_id</span></code> first, then the
+collection’s geometry columns (if any), then every property under its English
+name.</p>
+<dl class="py attribute pydantic_field">
+<dt class="sig sig-object py" id="sgu_client.models.features.FeatureCollection.type">
+<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Literal</span></code></a><span class="pre">[</span><code class="docutils literal notranslate"><span class="pre">'FeatureCollection'</span></code><span class="pre">]</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'FeatureCollection'</span></em><a class="headerlink" href="#sgu_client.models.features.FeatureCollection.type" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute pydantic_field">
+<dt class="sig sig-object py" id="sgu_client.models.features.FeatureCollection.features">
+<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">features</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a><span class="pre">[</span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.TypeVar" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeVar</span></code></a><span class="pre">(</span><code class="docutils literal notranslate"><span class="pre">F</span></code><span class="pre">,</span> <span class="pre">bound=</span> <a class="reference internal" href="#sgu_client.models.features.Feature" title="sgu_client.models.features.Feature"><code class="xref py py-class docutils literal notranslate"><span class="pre">Feature</span></code></a><span class="pre">)]</span></em><em class="property"> <span class="pre">[Optional]</span></em><a class="headerlink" href="#sgu_client.models.features.FeatureCollection.features" title="Link to this definition">#</a></dt>
+<dd><p>Features</p>
+</dd></dl>
+
+<dl class="py attribute pydantic_field">
+<dt class="sig sig-object py" id="sgu_client.models.features.FeatureCollection.totalFeatures">
+<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">totalFeatures</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a> <span class="pre">|</span> <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#sgu_client.models.features.FeatureCollection.totalFeatures" title="Link to this definition">#</a></dt>
+<dd><p>Total number of features</p>
+</dd></dl>
+
+<dl class="py attribute pydantic_field">
+<dt class="sig sig-object py" id="sgu_client.models.features.FeatureCollection.numberMatched">
+<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">numberMatched</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a> <span class="pre">|</span> <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#sgu_client.models.features.FeatureCollection.numberMatched" title="Link to this definition">#</a></dt>
+<dd><p>Number of features matching query</p>
+</dd></dl>
+
+<dl class="py attribute pydantic_field">
+<dt class="sig sig-object py" id="sgu_client.models.features.FeatureCollection.numberReturned">
+<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">numberReturned</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a> <span class="pre">|</span> <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#sgu_client.models.features.FeatureCollection.numberReturned" title="Link to this definition">#</a></dt>
+<dd><p>Number of features returned</p>
+</dd></dl>
+
+<dl class="py attribute pydantic_field">
+<dt class="sig sig-object py" id="sgu_client.models.features.FeatureCollection.timeStamp">
+<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">timeStamp</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">Annotated</span></code><span class="pre">[</span><a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">datetime</span></code></a> <span class="pre">|</span> <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a><span class="pre">]</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#sgu_client.models.features.FeatureCollection.timeStamp" title="Link to this definition">#</a></dt>
+<dd><p>Response timestamp (UTC)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Constraints<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>func</strong> = &lt;function _parse_api_datetime at 0x7fa47d9d60c0&gt;</p></li>
+<li><p><strong>json_schema_input_type</strong> = PydanticUndefined</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute pydantic_field">
+<dt class="sig sig-object py" id="sgu_client.models.features.FeatureCollection.links">
+<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">links</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a><span class="pre">[</span><a class="reference internal" href="#sgu_client.models.shared.Link" title="sgu_client.models.shared.Link"><code class="xref py py-class docutils literal notranslate"><span class="pre">Link</span></code></a><span class="pre">]</span> <span class="pre">|</span> <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#sgu_client.models.features.FeatureCollection.links" title="Link to this definition">#</a></dt>
+<dd><p>Related links</p>
+</dd></dl>
+
+<dl class="py attribute pydantic_field">
+<dt class="sig sig-object py" id="sgu_client.models.features.FeatureCollection.crs">
+<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">crs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#sgu_client.models.shared.CRS" title="sgu_client.models.shared.CRS"><code class="xref py py-class docutils literal notranslate"><span class="pre">CRS</span></code></a> <span class="pre">|</span> <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#sgu_client.models.features.FeatureCollection.crs" title="Link to this definition">#</a></dt>
+<dd><p>Coordinate reference system</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sgu_client.models.features.FeatureCollection.to_dataframe">
+<span class="sig-name descname"><span class="pre">to_dataframe</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sgu_client/models/features.html#FeatureCollection.to_dataframe"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sgu_client.models.features.FeatureCollection.to_dataframe" title="Link to this definition">#</a></dt>
+<dd><p>Convert to a pandas DataFrame with one row per feature.</p>
+<p>The index is each row’s position in the API response.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v3.0.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame with <code class="docutils literal notranslate"><span class="pre">feature_id</span></code>, the geometry columns and the properties.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class pydantic_model">
+<dt class="sig sig-object py" id="sgu_client.models.features.TimeSeriesCollection">
+<em class="property"><span class="pre">pydantic</span> <span class="pre">model</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">TimeSeriesCollection</span></span><a class="reference internal" href="../_modules/sgu_client/models/features.html#TimeSeriesCollection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sgu_client.models.features.TimeSeriesCollection" title="Link to this definition">#</a></dt>
+<dd><p>A feature collection with a date per feature.</p>
+<p>Adds sorting by date to <code class="docutils literal notranslate"><span class="pre">to_dataframe()</span></code>, and <code class="docutils literal notranslate"><span class="pre">to_series()</span></code>.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="sgu_client.models.features.TimeSeriesCollection.to_dataframe">
+<span class="sig-name descname"><span class="pre">to_dataframe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sort_by_date</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sgu_client/models/features.html#TimeSeriesCollection.to_dataframe"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sgu_client.models.features.TimeSeriesCollection.to_dataframe" title="Link to this definition">#</a></dt>
+<dd><p>Convert to a pandas DataFrame with one row per feature.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>sort_by_date</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – Sort the rows by date. Either way the index is each
+row’s position in the API response, so pass <code class="docutils literal notranslate"><span class="pre">False</span></code> (or call
+<code class="docutils literal notranslate"><span class="pre">sort_index()</span></code>) to get the rows in API order.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v3.0.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a></span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>DataFrame with <code class="docutils literal notranslate"><span class="pre">feature_id</span></code>, the geometry columns and the properties.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sgu_client.models.features.TimeSeriesCollection.to_series">
+<span class="sig-name descname"><span class="pre">to_series</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sort_by_date</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sgu_client/models/features.html#TimeSeriesCollection.to_series"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sgu_client.models.features.TimeSeriesCollection.to_series" title="Link to this definition">#</a></dt>
+<dd><p>Convert to a pandas Series, by default the collection’s main value by date.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>index</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span>) – Column to use as index. Defaults to the collection’s date column.</p></li>
+<li><p><strong>data</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span>) – Column to use as values. Defaults to the collection’s main value.</p></li>
+<li><p><strong>sort_by_date</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – Sort by date before creating the Series. Pass <code class="docutils literal notranslate"><span class="pre">False</span></code>
+to keep the API response order.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.Series.html#pandas.Series" title="(in pandas v3.0.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Series</span></code></a></span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Series named after the <code class="docutils literal notranslate"><span class="pre">data</span></code> column.</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">index</span></code> or <code class="docutils literal notranslate"><span class="pre">data</span></code> is not a column.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
 <section id="base-classes">
 <h2>Base classes<a class="headerlink" href="#base-classes" title="Link to this heading">#</a></h2>
-<p>Every response collection inherits from <a class="reference internal" href="#sgu_client.models.base.SGUResponse" title="sgu_client.models.base.SGUResponse"><code class="xref py py-class docutils literal notranslate"><span class="pre">SGUResponse</span></code></a>.
-Models accept both the English field names and the Swedish API aliases, and keep any
+<p>Models accept both the English field names and the Swedish API aliases, and keep any
 extra fields SGU adds in the future.</p>
 <p id="module-sgu_client.models.base">Base model classes for SGU Client.</p>
 <dl class="py class pydantic_model">
@@ -457,30 +635,6 @@ extra fields SGU adds in the future.</p>
 <dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>]</span></p>
 </dd>
 </dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="sgu_client.models.base.SGUResponse.to_dataframe">
-<span class="sig-name descname"><span class="pre">to_dataframe</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sgu_client/models/base.html#SGUResponse.to_dataframe"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sgu_client.models.base.SGUResponse.to_dataframe" title="Link to this definition">#</a></dt>
-<dd><p>Convert to pandas DataFrame.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v3.0.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a></span></p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>DataFrame with the data</p>
-</dd>
-</dl>
-<p class="rubric">Examples</p>
-<p>This is an abstract method that must be implemented by subclasses.
-Use concrete collection classes instead:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">sgu_client</span><span class="w"> </span><span class="kn">import</span> <span class="n">SGUClient</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">SGUClient</span><span class="p">()</span> <span class="k">as</span> <span class="n">client</span><span class="p">:</span>
-<span class="gp">... </span>    <span class="c1"># Use specific collection types like GroundwaterStationCollection</span>
-<span class="gp">... </span>    <span class="n">stations</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">levels</span><span class="o">.</span><span class="n">observed</span><span class="o">.</span><span class="n">get_stations</span><span class="p">(</span><span class="n">limit</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
-<span class="gp">... </span>    <span class="n">df</span> <span class="o">=</span> <span class="n">stations</span><span class="o">.</span><span class="n">to_dataframe</span><span class="p">()</span>  <span class="c1"># This works!</span>
-</pre></div>
-</div>
 </dd></dl>
 
 </dd></dl>
@@ -682,6 +836,7 @@ Use concrete collection classes instead:</p>
   </div>
   <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#collections-and-features">Collections and features</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#base-classes">Base classes</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-sgu_client.models.shared">GeoJSON types</a></li>
 </ul>

@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../../_static/documentation_options.js?v=fe7df9b0"></script>
+    <script src="../../../../_static/documentation_options.js?v=486e5634"></script>
     <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -379,12 +379,12 @@
   <h1>Source code for sgu_client.client.levels.observed</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;Observed groundwater level client endpoints.&quot;&quot;&quot;</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">sgu_client.client.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseClient</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">sgu_client.client.collection</span><span class="w"> </span><span class="kn">import</span> <span class="n">SGUCollection</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sgu_client.client.identifiers</span><span class="w"> </span><span class="kn">import</span> <span class="n">IdentifierLookup</span><span class="p">,</span> <span class="n">IdentifierValue</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">sgu_client.models.observed</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">GroundwaterMeasurement</span><span class="p">,</span>
     <span class="n">GroundwaterMeasurementCollection</span><span class="p">,</span>
@@ -392,9 +392,23 @@
     <span class="n">GroundwaterStationCollection</span><span class="p">,</span>
 <span class="p">)</span>
 
-<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
-
 <span class="n">DATASET</span> <span class="o">=</span> <span class="s2">&quot;grundvattennivaer-observerade&quot;</span>
+
+<span class="c1"># Station identifier argument -&gt; (API field, GroundwaterStationProperties attribute)</span>
+<span class="n">STATION_IDENTIFIERS</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;station_id&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;platsbeteckning&quot;</span><span class="p">,</span> <span class="s2">&quot;station_id&quot;</span><span class="p">),</span>
+    <span class="s2">&quot;station_name&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;obsplatsnamn&quot;</span><span class="p">,</span> <span class="s2">&quot;station_name&quot;</span><span class="p">),</span>
+<span class="p">}</span>
+
+<span class="c1"># The field measurements refer to their station by</span>
+<span class="n">MEASUREMENT_STATION_FIELD</span> <span class="o">=</span> <span class="s2">&quot;platsbeteckning&quot;</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_stations_given</span><span class="p">(</span>
+    <span class="n">station_id</span><span class="p">:</span> <span class="n">IdentifierValue</span><span class="p">,</span> <span class="n">station_name</span><span class="p">:</span> <span class="n">IdentifierValue</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">IdentifierValue</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A station lookup method&#39;s identifier arguments, for IdentifierLookup.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;station_id&quot;</span><span class="p">:</span> <span class="n">station_id</span><span class="p">,</span> <span class="s2">&quot;station_name&quot;</span><span class="p">:</span> <span class="n">station_name</span><span class="p">}</span>
 
 
 <div class="viewcode-block" id="ObservedGroundwaterLevelClient">
@@ -423,6 +437,9 @@
             <span class="n">model</span><span class="o">=</span><span class="n">GroundwaterMeasurementCollection</span><span class="p">,</span>
             <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Measurement&quot;</span><span class="p">,</span>
             <span class="n">date_field</span><span class="o">=</span><span class="s2">&quot;obsdatum&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_station_lookup</span> <span class="o">=</span> <span class="n">IdentifierLookup</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_stations</span><span class="p">,</span> <span class="n">STATION_IDENTIFIERS</span><span class="p">,</span> <span class="n">ref</span><span class="o">=</span><span class="s2">&quot;station_id&quot;</span><span class="p">,</span> <span class="n">noun</span><span class="o">=</span><span class="s2">&quot;station&quot;</span>
         <span class="p">)</span>
 
 <div class="viewcode-block" id="ObservedGroundwaterLevelClient.get_stations">
@@ -572,8 +589,10 @@
 <span class="sd">            Typed groundwater monitoring station</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            ValueError: If neither parameter is provided, both are provided,</span>
-<span class="sd">                       or if multiple stations are found</span>
+<span class="sd">            SGUNotFoundError: If no station matches.</span>
+<span class="sd">            SGUAmbiguousError: If several stations match.</span>
+<span class="sd">            ValueError: If not exactly one of station_id or station_name is</span>
+<span class="sd">                provided.</span>
 
 <span class="sd">        Example:</span>
 
@@ -587,21 +606,9 @@
 <span class="sd">            ...     )</span>
 <span class="sd">            ...     print(station.properties.aquifer_description)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">station_id</span> <span class="ow">and</span> <span class="n">station_name</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;Only one of &#39;station_id&#39; or &#39;station_name&#39; can be provided.&quot;</span>
-            <span class="p">)</span>
-
-        <span class="c1"># Map English parameter names to Swedish API field names</span>
-        <span class="k">if</span> <span class="n">station_id</span><span class="p">:</span>
-            <span class="n">name_type</span> <span class="o">=</span> <span class="s2">&quot;platsbeteckning&quot;</span>
-            <span class="n">station</span> <span class="o">=</span> <span class="n">station_id</span>
-        <span class="k">elif</span> <span class="n">station_name</span><span class="p">:</span>
-            <span class="n">name_type</span> <span class="o">=</span> <span class="s2">&quot;obsplatsnamn&quot;</span>
-            <span class="n">station</span> <span class="o">=</span> <span class="n">station_name</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Either &#39;station_id&#39; or &#39;station_name&#39; must be provided.&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stations</span><span class="o">.</span><span class="n">find_one</span><span class="p">(</span><span class="n">where</span><span class="o">=</span><span class="p">{</span><span class="n">name_type</span><span class="p">:</span> <span class="n">station</span><span class="p">},</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_station_lookup</span><span class="o">.</span><span class="n">find_one</span><span class="p">(</span>
+            <span class="n">_stations_given</span><span class="p">(</span><span class="n">station_id</span><span class="p">,</span> <span class="n">station_name</span><span class="p">),</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="ObservedGroundwaterLevelClient.get_stations_by_names">
@@ -623,7 +630,9 @@
 <span class="sd">            Typed collection of groundwater monitoring stations</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            ValueError: If neither parameter is provided or both are provided</span>
+<span class="sd">            SGUNotFoundError: If any of the requested stations is not found.</span>
+<span class="sd">            ValueError: If not exactly one of station_id or station_name is</span>
+<span class="sd">                provided.</span>
 
 <span class="sd">        Example:</span>
 
@@ -636,21 +645,9 @@
 <span class="sd">            ...     for station in stations.features:</span>
 <span class="sd">            ...         print(f&quot;{station.properties.station_id}: {station.properties.aquifer_code}&quot;)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">station_id</span> <span class="ow">and</span> <span class="n">station_name</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;Only one of &#39;station_id&#39; or &#39;station_name&#39; can be provided.&quot;</span>
-            <span class="p">)</span>
-
-        <span class="c1"># Map English parameter names to Swedish API field names</span>
-        <span class="k">if</span> <span class="n">station_id</span><span class="p">:</span>
-            <span class="n">name_type</span> <span class="o">=</span> <span class="s2">&quot;platsbeteckning&quot;</span>
-            <span class="n">stations</span> <span class="o">=</span> <span class="n">station_id</span>
-        <span class="k">elif</span> <span class="n">station_name</span><span class="p">:</span>
-            <span class="n">name_type</span> <span class="o">=</span> <span class="s2">&quot;obsplatsnamn&quot;</span>
-            <span class="n">stations</span> <span class="o">=</span> <span class="n">station_name</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Either &#39;station_id&#39; or &#39;station_name&#39; must be provided.&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stations</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">where</span><span class="o">=</span><span class="p">{</span><span class="n">name_type</span><span class="p">:</span> <span class="n">stations</span><span class="p">},</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_station_lookup</span><span class="o">.</span><span class="n">find_all</span><span class="p">(</span>
+            <span class="n">_stations_given</span><span class="p">(</span><span class="n">station_id</span><span class="p">,</span> <span class="n">station_name</span><span class="p">),</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="ObservedGroundwaterLevelClient.get_measurements_by_name">
@@ -678,8 +675,10 @@
 <span class="sd">            Typed collection of groundwater level measurements</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            ValueError: If neither or both name parameters are provided,</span>
-<span class="sd">                       or if station lookup fails</span>
+<span class="sd">            SGUNotFoundError: If a station_name matches no station.</span>
+<span class="sd">            SGUAmbiguousError: If a station_name matches several stations.</span>
+<span class="sd">            ValueError: If not exactly one of station_id or station_name is</span>
+<span class="sd">                provided, or if the looked-up station has no station_id.</span>
 
 <span class="sd">        Example:</span>
 
@@ -704,31 +703,9 @@
 <span class="sd">            ...         tmax=&quot;2021-01-01T00:00:00Z&quot;</span>
 <span class="sd">            ...     )</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">station_id</span> <span class="ow">and</span> <span class="n">station_name</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;Only one of &#39;station_id&#39; or &#39;station_name&#39; can be provided.&quot;</span>
-            <span class="p">)</span>
-
-        <span class="c1"># If station_name provided, look up the station to get station_id</span>
-        <span class="k">if</span> <span class="n">station_name</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
-                <span class="s2">&quot;Using &#39;station_name&#39; requires an additional API request to lookup the station. &quot;</span>
-                <span class="s2">&quot;For better performance, use &#39;station_id&#39; directly if available.&quot;</span>
-            <span class="p">)</span>
-            <span class="c1"># Don&#39;t pass kwargs to station lookup as it&#39;s a single result operation</span>
-            <span class="n">station</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_station_by_name</span><span class="p">(</span><span class="n">station_name</span><span class="o">=</span><span class="n">station_name</span><span class="p">)</span>
-            <span class="n">target_platsbeteckning</span> <span class="o">=</span> <span class="n">station</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">station_id</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">target_platsbeteckning</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;Station with station_name &#39;</span><span class="si">{</span><span class="n">station_name</span><span class="si">}</span><span class="s2">&#39; has no station_id&quot;</span>
-                <span class="p">)</span>
-        <span class="k">elif</span> <span class="n">station_id</span><span class="p">:</span>
-            <span class="n">target_platsbeteckning</span> <span class="o">=</span> <span class="n">station_id</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Either &#39;station_id&#39; or &#39;station_name&#39; must be provided.&quot;</span><span class="p">)</span>
-
+        <span class="n">ref</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_station_lookup</span><span class="o">.</span><span class="n">ref</span><span class="p">(</span><span class="n">_stations_given</span><span class="p">(</span><span class="n">station_id</span><span class="p">,</span> <span class="n">station_name</span><span class="p">))</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_measurements</span><span class="o">.</span><span class="n">query</span><span class="p">(</span>
-            <span class="n">where</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;platsbeteckning&quot;</span><span class="p">:</span> <span class="n">target_platsbeteckning</span><span class="p">},</span>
+            <span class="n">where</span><span class="o">=</span><span class="p">{</span><span class="n">MEASUREMENT_STATION_FIELD</span><span class="p">:</span> <span class="n">ref</span><span class="p">},</span>
             <span class="n">tmin</span><span class="o">=</span><span class="n">tmin</span><span class="p">,</span>
             <span class="n">tmax</span><span class="o">=</span><span class="n">tmax</span><span class="p">,</span>
             <span class="n">limit</span><span class="o">=</span><span class="n">limit</span><span class="p">,</span>
@@ -761,8 +738,9 @@
 <span class="sd">            Typed collection of groundwater level measurements</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            ValueError: If neither or both name parameters are provided,</span>
-<span class="sd">                       or if station lookup fails</span>
+<span class="sd">            SGUNotFoundError: If any station_name matches no station.</span>
+<span class="sd">            ValueError: If not exactly one of station_id or station_name is</span>
+<span class="sd">                provided, or if a looked-up station has no station_id.</span>
 
 <span class="sd">        Example:</span>
 
@@ -777,35 +755,9 @@
 <span class="sd">            ...     )</span>
 <span class="sd">            ...     print(f&quot;Found {len(measurements.features)} measurements&quot;)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">station_id</span> <span class="ow">and</span> <span class="n">station_name</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;Only one of &#39;station_id&#39; or &#39;station_name&#39; can be provided.&quot;</span>
-            <span class="p">)</span>
-
-        <span class="c1"># If station_name provided, look up stations to get station_id values</span>
-        <span class="k">if</span> <span class="n">station_name</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
-                <span class="s2">&quot;Using &#39;station_name&#39; requires an additional API request to lookup stations. &quot;</span>
-                <span class="s2">&quot;For better performance, use &#39;station_id&#39; directly if available.&quot;</span>
-            <span class="p">)</span>
-            <span class="c1"># Don&#39;t pass kwargs to station lookup as it&#39;s a separate operation</span>
-            <span class="n">stations</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_stations_by_names</span><span class="p">(</span><span class="n">station_name</span><span class="o">=</span><span class="n">station_name</span><span class="p">)</span>
-            <span class="n">target_platsbeteckningar</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="k">for</span> <span class="n">station</span> <span class="ow">in</span> <span class="n">stations</span><span class="o">.</span><span class="n">features</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">station</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">station_id</span><span class="p">:</span>
-                    <span class="n">target_platsbeteckningar</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">station</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">station_id</span><span class="p">)</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                        <span class="sa">f</span><span class="s2">&quot;Station </span><span class="si">{</span><span class="n">station</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2"> with station_name &#39;</span><span class="si">{</span><span class="n">station</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">station_name</span><span class="si">}</span><span class="s2">&#39; &quot;</span>
-                        <span class="sa">f</span><span class="s2">&quot;has no station_id&quot;</span>
-                    <span class="p">)</span>
-        <span class="k">elif</span> <span class="n">station_id</span><span class="p">:</span>
-            <span class="n">target_platsbeteckningar</span> <span class="o">=</span> <span class="n">station_id</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Either &#39;station_id&#39; or &#39;station_name&#39; must be provided.&quot;</span><span class="p">)</span>
-
+        <span class="n">refs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_station_lookup</span><span class="o">.</span><span class="n">refs</span><span class="p">(</span><span class="n">_stations_given</span><span class="p">(</span><span class="n">station_id</span><span class="p">,</span> <span class="n">station_name</span><span class="p">))</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_measurements</span><span class="o">.</span><span class="n">query</span><span class="p">(</span>
-            <span class="n">where</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;platsbeteckning&quot;</span><span class="p">:</span> <span class="n">target_platsbeteckningar</span><span class="p">},</span>
+            <span class="n">where</span><span class="o">=</span><span class="p">{</span><span class="n">MEASUREMENT_STATION_FIELD</span><span class="p">:</span> <span class="n">refs</span><span class="p">},</span>
             <span class="n">tmin</span><span class="o">=</span><span class="n">tmin</span><span class="p">,</span>
             <span class="n">tmax</span><span class="o">=</span><span class="n">tmax</span><span class="p">,</span>
             <span class="n">limit</span><span class="o">=</span><span class="n">limit</span><span class="p">,</span>

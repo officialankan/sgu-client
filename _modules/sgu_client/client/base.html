@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=fe7df9b0"></script>
+    <script src="../../../_static/documentation_options.js?v=486e5634"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -374,89 +374,64 @@
                 <article class="bd-article">
                   
   <h1>Source code for sgu_client.client.base</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;Base HTTP client for SGU API.&quot;&quot;&quot;</span>
+<span></span><span class="sd">&quot;&quot;&quot;Base client for SGU API: requests, errors and pagination.&quot;&quot;&quot;</span>
 
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">urllib.parse</span><span class="w"> </span><span class="kn">import</span> <span class="n">urljoin</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">requests.adapters</span><span class="w"> </span><span class="kn">import</span> <span class="n">HTTPAdapter</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">urllib3.util.retry</span><span class="w"> </span><span class="kn">import</span> <span class="n">Retry</span>
-
 <span class="kn">from</span><span class="w"> </span><span class="nn">sgu_client.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">SGUConfig</span><span class="p">,</span> <span class="n">setup_logging</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">sgu_client.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">SGUAPIError</span><span class="p">,</span> <span class="n">SGUConnectionError</span><span class="p">,</span> <span class="n">SGUTimeoutError</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sgu_client.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">SGUAPIError</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sgu_client.transport</span><span class="w"> </span><span class="kn">import</span> <span class="n">RequestsTransport</span><span class="p">,</span> <span class="n">Transport</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="c1"># Safety cap on automatic pagination when the caller sets no limit</span>
+<span class="n">MAX_FEATURES</span> <span class="o">=</span> <span class="mi">50000</span>
 
 
 <div class="viewcode-block" id="BaseClient">
 <a class="viewcode-back" href="../../../api/internals.html#sgu_client.client.base.BaseClient">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">BaseClient</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Base HTTP client with common functionality for SGU API.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Sends GET requests to SGU through a transport and pages through results.</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">SGUConfig</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the base client.</span>
+<span class="sd">    Args:</span>
+<span class="sd">        config: Configuration object. If None, uses default config.</span>
+<span class="sd">        transport: Where requests go. If None, a :class:`RequestsTransport` is</span>
+<span class="sd">            built from the config and closed by :meth:`close`. A transport you</span>
+<span class="sd">            pass in is yours to close.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
-<span class="sd">        Args:</span>
-<span class="sd">            config: Configuration object. If None, uses default config.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">SGUConfig</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">transport</span><span class="p">:</span> <span class="n">Transport</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">config</span> <span class="ow">or</span> <span class="n">SGUConfig</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_session</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_session</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_owned_transport</span><span class="p">:</span> <span class="n">RequestsTransport</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">transport</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_owned_transport</span> <span class="o">=</span> <span class="n">transport</span> <span class="o">=</span> <span class="n">RequestsTransport</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_transport</span> <span class="o">=</span> <span class="n">transport</span>
 
         <span class="c1"># Configure logging based on config</span>
         <span class="n">setup_logging</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">log_level</span><span class="p">)</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">_create_session</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">requests</span><span class="o">.</span><span class="n">Session</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create and configure a requests session.&quot;&quot;&quot;</span>
-        <span class="n">session</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">Session</span><span class="p">()</span>
-
-        <span class="c1"># Set headers</span>
-        <span class="n">session</span><span class="o">.</span><span class="n">headers</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
-            <span class="p">{</span>
-                <span class="s2">&quot;User-Agent&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">user_agent</span><span class="p">,</span>
-                <span class="s2">&quot;Accept&quot;</span><span class="p">:</span> <span class="s2">&quot;application/json&quot;</span><span class="p">,</span>
-            <span class="p">}</span>
-        <span class="p">)</span>
-
-        <span class="c1"># Configure retry strategy</span>
-        <span class="n">retry_strategy</span> <span class="o">=</span> <span class="n">Retry</span><span class="p">(</span>
-            <span class="n">total</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">max_retries</span><span class="p">,</span>
-            <span class="n">backoff_factor</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-            <span class="n">status_forcelist</span><span class="o">=</span><span class="p">[</span><span class="mi">429</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">502</span><span class="p">,</span> <span class="mi">503</span><span class="p">,</span> <span class="mi">504</span><span class="p">],</span>
-        <span class="p">)</span>
-
-        <span class="n">adapter</span> <span class="o">=</span> <span class="n">HTTPAdapter</span><span class="p">(</span><span class="n">max_retries</span><span class="o">=</span><span class="n">retry_strategy</span><span class="p">)</span>
-        <span class="n">session</span><span class="o">.</span><span class="n">mount</span><span class="p">(</span><span class="s2">&quot;http://&quot;</span><span class="p">,</span> <span class="n">adapter</span><span class="p">)</span>
-        <span class="n">session</span><span class="o">.</span><span class="n">mount</span><span class="p">(</span><span class="s2">&quot;https://&quot;</span><span class="p">,</span> <span class="n">adapter</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">session</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">_make_request</span><span class="p">(</span>
+<div class="viewcode-block" id="BaseClient.get">
+<a class="viewcode-back" href="../../../api/internals.html#sgu_client.client.base.BaseClient.get">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">method</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">endpoint</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">base_url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Make an HTTP request to the SGU API with automatic pagination.</span>
-
-<span class="sd">        This method automatically handles pagination for OGC API Features responses</span>
-<span class="sd">        by detecting when the API returns fewer features than available and making</span>
-<span class="sd">        additional requests to fetch all remaining data.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;GET an endpoint, fetching every page of a FeatureCollection.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            method: HTTP method (GET, POST, etc.)</span>
 <span class="sd">            endpoint: API endpoint path</span>
 <span class="sd">            params: Query parameters</span>
-<span class="sd">            data: Request body data</span>
 <span class="sd">            base_url: Optional override for base URL (for different API endpoints)</span>
-<span class="sd">            **kwargs: Additional arguments passed to requests</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            JSON response data with all features if pagination was applied</span>
+<span class="sd">            JSON response data, with all features if the response was paginated</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            SGUConnectionError: If connection fails</span>
@@ -466,66 +441,36 @@
         <span class="n">url</span> <span class="o">=</span> <span class="n">urljoin</span><span class="p">(</span><span class="n">base_url</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">base_url</span><span class="p">,</span> <span class="n">endpoint</span><span class="p">)</span>
         <span class="n">params</span> <span class="o">=</span> <span class="n">params</span> <span class="ow">or</span> <span class="p">{}</span>
 
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Making </span><span class="si">{</span><span class="n">method</span><span class="si">}</span><span class="s2"> request to </span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">params</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Query params: </span><span class="si">{</span><span class="n">params</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">data</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Request data: </span><span class="si">{</span><span class="n">data</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Making GET request to </span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">params</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Query params: </span><span class="si">{</span><span class="n">params</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
-            <span class="c1"># Make initial request</span>
-            <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_session</span><span class="o">.</span><span class="n">request</span><span class="p">(</span>
-                <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span>
-                <span class="n">url</span><span class="o">=</span><span class="n">url</span><span class="p">,</span>
-                <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">,</span>
-                <span class="n">json</span><span class="o">=</span><span class="n">data</span><span class="p">,</span>
-                <span class="n">timeout</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">timeout</span><span class="p">,</span>
-                <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fetch_page</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">failure</span><span class="o">=</span><span class="s2">&quot;API request failed&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;FeatureCollection&quot;</span> <span class="ow">and</span> <span class="s2">&quot;features&quot;</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_handle_pagination</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">data</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_fetch_page</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="o">*</span><span class="p">,</span> <span class="n">failure</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transport</span><span class="o">.</span><span class="n">fetch</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Response status: </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">&gt;=</span> <span class="mi">400</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">error_data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="n">error_data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">}</span>
+            <span class="k">raise</span> <span class="n">SGUAPIError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">failure</span><span class="si">}</span><span class="s2"> with status </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="n">status_code</span><span class="o">=</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span>
+                <span class="n">response_data</span><span class="o">=</span><span class="n">error_data</span><span class="p">,</span>
             <span class="p">)</span>
 
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Response status: </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-
-            <span class="c1"># Check for HTTP errors</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">response</span><span class="o">.</span><span class="n">ok</span><span class="p">:</span>
-                <span class="k">try</span><span class="p">:</span>
-                    <span class="n">error_data</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
-                <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
-                    <span class="n">error_data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">}</span>
-
-                <span class="k">raise</span> <span class="n">SGUAPIError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;API request failed with status </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-                    <span class="n">status_code</span><span class="o">=</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span>
-                    <span class="n">response_data</span><span class="o">=</span><span class="n">error_data</span><span class="p">,</span>
-                <span class="p">)</span>
-
-            <span class="n">response_data</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
-
-            <span class="c1"># Check if this is a GeoJSON FeatureCollection that may need pagination</span>
-            <span class="k">if</span> <span class="p">(</span>
-                <span class="n">method</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;GET&quot;</span>
-                <span class="ow">and</span> <span class="n">response_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;FeatureCollection&quot;</span>
-                <span class="ow">and</span> <span class="s2">&quot;features&quot;</span> <span class="ow">in</span> <span class="n">response_data</span>
-            <span class="p">):</span>
-                <span class="n">response_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_handle_pagination</span><span class="p">(</span>
-                    <span class="n">url</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">response_data</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
-                <span class="p">)</span>
-
-            <span class="k">return</span> <span class="n">response_data</span>
-
-        <span class="k">except</span> <span class="n">requests</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">ReadTimeout</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">SGUTimeoutError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Read timeout after </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">timeout</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
-        <span class="k">except</span> <span class="n">requests</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">ConnectTimeout</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">SGUTimeoutError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Connection timeout after </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">timeout</span><span class="si">}</span><span class="s2">s&quot;</span>
-            <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
-        <span class="k">except</span> <span class="n">requests</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">ConnectionError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="c1"># Check if this is a timeout wrapped in MaxRetryError</span>
-            <span class="k">if</span> <span class="s2">&quot;Read timed out&quot;</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">&quot;ReadTimeoutError&quot;</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">):</span>
-                <span class="k">raise</span> <span class="n">SGUTimeoutError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;Read timeout after </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">timeout</span><span class="si">}</span><span class="s2">s&quot;</span>
-                <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
-            <span class="k">raise</span> <span class="n">SGUConnectionError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Connection failed: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
-        <span class="k">except</span> <span class="n">requests</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">RequestException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">SGUAPIError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Request failed: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_handle_pagination</span><span class="p">(</span>
@@ -533,47 +478,35 @@
         <span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">initial_params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
         <span class="n">initial_response</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
-        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Handle automatic pagination for OGC API Features responses.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Fetch the remaining pages of an OGC API Features response.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            url: The request URL</span>
 <span class="sd">            initial_params: Parameters from the initial request</span>
 <span class="sd">            initial_response: Response from the initial request</span>
-<span class="sd">            **kwargs: Additional arguments passed to requests</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Combined response with all features</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># Check if pagination is needed</span>
         <span class="n">number_returned</span> <span class="o">=</span> <span class="n">initial_response</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;numberReturned&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
         <span class="n">number_matched</span> <span class="o">=</span> <span class="n">initial_response</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;numberMatched&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">initial_response</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
             <span class="s2">&quot;totalFeatures&quot;</span>
         <span class="p">)</span>
 
-        <span class="c1"># Handle cases where API returns &#39;unknown&#39; or other non-numeric values</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">number_matched</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">number_matched</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="p">(</span>
-            <span class="s2">&quot;unknown&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;null&quot;</span><span class="p">,</span>
-        <span class="p">):</span>
-            <span class="n">number_matched</span> <span class="o">=</span> <span class="kc">None</span>
-
+        <span class="c1"># SGU sends &quot;unknown&quot; when it doesn&#39;t count the matches; we can&#39;t page then</span>
         <span class="k">if</span> <span class="p">(</span>
             <span class="ow">not</span> <span class="n">number_matched</span>
             <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">number_matched</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
             <span class="ow">or</span> <span class="n">number_returned</span> <span class="o">&gt;=</span> <span class="n">number_matched</span>
         <span class="p">):</span>
-            <span class="c1"># No pagination needed</span>
             <span class="k">return</span> <span class="n">initial_response</span>
 
-        <span class="c1"># Safety check: Don&#39;t auto-paginate beyond reasonable limits</span>
-        <span class="c1"># If user requested a specific limit, respect it; otherwise use 50K as max</span>
+        <span class="c1"># Respect a limit the caller set; otherwise stop at the safety cap</span>
         <span class="n">user_requested_limit</span> <span class="o">=</span> <span class="n">initial_params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;limit&quot;</span><span class="p">)</span>
-        <span class="n">max_features</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">number_matched</span><span class="p">,</span> <span class="n">user_requested_limit</span> <span class="ow">or</span> <span class="mi">50000</span><span class="p">)</span>
+        <span class="n">max_features</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">number_matched</span><span class="p">,</span> <span class="n">user_requested_limit</span> <span class="ow">or</span> <span class="n">MAX_FEATURES</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">number_returned</span> <span class="o">&gt;=</span> <span class="n">max_features</span><span class="p">:</span>
-            <span class="c1"># Already have enough features</span>
             <span class="k">return</span> <span class="n">initial_response</span>
 
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
@@ -581,54 +514,30 @@
             <span class="sa">f</span><span class="s2">&quot;will fetch up to </span><span class="si">{</span><span class="n">max_features</span><span class="si">}</span><span class="s2"> features total&quot;</span>
         <span class="p">)</span>
 
-        <span class="c1"># Collect all features</span>
         <span class="n">all_features</span> <span class="o">=</span> <span class="n">initial_response</span><span class="p">[</span><span class="s2">&quot;features&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="n">current_start_index</span> <span class="o">=</span> <span class="n">number_returned</span>
 
         <span class="k">while</span> <span class="n">current_start_index</span> <span class="o">&lt;</span> <span class="n">max_features</span><span class="p">:</span>
-            <span class="c1"># Prepare parameters for next page</span>
             <span class="n">next_params</span> <span class="o">=</span> <span class="n">initial_params</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
             <span class="n">next_params</span><span class="p">[</span><span class="s2">&quot;startIndex&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">current_start_index</span>
 
-            <span class="c1"># Keep the same limit as the initial request (or use API default)</span>
+            <span class="c1"># Keep the page size of the first response unless the caller set one</span>
             <span class="k">if</span> <span class="s2">&quot;limit&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">next_params</span><span class="p">:</span>
-                <span class="n">next_params</span><span class="p">[</span><span class="s2">&quot;limit&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-                    <span class="n">number_returned</span>  <span class="c1"># Use same page size as first response</span>
-                <span class="p">)</span>
+                <span class="n">next_params</span><span class="p">[</span><span class="s2">&quot;limit&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">number_returned</span>
 
-            <span class="c1"># Adjust limit for final page to not exceed max_features</span>
+            <span class="c1"># Don&#39;t fetch past max_features on the last page</span>
             <span class="n">remaining</span> <span class="o">=</span> <span class="n">max_features</span> <span class="o">-</span> <span class="n">current_start_index</span>
             <span class="k">if</span> <span class="n">remaining</span> <span class="o">&lt;</span> <span class="n">next_params</span><span class="p">[</span><span class="s2">&quot;limit&quot;</span><span class="p">]:</span>
                 <span class="n">next_params</span><span class="p">[</span><span class="s2">&quot;limit&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">remaining</span>
 
             <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Fetching page starting at index </span><span class="si">{</span><span class="n">current_start_index</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
-            <span class="c1"># Make request for next page</span>
-            <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_session</span><span class="o">.</span><span class="n">request</span><span class="p">(</span>
-                <span class="n">method</span><span class="o">=</span><span class="s2">&quot;GET&quot;</span><span class="p">,</span>
-                <span class="n">url</span><span class="o">=</span><span class="n">url</span><span class="p">,</span>
-                <span class="n">params</span><span class="o">=</span><span class="n">next_params</span><span class="p">,</span>
-                <span class="n">timeout</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">timeout</span><span class="p">,</span>
-                <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+            <span class="n">page_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fetch_page</span><span class="p">(</span>
+                <span class="n">url</span><span class="p">,</span> <span class="n">next_params</span><span class="p">,</span> <span class="n">failure</span><span class="o">=</span><span class="s2">&quot;Pagination request failed&quot;</span>
             <span class="p">)</span>
-
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">response</span><span class="o">.</span><span class="n">ok</span><span class="p">:</span>
-                <span class="k">try</span><span class="p">:</span>
-                    <span class="n">error_data</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
-                <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
-                    <span class="n">error_data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">}</span>
-
-                <span class="k">raise</span> <span class="n">SGUAPIError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;Pagination request failed with status </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-                    <span class="n">status_code</span><span class="o">=</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span>
-                    <span class="n">response_data</span><span class="o">=</span><span class="n">error_data</span><span class="p">,</span>
-                <span class="p">)</span>
-
-            <span class="n">page_data</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
             <span class="n">page_features</span> <span class="o">=</span> <span class="n">page_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;features&quot;</span><span class="p">,</span> <span class="p">[])</span>
 
             <span class="k">if</span> <span class="ow">not</span> <span class="n">page_features</span><span class="p">:</span>
-                <span class="c1"># No more features to fetch</span>
                 <span class="k">break</span>
 
             <span class="n">all_features</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">page_features</span><span class="p">)</span>
@@ -638,7 +547,6 @@
                 <span class="sa">f</span><span class="s2">&quot;Fetched </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">page_features</span><span class="p">)</span><span class="si">}</span><span class="s2"> features, total: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">all_features</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="p">)</span>
 
-        <span class="c1"># Update the response with all collected features</span>
         <span class="n">final_response</span> <span class="o">=</span> <span class="n">initial_response</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="n">final_response</span><span class="p">[</span><span class="s2">&quot;features&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">all_features</span>
         <span class="n">final_response</span><span class="p">[</span><span class="s2">&quot;numberReturned&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">all_features</span><span class="p">)</span>
@@ -649,64 +557,12 @@
 
         <span class="k">return</span> <span class="n">final_response</span>
 
-<div class="viewcode-block" id="BaseClient.get">
-<a class="viewcode-back" href="../../../api/internals.html#sgu_client.client.base.BaseClient.get">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">endpoint</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-        <span class="n">params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">base_url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Make a GET request.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            endpoint: API endpoint path</span>
-<span class="sd">            params: Query parameters</span>
-<span class="sd">            base_url: Optional override for base URL</span>
-<span class="sd">            **kwargs: Additional arguments passed to requests</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            JSON response data</span>
-
-<span class="sd">        Raises:</span>
-<span class="sd">            SGUConnectionError: If connection fails</span>
-<span class="sd">            SGUTimeoutError: If request times out</span>
-<span class="sd">            SGUAPIError: If API returns an error</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_request</span><span class="p">(</span>
-            <span class="s2">&quot;GET&quot;</span><span class="p">,</span> <span class="n">endpoint</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">,</span> <span class="n">base_url</span><span class="o">=</span><span class="n">base_url</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
-        <span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="BaseClient.post">
-<a class="viewcode-back" href="../../../api/internals.html#sgu_client.client.base.BaseClient.post">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">post</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">endpoint</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Make a POST request.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            endpoint: API endpoint path</span>
-<span class="sd">            data: Request body data</span>
-<span class="sd">            **kwargs: Additional arguments passed to requests</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            JSON response data</span>
-
-<span class="sd">        Raises:</span>
-<span class="sd">            SGUConnectionError: If connection fails</span>
-<span class="sd">            SGUTimeoutError: If request times out</span>
-<span class="sd">            SGUAPIError: If API returns an error</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_request</span><span class="p">(</span><span class="s2">&quot;POST&quot;</span><span class="p">,</span> <span class="n">endpoint</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
-
-
 <div class="viewcode-block" id="BaseClient.close">
 <a class="viewcode-back" href="../../../api/internals.html#sgu_client.client.base.BaseClient.close">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Close the underlying HTTP session and its pooled connections.&quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_session</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Close the transport, if this client created it.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_owned_transport</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_owned_transport</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>

@@ -43,7 +43,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../_static/documentation_options.js?v=fe7df9b0"></script>
+    <script src="../_static/documentation_options.js?v=486e5634"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -725,29 +725,6 @@ the specified coordinates, then retrieves modeled levels for those areas.</p>
 <dt class="sig sig-object py" id="sgu_client.models.modeled.ModeledArea">
 <em class="property"><span class="pre">pydantic</span> <span class="pre">model</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ModeledArea</span></span><a class="reference internal" href="../_modules/sgu_client/models/modeled.html#ModeledArea"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sgu_client.models.modeled.ModeledArea" title="Link to this definition">#</a></dt>
 <dd><p>A modeled groundwater area (GeoJSON Feature).</p>
-<dl class="py attribute pydantic_field">
-<dt class="sig sig-object py" id="sgu_client.models.modeled.ModeledArea.type">
-<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Literal</span></code></a><span class="pre">[</span><code class="docutils literal notranslate"><span class="pre">'Feature'</span></code><span class="pre">]</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Feature'</span></em><a class="headerlink" href="#sgu_client.models.modeled.ModeledArea.type" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute pydantic_field">
-<dt class="sig sig-object py" id="sgu_client.models.modeled.ModeledArea.id">
-<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></em><em class="property"> <span class="pre">[Required]</span></em><a class="headerlink" href="#sgu_client.models.modeled.ModeledArea.id" title="Link to this definition">#</a></dt>
-<dd><p>Area ID</p>
-</dd></dl>
-
-<dl class="py attribute pydantic_field">
-<dt class="sig sig-object py" id="sgu_client.models.modeled.ModeledArea.geometry">
-<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">geometry</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="models.html#sgu_client.models.shared.Point" title="sgu_client.models.shared.Point"><code class="xref py py-class docutils literal notranslate"><span class="pre">Point</span></code></a> <span class="pre">|</span> <a class="reference internal" href="models.html#sgu_client.models.shared.MultiPoint" title="sgu_client.models.shared.MultiPoint"><code class="xref py py-class docutils literal notranslate"><span class="pre">MultiPoint</span></code></a> <span class="pre">|</span> <a class="reference internal" href="models.html#sgu_client.models.shared.LineString" title="sgu_client.models.shared.LineString"><code class="xref py py-class docutils literal notranslate"><span class="pre">LineString</span></code></a> <span class="pre">|</span> <a class="reference internal" href="models.html#sgu_client.models.shared.Polygon" title="sgu_client.models.shared.Polygon"><code class="xref py py-class docutils literal notranslate"><span class="pre">Polygon</span></code></a> <span class="pre">|</span> <a class="reference internal" href="models.html#sgu_client.models.shared.MultiPolygon" title="sgu_client.models.shared.MultiPolygon"><code class="xref py py-class docutils literal notranslate"><span class="pre">MultiPolygon</span></code></a></em><em class="property"> <span class="pre">[Required]</span></em><a class="headerlink" href="#sgu_client.models.modeled.ModeledArea.geometry" title="Link to this definition">#</a></dt>
-<dd><p>Area geometry (typically MultiPolygon)</p>
-</dd></dl>
-
-<dl class="py attribute pydantic_field">
-<dt class="sig sig-object py" id="sgu_client.models.modeled.ModeledArea.properties">
-<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">properties</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#sgu_client.models.modeled.ModeledAreaProperties" title="sgu_client.models.modeled.ModeledAreaProperties"><code class="xref py py-class docutils literal notranslate"><span class="pre">ModeledAreaProperties</span></code></a></em><em class="property"> <span class="pre">[Required]</span></em><a class="headerlink" href="#sgu_client.models.modeled.ModeledArea.properties" title="Link to this definition">#</a></dt>
-<dd><p>Area properties</p>
-</dd></dl>
-
 </dd></dl>
 
 <dl class="py class pydantic_model">
@@ -761,7 +738,7 @@ the specified coordinates, then retrieves modeled levels for those areas.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Constraints<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>func</strong> = &lt;function _parse_api_datetime at 0x7f03d1f4c7c0&gt;</p></li>
+<li><p><strong>func</strong> = &lt;function _parse_api_datetime at 0x7fa47d9d60c0&gt;</p></li>
 <li><p><strong>json_schema_input_type</strong> = PydanticUndefined</p></li>
 </ul>
 </dd>
@@ -810,236 +787,40 @@ the specified coordinates, then retrieves modeled levels for those areas.</p>
 <dt class="sig sig-object py" id="sgu_client.models.modeled.ModeledGroundwaterLevel">
 <em class="property"><span class="pre">pydantic</span> <span class="pre">model</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ModeledGroundwaterLevel</span></span><a class="reference internal" href="../_modules/sgu_client/models/modeled.html#ModeledGroundwaterLevel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sgu_client.models.modeled.ModeledGroundwaterLevel" title="Link to this definition">#</a></dt>
 <dd><p>A modeled groundwater level (GeoJSON Feature).</p>
-<dl class="py attribute pydantic_field">
-<dt class="sig sig-object py" id="sgu_client.models.modeled.ModeledGroundwaterLevel.type">
-<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Literal</span></code></a><span class="pre">[</span><code class="docutils literal notranslate"><span class="pre">'Feature'</span></code><span class="pre">]</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Feature'</span></em><a class="headerlink" href="#sgu_client.models.modeled.ModeledGroundwaterLevel.type" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute pydantic_field">
-<dt class="sig sig-object py" id="sgu_client.models.modeled.ModeledGroundwaterLevel.id">
-<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></em><em class="property"> <span class="pre">[Required]</span></em><a class="headerlink" href="#sgu_client.models.modeled.ModeledGroundwaterLevel.id" title="Link to this definition">#</a></dt>
-<dd><p>Level ID</p>
-</dd></dl>
-
-<dl class="py attribute pydantic_field">
-<dt class="sig sig-object py" id="sgu_client.models.modeled.ModeledGroundwaterLevel.geometry">
-<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">geometry</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="models.html#sgu_client.models.shared.Point" title="sgu_client.models.shared.Point"><code class="xref py py-class docutils literal notranslate"><span class="pre">Point</span></code></a> <span class="pre">|</span> <a class="reference internal" href="models.html#sgu_client.models.shared.MultiPoint" title="sgu_client.models.shared.MultiPoint"><code class="xref py py-class docutils literal notranslate"><span class="pre">MultiPoint</span></code></a> <span class="pre">|</span> <a class="reference internal" href="models.html#sgu_client.models.shared.LineString" title="sgu_client.models.shared.LineString"><code class="xref py py-class docutils literal notranslate"><span class="pre">LineString</span></code></a> <span class="pre">|</span> <a class="reference internal" href="models.html#sgu_client.models.shared.Polygon" title="sgu_client.models.shared.Polygon"><code class="xref py py-class docutils literal notranslate"><span class="pre">Polygon</span></code></a> <span class="pre">|</span> <a class="reference internal" href="models.html#sgu_client.models.shared.MultiPolygon" title="sgu_client.models.shared.MultiPolygon"><code class="xref py py-class docutils literal notranslate"><span class="pre">MultiPolygon</span></code></a> <span class="pre">|</span> <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#sgu_client.models.modeled.ModeledGroundwaterLevel.geometry" title="Link to this definition">#</a></dt>
-<dd><p>Level geometry (typically null)</p>
-</dd></dl>
-
-<dl class="py attribute pydantic_field">
-<dt class="sig sig-object py" id="sgu_client.models.modeled.ModeledGroundwaterLevel.properties">
-<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">properties</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#sgu_client.models.modeled.ModeledGroundwaterLevelProperties" title="sgu_client.models.modeled.ModeledGroundwaterLevelProperties"><code class="xref py py-class docutils literal notranslate"><span class="pre">ModeledGroundwaterLevelProperties</span></code></a></em><em class="property"> <span class="pre">[Required]</span></em><a class="headerlink" href="#sgu_client.models.modeled.ModeledGroundwaterLevel.properties" title="Link to this definition">#</a></dt>
-<dd><p>Level properties</p>
-</dd></dl>
-
 </dd></dl>
 
 <dl class="py class pydantic_model">
 <dt class="sig sig-object py" id="sgu_client.models.modeled.ModeledAreaCollection">
 <em class="property"><span class="pre">pydantic</span> <span class="pre">model</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ModeledAreaCollection</span></span><a class="reference internal" href="../_modules/sgu_client/models/modeled.html#ModeledAreaCollection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sgu_client.models.modeled.ModeledAreaCollection" title="Link to this definition">#</a></dt>
 <dd><p>Collection of modeled groundwater areas (GeoJSON FeatureCollection).</p>
-<dl class="py attribute pydantic_field">
-<dt class="sig sig-object py" id="sgu_client.models.modeled.ModeledAreaCollection.type">
-<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Literal</span></code></a><span class="pre">[</span><code class="docutils literal notranslate"><span class="pre">'FeatureCollection'</span></code><span class="pre">]</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'FeatureCollection'</span></em><a class="headerlink" href="#sgu_client.models.modeled.ModeledAreaCollection.type" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute pydantic_field">
-<dt class="sig sig-object py" id="sgu_client.models.modeled.ModeledAreaCollection.features">
-<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">features</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a><span class="pre">[</span><a class="reference internal" href="#sgu_client.models.modeled.ModeledArea" title="sgu_client.models.modeled.ModeledArea"><code class="xref py py-class docutils literal notranslate"><span class="pre">ModeledArea</span></code></a><span class="pre">]</span></em><em class="property"> <span class="pre">[Optional]</span></em><a class="headerlink" href="#sgu_client.models.modeled.ModeledAreaCollection.features" title="Link to this definition">#</a></dt>
-<dd><p>Area features</p>
-</dd></dl>
-
-<dl class="py attribute pydantic_field">
-<dt class="sig sig-object py" id="sgu_client.models.modeled.ModeledAreaCollection.totalFeatures">
-<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">totalFeatures</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a> <span class="pre">|</span> <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#sgu_client.models.modeled.ModeledAreaCollection.totalFeatures" title="Link to this definition">#</a></dt>
-<dd><p>Total number of features</p>
-</dd></dl>
-
-<dl class="py attribute pydantic_field">
-<dt class="sig sig-object py" id="sgu_client.models.modeled.ModeledAreaCollection.numberMatched">
-<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">numberMatched</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a> <span class="pre">|</span> <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#sgu_client.models.modeled.ModeledAreaCollection.numberMatched" title="Link to this definition">#</a></dt>
-<dd><p>Number of features matching query</p>
-</dd></dl>
-
-<dl class="py attribute pydantic_field">
-<dt class="sig sig-object py" id="sgu_client.models.modeled.ModeledAreaCollection.numberReturned">
-<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">numberReturned</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a> <span class="pre">|</span> <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#sgu_client.models.modeled.ModeledAreaCollection.numberReturned" title="Link to this definition">#</a></dt>
-<dd><p>Number of features returned</p>
-</dd></dl>
-
-<dl class="py attribute pydantic_field">
-<dt class="sig sig-object py" id="sgu_client.models.modeled.ModeledAreaCollection.timeStamp">
-<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">timeStamp</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">Annotated</span></code><span class="pre">[</span><a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">datetime</span></code></a> <span class="pre">|</span> <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a><span class="pre">]</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#sgu_client.models.modeled.ModeledAreaCollection.timeStamp" title="Link to this definition">#</a></dt>
-<dd><p>Response timestamp (UTC)</p>
-<dl class="field-list simple">
-<dt class="field-odd">Constraints<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>func</strong> = &lt;function _parse_api_datetime at 0x7f03d1f4c7c0&gt;</p></li>
-<li><p><strong>json_schema_input_type</strong> = PydanticUndefined</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute pydantic_field">
-<dt class="sig sig-object py" id="sgu_client.models.modeled.ModeledAreaCollection.links">
-<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">links</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a><span class="pre">[</span><a class="reference internal" href="models.html#sgu_client.models.shared.Link" title="sgu_client.models.shared.Link"><code class="xref py py-class docutils literal notranslate"><span class="pre">Link</span></code></a><span class="pre">]</span> <span class="pre">|</span> <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#sgu_client.models.modeled.ModeledAreaCollection.links" title="Link to this definition">#</a></dt>
-<dd><p>Related links</p>
-</dd></dl>
-
-<dl class="py attribute pydantic_field">
-<dt class="sig sig-object py" id="sgu_client.models.modeled.ModeledAreaCollection.crs">
-<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">crs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="models.html#sgu_client.models.shared.CRS" title="sgu_client.models.shared.CRS"><code class="xref py py-class docutils literal notranslate"><span class="pre">CRS</span></code></a> <span class="pre">|</span> <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#sgu_client.models.modeled.ModeledAreaCollection.crs" title="Link to this definition">#</a></dt>
-<dd><p>Coordinate reference system</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="sgu_client.models.modeled.ModeledAreaCollection.to_dataframe">
-<span class="sig-name descname"><span class="pre">to_dataframe</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sgu_client/models/modeled.html#ModeledAreaCollection.to_dataframe"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sgu_client.models.modeled.ModeledAreaCollection.to_dataframe" title="Link to this definition">#</a></dt>
-<dd><p>Convert to pandas DataFrame with flattened area properties.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v3.0.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a></span></p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>DataFrame containing area data with centroid coordinates.</p>
-</dd>
-</dl>
+<p>Areas are grid cells, so the DataFrame has <code class="docutils literal notranslate"><span class="pre">centroid_longitude</span></code> and
+<code class="docutils literal notranslate"><span class="pre">centroid_latitude</span></code> columns: the centre of the cell. SGU sends only the
+cell’s outline; the centre is computed by sgu-client.</p>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">sgu_client</span><span class="w"> </span><span class="kn">import</span> <span class="n">SGUClient</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">SGUClient</span><span class="p">()</span> <span class="k">as</span> <span class="n">client</span><span class="p">:</span>
 <span class="gp">... </span>    <span class="n">areas</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">levels</span><span class="o">.</span><span class="n">modeled</span><span class="o">.</span><span class="n">get_areas</span><span class="p">(</span><span class="n">limit</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
 <span class="gp">... </span>    <span class="n">df</span> <span class="o">=</span> <span class="n">areas</span><span class="o">.</span><span class="n">to_dataframe</span><span class="p">()</span>
-<span class="gp">... </span>    <span class="c1"># dataFrame includes area properties and centroid coordinates</span>
-<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>  <span class="c1"># feature_id, centroid_longitude, centroid_latitude, area_id, time_series_url</span>
 <span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="n">df</span><span class="p">[[</span><span class="s1">&#39;area_id&#39;</span><span class="p">,</span> <span class="s1">&#39;centroid_longitude&#39;</span><span class="p">,</span> <span class="s1">&#39;centroid_latitude&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
 </pre></div>
 </div>
-</dd></dl>
-
 </dd></dl>
 
 <dl class="py class pydantic_model">
 <dt class="sig sig-object py" id="sgu_client.models.modeled.ModeledGroundwaterLevelCollection">
 <em class="property"><span class="pre">pydantic</span> <span class="pre">model</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ModeledGroundwaterLevelCollection</span></span><a class="reference internal" href="../_modules/sgu_client/models/modeled.html#ModeledGroundwaterLevelCollection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sgu_client.models.modeled.ModeledGroundwaterLevelCollection" title="Link to this definition">#</a></dt>
 <dd><p>Collection of modeled groundwater levels (GeoJSON FeatureCollection).</p>
-<dl class="py attribute pydantic_field">
-<dt class="sig sig-object py" id="sgu_client.models.modeled.ModeledGroundwaterLevelCollection.type">
-<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Literal</span></code></a><span class="pre">[</span><code class="docutils literal notranslate"><span class="pre">'FeatureCollection'</span></code><span class="pre">]</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'FeatureCollection'</span></em><a class="headerlink" href="#sgu_client.models.modeled.ModeledGroundwaterLevelCollection.type" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute pydantic_field">
-<dt class="sig sig-object py" id="sgu_client.models.modeled.ModeledGroundwaterLevelCollection.features">
-<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">features</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a><span class="pre">[</span><a class="reference internal" href="#sgu_client.models.modeled.ModeledGroundwaterLevel" title="sgu_client.models.modeled.ModeledGroundwaterLevel"><code class="xref py py-class docutils literal notranslate"><span class="pre">ModeledGroundwaterLevel</span></code></a><span class="pre">]</span></em><em class="property"> <span class="pre">[Optional]</span></em><a class="headerlink" href="#sgu_client.models.modeled.ModeledGroundwaterLevelCollection.features" title="Link to this definition">#</a></dt>
-<dd><p>Level features</p>
-</dd></dl>
-
-<dl class="py attribute pydantic_field">
-<dt class="sig sig-object py" id="sgu_client.models.modeled.ModeledGroundwaterLevelCollection.totalFeatures">
-<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">totalFeatures</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a> <span class="pre">|</span> <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#sgu_client.models.modeled.ModeledGroundwaterLevelCollection.totalFeatures" title="Link to this definition">#</a></dt>
-<dd><p>Total number of features</p>
-</dd></dl>
-
-<dl class="py attribute pydantic_field">
-<dt class="sig sig-object py" id="sgu_client.models.modeled.ModeledGroundwaterLevelCollection.numberMatched">
-<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">numberMatched</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a> <span class="pre">|</span> <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#sgu_client.models.modeled.ModeledGroundwaterLevelCollection.numberMatched" title="Link to this definition">#</a></dt>
-<dd><p>Number of features matching query</p>
-</dd></dl>
-
-<dl class="py attribute pydantic_field">
-<dt class="sig sig-object py" id="sgu_client.models.modeled.ModeledGroundwaterLevelCollection.numberReturned">
-<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">numberReturned</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a> <span class="pre">|</span> <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#sgu_client.models.modeled.ModeledGroundwaterLevelCollection.numberReturned" title="Link to this definition">#</a></dt>
-<dd><p>Number of features returned</p>
-</dd></dl>
-
-<dl class="py attribute pydantic_field">
-<dt class="sig sig-object py" id="sgu_client.models.modeled.ModeledGroundwaterLevelCollection.timeStamp">
-<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">timeStamp</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">Annotated</span></code><span class="pre">[</span><a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">datetime</span></code></a> <span class="pre">|</span> <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a><span class="pre">]</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#sgu_client.models.modeled.ModeledGroundwaterLevelCollection.timeStamp" title="Link to this definition">#</a></dt>
-<dd><p>Response timestamp (UTC)</p>
-<dl class="field-list simple">
-<dt class="field-odd">Constraints<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>func</strong> = &lt;function _parse_api_datetime at 0x7f03d1f4c7c0&gt;</p></li>
-<li><p><strong>json_schema_input_type</strong> = PydanticUndefined</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute pydantic_field">
-<dt class="sig sig-object py" id="sgu_client.models.modeled.ModeledGroundwaterLevelCollection.links">
-<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">links</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a><span class="pre">[</span><a class="reference internal" href="models.html#sgu_client.models.shared.Link" title="sgu_client.models.shared.Link"><code class="xref py py-class docutils literal notranslate"><span class="pre">Link</span></code></a><span class="pre">]</span> <span class="pre">|</span> <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#sgu_client.models.modeled.ModeledGroundwaterLevelCollection.links" title="Link to this definition">#</a></dt>
-<dd><p>Related links</p>
-</dd></dl>
-
-<dl class="py attribute pydantic_field">
-<dt class="sig sig-object py" id="sgu_client.models.modeled.ModeledGroundwaterLevelCollection.crs">
-<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">crs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="models.html#sgu_client.models.shared.CRS" title="sgu_client.models.shared.CRS"><code class="xref py py-class docutils literal notranslate"><span class="pre">CRS</span></code></a> <span class="pre">|</span> <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#sgu_client.models.modeled.ModeledGroundwaterLevelCollection.crs" title="Link to this definition">#</a></dt>
-<dd><p>Coordinate reference system</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="sgu_client.models.modeled.ModeledGroundwaterLevelCollection.to_dataframe">
-<span class="sig-name descname"><span class="pre">to_dataframe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sort_by_date</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sgu_client/models/modeled.html#ModeledGroundwaterLevelCollection.to_dataframe"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sgu_client.models.modeled.ModeledGroundwaterLevelCollection.to_dataframe" title="Link to this definition">#</a></dt>
-<dd><p>Convert to pandas DataFrame with modeled level data.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>sort_by_date</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – Whether to sort the DataFrame by date.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v3.0.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a></span></p>
-</dd>
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>DataFrame containing modeled level data.</p>
-</dd>
-</dl>
+<p>Its DataFrame has no geometry columns. Sorted by <code class="docutils literal notranslate"><span class="pre">date</span></code>; <code class="docutils literal notranslate"><span class="pre">to_series()</span></code>
+defaults to <code class="docutils literal notranslate"><span class="pre">relative_level_small_resources</span></code>.</p>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">sgu_client</span><span class="w"> </span><span class="kn">import</span> <span class="n">SGUClient</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">SGUClient</span><span class="p">()</span> <span class="k">as</span> <span class="n">client</span><span class="p">:</span>
 <span class="gp">... </span>    <span class="n">levels</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">levels</span><span class="o">.</span><span class="n">modeled</span><span class="o">.</span><span class="n">get_levels</span><span class="p">(</span><span class="n">limit</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
 <span class="gp">... </span>    <span class="n">df</span> <span class="o">=</span> <span class="n">levels</span><span class="o">.</span><span class="n">to_dataframe</span><span class="p">()</span>
-<span class="gp">... </span>    <span class="c1"># dataFrame includes modeled percentile data sorted by date</span>
-<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="n">df</span><span class="p">[[</span><span class="s1">&#39;date&#39;</span><span class="p">,</span> <span class="s1">&#39;area_id&#39;</span><span class="p">,</span> <span class="s1">&#39;relative_level_small_resources&#39;</span><span class="p">,</span> <span class="s1">&#39;deviation_small_resources&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
+<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="n">df</span><span class="p">[[</span><span class="s1">&#39;date&#39;</span><span class="p">,</span> <span class="s1">&#39;area_id&#39;</span><span class="p">,</span> <span class="s1">&#39;relative_level_small_resources&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
+<span class="gp">... </span>    <span class="n">series</span> <span class="o">=</span> <span class="n">levels</span><span class="o">.</span><span class="n">to_series</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="s2">&quot;relative_level_large_resources&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="sgu_client.models.modeled.ModeledGroundwaterLevelCollection.to_series">
-<span class="sig-name descname"><span class="pre">to_series</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sort_by_date</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sgu_client/models/modeled.html#ModeledGroundwaterLevelCollection.to_series"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sgu_client.models.modeled.ModeledGroundwaterLevelCollection.to_series" title="Link to this definition">#</a></dt>
-<dd><p>Convert to pandas Series with modeled data.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>index</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span>) – Column name to use as index. If None, <cite>date</cite> is used.</p></li>
-<li><p><strong>data</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span>) – Column name to use as data. If None, <cite>relative_level_small_resources</cite> is used.</p></li>
-<li><p><strong>sort_by_date</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – Whether to sort the data by observation date before creating the Series.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.Series.html#pandas.Series" title="(in pandas v3.0.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Series</span></code></a></span></p>
-</dd>
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Series containing modeled data.</p>
-</dd>
-</dl>
-<p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">sgu_client</span><span class="w"> </span><span class="kn">import</span> <span class="n">SGUClient</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">SGUClient</span><span class="p">()</span> <span class="k">as</span> <span class="n">client</span><span class="p">:</span>
-<span class="gp">... </span>    <span class="n">levels</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">levels</span><span class="o">.</span><span class="n">modeled</span><span class="o">.</span><span class="n">get_levels</span><span class="p">(</span><span class="n">limit</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
-<span class="gp">... </span>    <span class="c1"># create time series with default columns (date, relative_level_small_resources)</span>
-<span class="gp">... </span>    <span class="n">series</span> <span class="o">=</span> <span class="n">levels</span><span class="o">.</span><span class="n">to_series</span><span class="p">()</span>
-<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="n">series</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
-<span class="gp">... </span>    <span class="c1"># use custom columns - compare small vs large resources</span>
-<span class="gp">... </span>    <span class="n">series_large</span> <span class="o">=</span> <span class="n">levels</span><span class="o">.</span><span class="n">to_series</span><span class="p">(</span>
-<span class="gp">... </span>        <span class="n">index</span><span class="o">=</span><span class="s2">&quot;date&quot;</span><span class="p">,</span>
-<span class="gp">... </span>        <span class="n">data</span><span class="o">=</span><span class="s2">&quot;relative_level_large_resources&quot;</span>
-<span class="gp">... </span>    <span class="p">)</span>
-</pre></div>
-</div>
-</dd></dl>
-
 </dd></dl>
 
 </section>

@@ -43,7 +43,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../_static/documentation_options.js?v=fe7df9b0"></script>
+    <script src="../_static/documentation_options.js?v=486e5634"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -441,7 +441,7 @@ for a walkthrough.</p>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="#sgu_client.models.chemistry.SamplingSiteCollection" title="sgu_client.models.chemistry.SamplingSiteCollection"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SamplingSiteCollection</span></code></a></p></td>
-<td><p>Collection of groundwater chemistry sampling sites (GeoJSON).</p></td>
+<td><p>Collection of groundwater chemistry sampling sites (GeoJSON FeatureCollection).</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#sgu_client.models.chemistry.SamplingSite" title="sgu_client.models.chemistry.SamplingSite"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SamplingSite</span></code></a></p></td>
 <td><p>A groundwater chemistry sampling site (GeoJSON Feature).</p></td>
@@ -450,7 +450,7 @@ for a walkthrough.</p>
 <td><p>Properties for a groundwater chemistry sampling site.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#sgu_client.models.chemistry.AnalysisResultCollection" title="sgu_client.models.chemistry.AnalysisResultCollection"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AnalysisResultCollection</span></code></a></p></td>
-<td><p>Collection of groundwater chemistry analysis results (GeoJSON).</p></td>
+<td><p>Collection of groundwater chemistry analysis results (GeoJSON FeatureCollection).</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#sgu_client.models.chemistry.AnalysisResult" title="sgu_client.models.chemistry.AnalysisResult"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AnalysisResult</span></code></a></p></td>
 <td><p>A groundwater chemistry analysis result (GeoJSON Feature).</p></td>
@@ -540,8 +540,11 @@ features are returned in the server’s default order.</p></li>
 <dd class="field-odd"><p>Typed groundwater chemistry sampling site</p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If not exactly one identifier is provided,
-    or if no site or multiple sites are found</p>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference internal" href="config.html#sgu_client.SGUNotFoundError" title="sgu_client.SGUNotFoundError"><strong>SGUNotFoundError</strong></a> – If no site matches.</p></li>
+<li><p><a class="reference internal" href="config.html#sgu_client.SGUAmbiguousError" title="sgu_client.SGUAmbiguousError"><strong>SGUAmbiguousError</strong></a> – If several sites match.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If not exactly one identifier is provided.</p></li>
+</ul>
 </dd>
 </dl>
 <p class="rubric">Example</p>
@@ -581,8 +584,10 @@ features are returned in the server’s default order.</p></li>
 <dd class="field-odd"><p>Typed collection of groundwater chemistry sampling sites</p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If not exactly one identifier is provided,
-    or if any of the requested sites is not found</p>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference internal" href="config.html#sgu_client.SGUNotFoundError" title="sgu_client.SGUNotFoundError"><strong>SGUNotFoundError</strong></a> – If any of the requested sites is not found.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If not exactly one identifier is provided.</p></li>
+</ul>
 </dd>
 </dl>
 <p class="rubric">Example</p>
@@ -679,8 +684,13 @@ the recommended (and fastest) way to identify a site. Using <cite>site_id</cite>
 <dd class="field-odd"><p>Typed collection of groundwater chemistry analysis results</p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If not exactly one site identifier is provided,
-    or if site lookup fails</p>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference internal" href="config.html#sgu_client.SGUNotFoundError" title="sgu_client.SGUNotFoundError"><strong>SGUNotFoundError</strong></a> – If a site_id or site_name matches no site.</p></li>
+<li><p><a class="reference internal" href="config.html#sgu_client.SGUAmbiguousError" title="sgu_client.SGUAmbiguousError"><strong>SGUAmbiguousError</strong></a> – If a site_id or site_name matches several sites.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If not exactly one of national_site_id, site_id or
+    site_name is provided, or if the
+    looked-up site has no national_site_id.</p></li>
+</ul>
 </dd>
 </dl>
 <p class="rubric">Example</p>
@@ -726,8 +736,12 @@ the recommended (and fastest) way to identify sites. Using <cite>site_id</cite> 
 <dd class="field-odd"><p>Typed collection of groundwater chemistry analysis results</p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If not exactly one site identifier is provided,
-    or if any site is not found in the lookup</p>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference internal" href="config.html#sgu_client.SGUNotFoundError" title="sgu_client.SGUNotFoundError"><strong>SGUNotFoundError</strong></a> – If any site_id or site_name matches no site.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If not exactly one of national_site_id, site_id or
+    site_name is provided, or if a
+    looked-up site has no national_site_id.</p></li>
+</ul>
 </dd>
 </dl>
 <p class="rubric">Example</p>
@@ -775,8 +789,12 @@ e.g. ‘pH’, ‘Bly’, ‘Nitratkväve’, ‘Klorid’</p></li>
 <dd class="field-odd"><p>Typed collection of groundwater chemistry analysis results</p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If more than one site identifier is provided,
-    or if any site is not found in the lookup</p>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference internal" href="config.html#sgu_client.SGUNotFoundError" title="sgu_client.SGUNotFoundError"><strong>SGUNotFoundError</strong></a> – If any site_id or site_name matches no site.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If more than one of national_site_id, site_id or
+    site_name is provided, or if a
+    looked-up site has no national_site_id.</p></li>
+</ul>
 </dd>
 </dl>
 <p class="rubric">Example</p>
@@ -1186,7 +1204,7 @@ e.g. ‘pH’, ‘Bly’, ‘Nitratkväve’, ‘Klorid’</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Constraints<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>func</strong> = &lt;function _parse_api_datetime at 0x7f03d1f4c7c0&gt;</p></li>
+<li><p><strong>func</strong> = &lt;function _parse_api_datetime at 0x7fa47d9d60c0&gt;</p></li>
 <li><p><strong>json_schema_input_type</strong> = PydanticUndefined</p></li>
 </ul>
 </dd>
@@ -1200,7 +1218,7 @@ e.g. ‘pH’, ‘Bly’, ‘Nitratkväve’, ‘Klorid’</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Constraints<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>func</strong> = &lt;function _parse_api_datetime at 0x7f03d1f4c7c0&gt;</p></li>
+<li><p><strong>func</strong> = &lt;function _parse_api_datetime at 0x7fa47d9d60c0&gt;</p></li>
 <li><p><strong>json_schema_input_type</strong> = PydanticUndefined</p></li>
 </ul>
 </dd>
@@ -1214,7 +1232,7 @@ e.g. ‘pH’, ‘Bly’, ‘Nitratkväve’, ‘Klorid’</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Constraints<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>func</strong> = &lt;function _parse_api_datetime at 0x7f03d1f4c7c0&gt;</p></li>
+<li><p><strong>func</strong> = &lt;function _parse_api_datetime at 0x7fa47d9d60c0&gt;</p></li>
 <li><p><strong>json_schema_input_type</strong> = PydanticUndefined</p></li>
 </ul>
 </dd>
@@ -1293,29 +1311,6 @@ e.g. ‘pH’, ‘Bly’, ‘Nitratkväve’, ‘Klorid’</p></li>
 <dt class="sig sig-object py" id="sgu_client.models.chemistry.SamplingSite">
 <em class="property"><span class="pre">pydantic</span> <span class="pre">model</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SamplingSite</span></span><a class="reference internal" href="../_modules/sgu_client/models/chemistry.html#SamplingSite"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sgu_client.models.chemistry.SamplingSite" title="Link to this definition">#</a></dt>
 <dd><p>A groundwater chemistry sampling site (GeoJSON Feature).</p>
-<dl class="py attribute pydantic_field">
-<dt class="sig sig-object py" id="sgu_client.models.chemistry.SamplingSite.type">
-<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Literal</span></code></a><span class="pre">[</span><code class="docutils literal notranslate"><span class="pre">'Feature'</span></code><span class="pre">]</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Feature'</span></em><a class="headerlink" href="#sgu_client.models.chemistry.SamplingSite.type" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute pydantic_field">
-<dt class="sig sig-object py" id="sgu_client.models.chemistry.SamplingSite.id">
-<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></em><em class="property"> <span class="pre">[Required]</span></em><a class="headerlink" href="#sgu_client.models.chemistry.SamplingSite.id" title="Link to this definition">#</a></dt>
-<dd><p>Site ID</p>
-</dd></dl>
-
-<dl class="py attribute pydantic_field">
-<dt class="sig sig-object py" id="sgu_client.models.chemistry.SamplingSite.geometry">
-<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">geometry</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="models.html#sgu_client.models.shared.Point" title="sgu_client.models.shared.Point"><code class="xref py py-class docutils literal notranslate"><span class="pre">Point</span></code></a> <span class="pre">|</span> <a class="reference internal" href="models.html#sgu_client.models.shared.MultiPoint" title="sgu_client.models.shared.MultiPoint"><code class="xref py py-class docutils literal notranslate"><span class="pre">MultiPoint</span></code></a> <span class="pre">|</span> <a class="reference internal" href="models.html#sgu_client.models.shared.LineString" title="sgu_client.models.shared.LineString"><code class="xref py py-class docutils literal notranslate"><span class="pre">LineString</span></code></a> <span class="pre">|</span> <a class="reference internal" href="models.html#sgu_client.models.shared.Polygon" title="sgu_client.models.shared.Polygon"><code class="xref py py-class docutils literal notranslate"><span class="pre">Polygon</span></code></a> <span class="pre">|</span> <a class="reference internal" href="models.html#sgu_client.models.shared.MultiPolygon" title="sgu_client.models.shared.MultiPolygon"><code class="xref py py-class docutils literal notranslate"><span class="pre">MultiPolygon</span></code></a> <span class="pre">|</span> <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#sgu_client.models.chemistry.SamplingSite.geometry" title="Link to this definition">#</a></dt>
-<dd><p>Site geometry</p>
-</dd></dl>
-
-<dl class="py attribute pydantic_field">
-<dt class="sig sig-object py" id="sgu_client.models.chemistry.SamplingSite.properties">
-<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">properties</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#sgu_client.models.chemistry.SamplingSiteProperties" title="sgu_client.models.chemistry.SamplingSiteProperties"><code class="xref py py-class docutils literal notranslate"><span class="pre">SamplingSiteProperties</span></code></a></em><em class="property"> <span class="pre">[Required]</span></em><a class="headerlink" href="#sgu_client.models.chemistry.SamplingSite.properties" title="Link to this definition">#</a></dt>
-<dd><p>Site properties</p>
-</dd></dl>
-
 </dd></dl>
 
 <dl class="py class pydantic_model">
@@ -1497,7 +1492,7 @@ e.g. ‘pH’, ‘Bly’, ‘Nitratkväve’, ‘Klorid’</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Constraints<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>func</strong> = &lt;function _parse_api_datetime at 0x7f03d1f4c7c0&gt;</p></li>
+<li><p><strong>func</strong> = &lt;function _parse_api_datetime at 0x7fa47d9d60c0&gt;</p></li>
 <li><p><strong>json_schema_input_type</strong> = PydanticUndefined</p></li>
 </ul>
 </dd>
@@ -1511,7 +1506,7 @@ e.g. ‘pH’, ‘Bly’, ‘Nitratkväve’, ‘Klorid’</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Constraints<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>func</strong> = &lt;function _parse_api_datetime at 0x7f03d1f4c7c0&gt;</p></li>
+<li><p><strong>func</strong> = &lt;function _parse_api_datetime at 0x7fa47d9d60c0&gt;</p></li>
 <li><p><strong>json_schema_input_type</strong> = PydanticUndefined</p></li>
 </ul>
 </dd>
@@ -1657,7 +1652,7 @@ e.g. ‘pH’, ‘Bly’, ‘Nitratkväve’, ‘Klorid’</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Constraints<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>func</strong> = &lt;function _parse_api_datetime at 0x7f03d1f4c7c0&gt;</p></li>
+<li><p><strong>func</strong> = &lt;function _parse_api_datetime at 0x7fa47d9d60c0&gt;</p></li>
 <li><p><strong>json_schema_input_type</strong> = PydanticUndefined</p></li>
 </ul>
 </dd>
@@ -1671,7 +1666,7 @@ e.g. ‘pH’, ‘Bly’, ‘Nitratkväve’, ‘Klorid’</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Constraints<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>func</strong> = &lt;function _parse_api_datetime at 0x7f03d1f4c7c0&gt;</p></li>
+<li><p><strong>func</strong> = &lt;function _parse_api_datetime at 0x7fa47d9d60c0&gt;</p></li>
 <li><p><strong>json_schema_input_type</strong> = PydanticUndefined</p></li>
 </ul>
 </dd>
@@ -1900,242 +1895,39 @@ e.g. ‘pH’, ‘Bly’, ‘Nitratkväve’, ‘Klorid’</p></li>
 <dt class="sig sig-object py" id="sgu_client.models.chemistry.AnalysisResult">
 <em class="property"><span class="pre">pydantic</span> <span class="pre">model</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">AnalysisResult</span></span><a class="reference internal" href="../_modules/sgu_client/models/chemistry.html#AnalysisResult"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sgu_client.models.chemistry.AnalysisResult" title="Link to this definition">#</a></dt>
 <dd><p>A groundwater chemistry analysis result (GeoJSON Feature).</p>
-<dl class="py attribute pydantic_field">
-<dt class="sig sig-object py" id="sgu_client.models.chemistry.AnalysisResult.type">
-<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Literal</span></code></a><span class="pre">[</span><code class="docutils literal notranslate"><span class="pre">'Feature'</span></code><span class="pre">]</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Feature'</span></em><a class="headerlink" href="#sgu_client.models.chemistry.AnalysisResult.type" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute pydantic_field">
-<dt class="sig sig-object py" id="sgu_client.models.chemistry.AnalysisResult.id">
-<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></em><em class="property"> <span class="pre">[Required]</span></em><a class="headerlink" href="#sgu_client.models.chemistry.AnalysisResult.id" title="Link to this definition">#</a></dt>
-<dd><p>Result ID</p>
-</dd></dl>
-
-<dl class="py attribute pydantic_field">
-<dt class="sig sig-object py" id="sgu_client.models.chemistry.AnalysisResult.geometry">
-<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">geometry</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="models.html#sgu_client.models.shared.Point" title="sgu_client.models.shared.Point"><code class="xref py py-class docutils literal notranslate"><span class="pre">Point</span></code></a> <span class="pre">|</span> <a class="reference internal" href="models.html#sgu_client.models.shared.MultiPoint" title="sgu_client.models.shared.MultiPoint"><code class="xref py py-class docutils literal notranslate"><span class="pre">MultiPoint</span></code></a> <span class="pre">|</span> <a class="reference internal" href="models.html#sgu_client.models.shared.LineString" title="sgu_client.models.shared.LineString"><code class="xref py py-class docutils literal notranslate"><span class="pre">LineString</span></code></a> <span class="pre">|</span> <a class="reference internal" href="models.html#sgu_client.models.shared.Polygon" title="sgu_client.models.shared.Polygon"><code class="xref py py-class docutils literal notranslate"><span class="pre">Polygon</span></code></a> <span class="pre">|</span> <a class="reference internal" href="models.html#sgu_client.models.shared.MultiPolygon" title="sgu_client.models.shared.MultiPolygon"><code class="xref py py-class docutils literal notranslate"><span class="pre">MultiPolygon</span></code></a> <span class="pre">|</span> <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#sgu_client.models.chemistry.AnalysisResult.geometry" title="Link to this definition">#</a></dt>
-<dd><p>Result geometry</p>
-</dd></dl>
-
-<dl class="py attribute pydantic_field">
-<dt class="sig sig-object py" id="sgu_client.models.chemistry.AnalysisResult.properties">
-<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">properties</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#sgu_client.models.chemistry.AnalysisResultProperties" title="sgu_client.models.chemistry.AnalysisResultProperties"><code class="xref py py-class docutils literal notranslate"><span class="pre">AnalysisResultProperties</span></code></a></em><em class="property"> <span class="pre">[Required]</span></em><a class="headerlink" href="#sgu_client.models.chemistry.AnalysisResult.properties" title="Link to this definition">#</a></dt>
-<dd><p>Analysis result properties</p>
-</dd></dl>
-
 </dd></dl>
 
 <dl class="py class pydantic_model">
 <dt class="sig sig-object py" id="sgu_client.models.chemistry.SamplingSiteCollection">
 <em class="property"><span class="pre">pydantic</span> <span class="pre">model</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SamplingSiteCollection</span></span><a class="reference internal" href="../_modules/sgu_client/models/chemistry.html#SamplingSiteCollection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sgu_client.models.chemistry.SamplingSiteCollection" title="Link to this definition">#</a></dt>
-<dd><p>Collection of groundwater chemistry sampling sites (GeoJSON).</p>
-<p>A GeoJSON FeatureCollection of sampling sites.</p>
-<dl class="py attribute pydantic_field">
-<dt class="sig sig-object py" id="sgu_client.models.chemistry.SamplingSiteCollection.type">
-<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Literal</span></code></a><span class="pre">[</span><code class="docutils literal notranslate"><span class="pre">'FeatureCollection'</span></code><span class="pre">]</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'FeatureCollection'</span></em><a class="headerlink" href="#sgu_client.models.chemistry.SamplingSiteCollection.type" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute pydantic_field">
-<dt class="sig sig-object py" id="sgu_client.models.chemistry.SamplingSiteCollection.features">
-<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">features</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a><span class="pre">[</span><a class="reference internal" href="#sgu_client.models.chemistry.SamplingSite" title="sgu_client.models.chemistry.SamplingSite"><code class="xref py py-class docutils literal notranslate"><span class="pre">SamplingSite</span></code></a><span class="pre">]</span></em><em class="property"> <span class="pre">[Optional]</span></em><a class="headerlink" href="#sgu_client.models.chemistry.SamplingSiteCollection.features" title="Link to this definition">#</a></dt>
-<dd><p>Sampling site features</p>
-</dd></dl>
-
-<dl class="py attribute pydantic_field">
-<dt class="sig sig-object py" id="sgu_client.models.chemistry.SamplingSiteCollection.totalFeatures">
-<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">totalFeatures</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a> <span class="pre">|</span> <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#sgu_client.models.chemistry.SamplingSiteCollection.totalFeatures" title="Link to this definition">#</a></dt>
-<dd><p>Total number of features</p>
-</dd></dl>
-
-<dl class="py attribute pydantic_field">
-<dt class="sig sig-object py" id="sgu_client.models.chemistry.SamplingSiteCollection.numberMatched">
-<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">numberMatched</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a> <span class="pre">|</span> <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#sgu_client.models.chemistry.SamplingSiteCollection.numberMatched" title="Link to this definition">#</a></dt>
-<dd><p>Number of features matching query</p>
-</dd></dl>
-
-<dl class="py attribute pydantic_field">
-<dt class="sig sig-object py" id="sgu_client.models.chemistry.SamplingSiteCollection.numberReturned">
-<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">numberReturned</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a> <span class="pre">|</span> <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#sgu_client.models.chemistry.SamplingSiteCollection.numberReturned" title="Link to this definition">#</a></dt>
-<dd><p>Number of features returned</p>
-</dd></dl>
-
-<dl class="py attribute pydantic_field">
-<dt class="sig sig-object py" id="sgu_client.models.chemistry.SamplingSiteCollection.timeStamp">
-<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">timeStamp</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">Annotated</span></code><span class="pre">[</span><a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">datetime</span></code></a> <span class="pre">|</span> <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a><span class="pre">]</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#sgu_client.models.chemistry.SamplingSiteCollection.timeStamp" title="Link to this definition">#</a></dt>
-<dd><p>Response timestamp (UTC)</p>
-<dl class="field-list simple">
-<dt class="field-odd">Constraints<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>func</strong> = &lt;function _parse_api_datetime at 0x7f03d1f4c7c0&gt;</p></li>
-<li><p><strong>json_schema_input_type</strong> = PydanticUndefined</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute pydantic_field">
-<dt class="sig sig-object py" id="sgu_client.models.chemistry.SamplingSiteCollection.links">
-<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">links</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a><span class="pre">[</span><a class="reference internal" href="models.html#sgu_client.models.shared.Link" title="sgu_client.models.shared.Link"><code class="xref py py-class docutils literal notranslate"><span class="pre">Link</span></code></a><span class="pre">]</span> <span class="pre">|</span> <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#sgu_client.models.chemistry.SamplingSiteCollection.links" title="Link to this definition">#</a></dt>
-<dd><p>Related links</p>
-</dd></dl>
-
-<dl class="py attribute pydantic_field">
-<dt class="sig sig-object py" id="sgu_client.models.chemistry.SamplingSiteCollection.crs">
-<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">crs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="models.html#sgu_client.models.shared.CRS" title="sgu_client.models.shared.CRS"><code class="xref py py-class docutils literal notranslate"><span class="pre">CRS</span></code></a> <span class="pre">|</span> <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#sgu_client.models.chemistry.SamplingSiteCollection.crs" title="Link to this definition">#</a></dt>
-<dd><p>Coordinate reference system</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="sgu_client.models.chemistry.SamplingSiteCollection.to_dataframe">
-<span class="sig-name descname"><span class="pre">to_dataframe</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sgu_client/models/chemistry.html#SamplingSiteCollection.to_dataframe"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sgu_client.models.chemistry.SamplingSiteCollection.to_dataframe" title="Link to this definition">#</a></dt>
-<dd><p>Convert to pandas DataFrame with flattened sampling site properties.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v3.0.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a></span></p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>DataFrame containing sampling site data with parsed datetime columns.</p>
-</dd>
-</dl>
+<dd><p>Collection of groundwater chemistry sampling sites (GeoJSON FeatureCollection).</p>
+<p>Its DataFrame has <code class="docutils literal notranslate"><span class="pre">longitude</span></code> and <code class="docutils literal notranslate"><span class="pre">latitude</span></code> columns, null for sites without
+a geometry.</p>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">sgu_client</span><span class="w"> </span><span class="kn">import</span> <span class="n">SGUClient</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">SGUClient</span><span class="p">()</span> <span class="k">as</span> <span class="n">client</span><span class="p">:</span>
 <span class="gp">... </span>    <span class="n">sites</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">chemistry</span><span class="o">.</span><span class="n">get_sampling_sites</span><span class="p">(</span><span class="n">limit</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
 <span class="gp">... </span>    <span class="n">df</span> <span class="o">=</span> <span class="n">sites</span><span class="o">.</span><span class="n">to_dataframe</span><span class="p">()</span>
-<span class="gp">... </span>    <span class="c1"># one row per site, with the feature ID in &#39;feature_id&#39;</span>
 <span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="n">df</span><span class="p">[[</span><span class="s1">&#39;national_site_id&#39;</span><span class="p">,</span> <span class="s1">&#39;station_id&#39;</span><span class="p">,</span> <span class="s1">&#39;site_name&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
-<span class="gp">... </span>    <span class="c1"># established_date, first_sample_date and latest_sample_date</span>
-<span class="gp">... </span>    <span class="c1"># are parsed as UTC datetimes</span>
 </pre></div>
 </div>
-</dd></dl>
-
 </dd></dl>
 
 <dl class="py class pydantic_model">
 <dt class="sig sig-object py" id="sgu_client.models.chemistry.AnalysisResultCollection">
 <em class="property"><span class="pre">pydantic</span> <span class="pre">model</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">AnalysisResultCollection</span></span><a class="reference internal" href="../_modules/sgu_client/models/chemistry.html#AnalysisResultCollection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sgu_client.models.chemistry.AnalysisResultCollection" title="Link to this definition">#</a></dt>
-<dd><p>Collection of groundwater chemistry analysis results (GeoJSON).</p>
-<p>A GeoJSON FeatureCollection of analysis results.</p>
-<dl class="py attribute pydantic_field">
-<dt class="sig sig-object py" id="sgu_client.models.chemistry.AnalysisResultCollection.type">
-<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Literal</span></code></a><span class="pre">[</span><code class="docutils literal notranslate"><span class="pre">'FeatureCollection'</span></code><span class="pre">]</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'FeatureCollection'</span></em><a class="headerlink" href="#sgu_client.models.chemistry.AnalysisResultCollection.type" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute pydantic_field">
-<dt class="sig sig-object py" id="sgu_client.models.chemistry.AnalysisResultCollection.features">
-<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">features</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a><span class="pre">[</span><a class="reference internal" href="#sgu_client.models.chemistry.AnalysisResult" title="sgu_client.models.chemistry.AnalysisResult"><code class="xref py py-class docutils literal notranslate"><span class="pre">AnalysisResult</span></code></a><span class="pre">]</span></em><em class="property"> <span class="pre">[Optional]</span></em><a class="headerlink" href="#sgu_client.models.chemistry.AnalysisResultCollection.features" title="Link to this definition">#</a></dt>
-<dd><p>Analysis result features</p>
-</dd></dl>
-
-<dl class="py attribute pydantic_field">
-<dt class="sig sig-object py" id="sgu_client.models.chemistry.AnalysisResultCollection.totalFeatures">
-<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">totalFeatures</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a> <span class="pre">|</span> <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#sgu_client.models.chemistry.AnalysisResultCollection.totalFeatures" title="Link to this definition">#</a></dt>
-<dd><p>Total number of features</p>
-</dd></dl>
-
-<dl class="py attribute pydantic_field">
-<dt class="sig sig-object py" id="sgu_client.models.chemistry.AnalysisResultCollection.numberMatched">
-<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">numberMatched</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a> <span class="pre">|</span> <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#sgu_client.models.chemistry.AnalysisResultCollection.numberMatched" title="Link to this definition">#</a></dt>
-<dd><p>Number of features matching query</p>
-</dd></dl>
-
-<dl class="py attribute pydantic_field">
-<dt class="sig sig-object py" id="sgu_client.models.chemistry.AnalysisResultCollection.numberReturned">
-<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">numberReturned</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a> <span class="pre">|</span> <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#sgu_client.models.chemistry.AnalysisResultCollection.numberReturned" title="Link to this definition">#</a></dt>
-<dd><p>Number of features returned</p>
-</dd></dl>
-
-<dl class="py attribute pydantic_field">
-<dt class="sig sig-object py" id="sgu_client.models.chemistry.AnalysisResultCollection.timeStamp">
-<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">timeStamp</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">Annotated</span></code><span class="pre">[</span><a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">datetime</span></code></a> <span class="pre">|</span> <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a><span class="pre">]</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#sgu_client.models.chemistry.AnalysisResultCollection.timeStamp" title="Link to this definition">#</a></dt>
-<dd><p>Response timestamp (UTC)</p>
-<dl class="field-list simple">
-<dt class="field-odd">Constraints<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>func</strong> = &lt;function _parse_api_datetime at 0x7f03d1f4c7c0&gt;</p></li>
-<li><p><strong>json_schema_input_type</strong> = PydanticUndefined</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute pydantic_field">
-<dt class="sig sig-object py" id="sgu_client.models.chemistry.AnalysisResultCollection.links">
-<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">links</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a><span class="pre">[</span><a class="reference internal" href="models.html#sgu_client.models.shared.Link" title="sgu_client.models.shared.Link"><code class="xref py py-class docutils literal notranslate"><span class="pre">Link</span></code></a><span class="pre">]</span> <span class="pre">|</span> <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#sgu_client.models.chemistry.AnalysisResultCollection.links" title="Link to this definition">#</a></dt>
-<dd><p>Related links</p>
-</dd></dl>
-
-<dl class="py attribute pydantic_field">
-<dt class="sig sig-object py" id="sgu_client.models.chemistry.AnalysisResultCollection.crs">
-<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">crs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="models.html#sgu_client.models.shared.CRS" title="sgu_client.models.shared.CRS"><code class="xref py py-class docutils literal notranslate"><span class="pre">CRS</span></code></a> <span class="pre">|</span> <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#sgu_client.models.chemistry.AnalysisResultCollection.crs" title="Link to this definition">#</a></dt>
-<dd><p>Coordinate reference system</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="sgu_client.models.chemistry.AnalysisResultCollection.to_dataframe">
-<span class="sig-name descname"><span class="pre">to_dataframe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sort_by_date</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sgu_client/models/chemistry.html#AnalysisResultCollection.to_dataframe"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sgu_client.models.chemistry.AnalysisResultCollection.to_dataframe" title="Link to this definition">#</a></dt>
-<dd><p>Convert to pandas DataFrame with analysis result data.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>sort_by_date</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – Whether to sort the DataFrame by sampling date.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v3.0.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a></span></p>
-</dd>
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>DataFrame containing analysis result data.</p>
-</dd>
-</dl>
+<dd><p>Collection of groundwater chemistry analysis results (GeoJSON FeatureCollection).</p>
+<p>Its DataFrame has no geometry columns. Sorted by <code class="docutils literal notranslate"><span class="pre">sampling_date</span></code>;
+<code class="docutils literal notranslate"><span class="pre">to_series()</span></code> defaults to <code class="docutils literal notranslate"><span class="pre">measurement_value</span></code>. <code class="docutils literal notranslate"><span class="pre">pivot_by_parameter()</span></code>
+gives one column per chemical parameter.</p>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">sgu_client</span><span class="w"> </span><span class="kn">import</span> <span class="n">SGUClient</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">SGUClient</span><span class="p">()</span> <span class="k">as</span> <span class="n">client</span><span class="p">:</span>
 <span class="gp">... </span>    <span class="n">results</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">chemistry</span><span class="o">.</span><span class="n">get_results_by_site</span><span class="p">(</span><span class="mi">359366</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
 <span class="gp">... </span>    <span class="n">df</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">to_dataframe</span><span class="p">()</span>
-<span class="gp">... </span>    <span class="c1"># one row per result, with the feature ID in &#39;feature_id&#39;</span>
 <span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="n">df</span><span class="p">[[</span><span class="s1">&#39;sampling_date&#39;</span><span class="p">,</span> <span class="s1">&#39;parameter_name&#39;</span><span class="p">,</span> <span class="s1">&#39;measurement_value&#39;</span><span class="p">]])</span>
-<span class="gp">... </span>    <span class="c1"># sampling_date, sampling_end_date, registration_date and</span>
-<span class="gp">... </span>    <span class="c1"># analysis_date are parsed as UTC datetimes</span>
 </pre></div>
 </div>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="sgu_client.models.chemistry.AnalysisResultCollection.to_series">
-<span class="sig-name descname"><span class="pre">to_series</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sort_by_date</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sgu_client/models/chemistry.html#AnalysisResultCollection.to_series"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sgu_client.models.chemistry.AnalysisResultCollection.to_series" title="Link to this definition">#</a></dt>
-<dd><p>Convert to pandas Series with analysis result data.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>index</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span>) – Column name to use as index. If None, <cite>sampling_date</cite> is used.</p></li>
-<li><p><strong>data</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span>) – Column name to use as data. If None, <cite>measurement_value</cite> is used.</p></li>
-<li><p><strong>sort_by_date</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – Whether to sort the data by sampling date before
-creating the Series.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.Series.html#pandas.Series" title="(in pandas v3.0.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Series</span></code></a></span></p>
-</dd>
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Series containing analysis result data.</p>
-</dd>
-</dl>
-<p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">sgu_client</span><span class="w"> </span><span class="kn">import</span> <span class="n">SGUClient</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">SGUClient</span><span class="p">()</span> <span class="k">as</span> <span class="n">client</span><span class="p">:</span>
-<span class="gp">... </span>    <span class="n">results</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">chemistry</span><span class="o">.</span><span class="n">get_results_by_site</span><span class="p">(</span><span class="mi">359366</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
-<span class="gp">... </span>    <span class="c1"># time series with default columns (sampling_date, measurement_value)</span>
-<span class="gp">... </span>    <span class="n">series</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">to_series</span><span class="p">()</span>
-<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="n">series</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
-<span class="gp">... </span>    <span class="c1"># use custom columns - e.g., parameter names as data</span>
-<span class="gp">... </span>    <span class="n">series_params</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">to_series</span><span class="p">(</span>
-<span class="gp">... </span>        <span class="n">index</span><span class="o">=</span><span class="s2">&quot;sampling_date&quot;</span><span class="p">,</span>
-<span class="gp">... </span>        <span class="n">data</span><span class="o">=</span><span class="s2">&quot;parameter_name&quot;</span>
-<span class="gp">... </span>    <span class="p">)</span>
-</pre></div>
-</div>
-</dd></dl>
-
 <dl class="py method">
 <dt class="sig sig-object py" id="sgu_client.models.chemistry.AnalysisResultCollection.pivot_by_parameter">
 <span class="sig-name descname"><span class="pre">pivot_by_parameter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">values</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'measurement_value'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'sampling_date'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">columns</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'parameter_name'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aggfunc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mean'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sgu_client/models/chemistry.html#AnalysisResultCollection.pivot_by_parameter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sgu_client.models.chemistry.AnalysisResultCollection.pivot_by_parameter" title="Link to this definition">#</a></dt>

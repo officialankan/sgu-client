@@ -43,7 +43,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../_static/documentation_options.js?v=fe7df9b0"></script>
+    <script src="../_static/documentation_options.js?v=486e5634"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -417,22 +417,82 @@
 <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">&quot;station_id&quot;</span><span class="p">)[</span><span class="s2">&quot;water_level_masl_m&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>The GeoJSON structure is flattened:</p>
+<p>The GeoJSON structure is flattened the same way for every collection:</p>
 <ul class="simple">
-<li><p>Each feature becomes a row.</p></li>
-<li><p>Point coordinates become <code class="docutils literal notranslate"><span class="pre">longitude</span></code> and <code class="docutils literal notranslate"><span class="pre">latitude</span></code> columns.</p></li>
-<li><p>Every property becomes a top-level column, using its English field name.</p></li>
+<li><p>Each feature becomes a row. The index is the row’s position in the API response.</p></li>
+<li><p>The first column is <code class="docutils literal notranslate"><span class="pre">feature_id</span></code>, SGU’s id for the feature (e.g. <code class="docutils literal notranslate"><span class="pre">stationer.4086</span></code>).</p></li>
+<li><p>Next come the collection’s geometry columns, if it has any (see below).</p></li>
+<li><p>Then every property becomes a column, using its English field name, in the order of
+the properties model.</p></li>
 <li><p>Date columns are <code class="docutils literal notranslate"><span class="pre">datetime64[ns,</span> <span class="pre">UTC]</span></code>, even when every value is missing (<code class="docutils literal notranslate"><span class="pre">NaT</span></code>).
 See <a class="reference internal" href="getting_started.html#dates-and-times"><span class="std std-ref">Dates and times</span></a>.</p></li>
-<li><p>Measurement, level and result collections are sorted by date (pass
-<code class="docutils literal notranslate"><span class="pre">sort_by_date=False</span></code> to keep the API order).</p></li>
+<li><p>An empty collection gives an empty DataFrame that still has all of these columns.</p></li>
 </ul>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span># GeoJSON feature                                   # DataFrame row
-{&quot;geometry&quot;: {&quot;type&quot;: &quot;Point&quot;,                      longitude  latitude  station_id  ...
-              &quot;coordinates&quot;: [15.5, 58.3]},              15.5      58.3        95_2  ...
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span># GeoJSON feature                          # DataFrame row
+{&quot;id&quot;: &quot;stationer.4086&quot;,                   feature_id      longitude  latitude  station_id  ...
+ &quot;geometry&quot;: {&quot;type&quot;: &quot;Point&quot;,             stationer.4086       15.5      58.3        95_2  ...
+              &quot;coordinates&quot;: [15.5, 58.3]},
  &quot;properties&quot;: {&quot;platsbeteckning&quot;: &quot;95_2&quot;, ...}}
 </pre></div>
 </div>
+</section>
+<section id="how-the-collections-differ">
+<h2>How the collections differ<a class="headerlink" href="#how-the-collections-differ" title="Link to this heading">#</a></h2>
+<p>Which geometry columns a collection has, whether it is sorted, and whether it has
+<code class="docutils literal notranslate"><span class="pre">to_series()</span></code> depends on the collection, never on what a particular response contains:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Collection</p></th>
+<th class="head"><p>Geometry columns</p></th>
+<th class="head"><p>Sorted by</p></th>
+<th class="head"><p><code class="docutils literal notranslate"><span class="pre">to_series()</span></code></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Observed stations</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">longitude</span></code>, <code class="docutils literal notranslate"><span class="pre">latitude</span></code></p></td>
+<td><p>—</p></td>
+<td><p>—</p></td>
+</tr>
+<tr class="row-odd"><td><p>Observed measurements</p></td>
+<td><p>—</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">observation_date</span></code></p></td>
+<td><p>✓</p></td>
+</tr>
+<tr class="row-even"><td><p>Modeled areas</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">centroid_longitude</span></code>, <code class="docutils literal notranslate"><span class="pre">centroid_latitude</span></code></p></td>
+<td><p>—</p></td>
+<td><p>—</p></td>
+</tr>
+<tr class="row-odd"><td><p>Modeled levels</p></td>
+<td><p>—</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">date</span></code></p></td>
+<td><p>✓</p></td>
+</tr>
+<tr class="row-even"><td><p>Sampling sites</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">longitude</span></code>, <code class="docutils literal notranslate"><span class="pre">latitude</span></code></p></td>
+<td><p>—</p></td>
+<td><p>—</p></td>
+</tr>
+<tr class="row-odd"><td><p>Analysis results</p></td>
+<td><p>—</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">sampling_date</span></code></p></td>
+<td><p>✓</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<ul class="simple">
+<li><p>Point coordinates are null for stations and sites that SGU publishes without a
+location.</p></li>
+<li><p>Areas are square grid cells. SGU sends only each cell’s outline, so sgu-client
+computes <code class="docutils literal notranslate"><span class="pre">centroid_longitude</span></code>/<code class="docutils literal notranslate"><span class="pre">centroid_latitude</span></code> as the centre of the cell. Modeled
+levels have no geometry of their own: join them to areas on <code class="docutils literal notranslate"><span class="pre">area_id</span></code> to map them.</p></li>
+<li><p>The sorted collections take <code class="docutils literal notranslate"><span class="pre">sort_by_date</span></code> (default <code class="docutils literal notranslate"><span class="pre">True</span></code>). Rows with the same date
+keep their API order, and the index stays the API position, so
+<code class="docutils literal notranslate"><span class="pre">to_dataframe(sort_by_date=False)</span></code> or <code class="docutils literal notranslate"><span class="pre">df.sort_index()</span></code> gives the API order back.</p></li>
+<li><p>Analysis results also have <code class="docutils literal notranslate"><span class="pre">pivot_by_parameter()</span></code>; see below.</p></li>
+</ul>
 </section>
 <section id="series">
 <h2>Series<a class="headerlink" href="#series" title="Link to this heading">#</a></h2>
@@ -530,6 +590,7 @@ sampling date:</p>
   <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#dataframes">DataFrames</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#how-the-collections-differ">How the collections differ</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#series">Series</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#one-column-per-chemical-parameter">One column per chemical parameter</a></li>
 </ul>
