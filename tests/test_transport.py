@@ -28,15 +28,25 @@ def transport():
 
 
 def test_returns_status_and_body_without_judging_them(transport):
-    response = Mock(status_code=404, text='{"error": "Not Found"}')
+    response = Mock(status_code=404, content=b'{"error": "Not Found"}')
     with patch.object(transport._session, "request", return_value=response):
         result = transport.fetch(URL, {"limit": 1})
 
     assert result == TransportResponse(404, '{"error": "Not Found"}')
 
 
+def test_decodes_the_body_as_utf8_whatever_the_content_type(transport):
+    # JSON is always UTF-8; requests would guess the charset for e.g. geo+json
+    body = '{"kommun": "Mölndal"}'.encode()
+    response = Mock(status_code=200, content=body, text=body.decode("latin-1"))
+    with patch.object(transport._session, "request", return_value=response):
+        result = transport.fetch(URL, {})
+
+    assert result.text == '{"kommun": "Mölndal"}'
+
+
 def test_sends_a_get_with_params_and_the_configured_timeout(transport):
-    response = Mock(status_code=200, text="{}")
+    response = Mock(status_code=200, content=b"{}")
     with patch.object(transport._session, "request", return_value=response) as request:
         transport.fetch(URL, {"limit": 1})
 

@@ -94,7 +94,9 @@ class RequestsTransport:
             raise SGUConnectionError(f"Connection failed: {e}") from e
         except requests.exceptions.RequestException as e:
             raise SGUAPIError(f"Request failed: {e}") from e
-        return TransportResponse(response.status_code, response.text)
+        # JSON is UTF-8 (RFC 8259); don't let requests guess from the Content-Type
+        text = response.content.decode("utf-8", errors="replace")
+        return TransportResponse(response.status_code, text)
 
     def close(self) -> None:
         """Close the HTTP session and its pooled connections."""
