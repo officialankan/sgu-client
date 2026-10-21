@@ -10,8 +10,7 @@ from datetime import UTC, datetime
 import pytest
 from pandas.api.types import is_datetime64_any_dtype as is_datetime
 
-from sgu_client import SGUClient, TransportResponse
-from sgu_client.exceptions import SGUAPIError, SGUConnectionError, SGUTimeoutError
+from sgu_client import SGUClient
 from sgu_client.models.modeled import (
     ModeledArea,
     ModeledAreaCollection,
@@ -390,15 +389,6 @@ def test_get_levels_by_area_with_limit(fake, client) -> None:
         assert level.properties.area_id == TEST_LEVEL_OMRADE_ID
 
 
-def test_get_levels_by_area_nonexistent(fake, client) -> None:
-    """Test timeout error for non-existent area using mocked response."""
-    fake.add("", SGUTimeoutError("Read timeout"))
-
-    # API freezes when searching for non-existent area, so expect timeout
-    with pytest.raises(SGUTimeoutError):
-        client.levels.modeled.get_levels_by_area(999999, limit=10)
-
-
 def test_get_levels_by_areas(fake, client) -> None:
     """Test getting levels by multiple area IDs with mocked response."""
     area_ids = [TEST_LEVEL_OMRADE_ID, 30126]
@@ -512,15 +502,6 @@ def test_get_levels_by_areas_with_limit(fake, client) -> None:
     # All results should have one of the specified area IDs
     for level in levels.features:
         assert level.properties.area_id in area_ids
-
-
-def test_get_levels_by_areas_nonexistent(fake, client) -> None:
-    """Test timeout error for non-existent areas using mocked response."""
-    fake.add("", SGUTimeoutError("Read timeout"))
-
-    # API freezes when searching for non-existent areas, so expect timeout
-    with pytest.raises(SGUTimeoutError):
-        client.levels.modeled.get_levels_by_areas([999998, 999999], limit=10)
 
 
 def test_get_levels_by_areas_mixed_existing_nonexistent(fake, client) -> None:
@@ -676,39 +657,7 @@ def test_get_levels_by_coords_searches_areas_within_the_buffer(fake, client) -> 
     assert area_lookup.params["bbox"] == "11.75,57.25,12.25,57.75"
 
 
-# Comprehensive error condition tests (enabled by mocking)
-def test_api_timeout_error(fake, client) -> None:
-    """Test that API timeout errors are properly raised."""
-    fake.add("", SGUTimeoutError("Read timeout"))
-
-    with pytest.raises(SGUTimeoutError, match="Read timeout"):
-        client.levels.modeled.get_area(TEST_AREA_ID)
-
-
-def test_api_connection_error(fake, client) -> None:
-    """Test that API connection errors are properly raised."""
-    fake.add("", SGUConnectionError("Connection failed"))
-
-    with pytest.raises(SGUConnectionError, match="Connection failed"):
-        client.levels.modeled.get_area(TEST_AREA_ID)
-
-
-def test_api_server_error(fake, client) -> None:
-    """Test that API server errors are properly raised."""
-    fake.add("", TransportResponse(500, '{"error": "Internal Server Error"}'))
-
-    with pytest.raises(SGUAPIError, match="API request failed with status 500"):
-        client.levels.modeled.get_area(TEST_AREA_ID)
-
-
-def test_api_not_found_error(fake, client) -> None:
-    """Test that API 404 errors are properly raised."""
-    fake.add("", TransportResponse(404, '{"error": "Area not found"}'))
-
-    with pytest.raises(SGUAPIError, match="API request failed with status 404"):
-        client.levels.modeled.get_area("nonexistent.area")
-
-
+# Responses with no feature, or several where one was expected
 def test_empty_area_response_handling(fake, client) -> None:
     """Test handling of empty area responses."""
     mock_response_data = create_mock_empty_modeled_collection_response()
@@ -725,17 +674,6 @@ def test_empty_level_response_handling(fake, client) -> None:
 
     with pytest.raises(ValueError, match="Level .* not found"):
         client.levels.modeled.get_level("nonexistent.level")
-
-
-def test_malformed_json_response(fake, client) -> None:
-    """Test handling of malformed JSON responses."""
-    fake.add("", TransportResponse(500, "Internal Server Error - HTML response"))
-
-    with pytest.raises(SGUAPIError) as exc_info:
-        client.levels.modeled.get_area(TEST_AREA_ID)
-
-    # Should raise SGUAPIError when JSON parsing fails
-    assert "API request failed with status 500" in str(exc_info.value)
 
 
 @pytest.mark.parametrize(

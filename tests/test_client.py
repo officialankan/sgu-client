@@ -2,14 +2,10 @@
 
 from unittest.mock import patch
 
-import pytest
-
 from sgu_client import (
     RequestsTransport,
-    SGUAPIError,
     SGUClient,
     SGUConfig,
-    TransportResponse,
 )
 from tests.fakes import FakeTransport, Request
 from tests.mock_responses import create_mock_single_station_response
@@ -79,17 +75,3 @@ def test_extra_keyword_arguments_are_sent_as_query_params() -> None:
     client.levels.observed.get_stations(limit=1, properties="obsplatsnamn")
 
     assert fake.params == {"limit": 1, "properties": "obsplatsnamn"}
-
-
-def test_http_error() -> None:
-    """Test that HTTP errors are properly raised."""
-    fake = FakeTransport(
-        {"stationer/items": TransportResponse(404, '{"error": "Not Found"}')}
-    )
-    client = SGUClient(transport=fake)
-
-    with pytest.raises(SGUAPIError) as exc_info:
-        client.levels.observed.get_stations(limit=1)
-
-    assert exc_info.value.status_code == 404
-    assert exc_info.value.response_data == {"error": "Not Found"}

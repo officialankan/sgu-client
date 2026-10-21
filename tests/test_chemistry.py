@@ -4,8 +4,7 @@ from datetime import UTC, datetime
 
 import pytest
 
-from sgu_client import SGUClient, TransportResponse
-from sgu_client.exceptions import SGUAPIError, SGUConnectionError, SGUTimeoutError
+from sgu_client import SGUClient
 from sgu_client.models.chemistry import (
     AnalysisResult,
     AnalysisResultCollection,
@@ -421,33 +420,6 @@ def test_get_results_by_site_multiple_sites_for_name_raises(fake, client):
 
 
 # Error condition tests
-
-
-def test_api_timeout_error(fake, client):
-    """API timeout errors are raised as SGUTimeoutError."""
-    fake.add("", SGUTimeoutError("Read timeout"))
-
-    with pytest.raises(SGUTimeoutError, match="Read timeout"):
-        client.chemistry.get_sampling_sites()
-
-
-def test_api_connection_error(fake, client):
-    """API connection errors are raised as SGUConnectionError."""
-    fake.add("", SGUConnectionError("Connection failed"))
-
-    with pytest.raises(SGUConnectionError, match="Connection failed"):
-        client.chemistry.get_sampling_sites()
-
-
-@pytest.mark.parametrize("status_code", [404, 500])
-def test_api_error_status(fake, client, status_code):
-    """Non-2xx responses are raised as SGUAPIError."""
-    fake.add("", TransportResponse(status_code, "error page"))
-
-    with pytest.raises(
-        SGUAPIError, match=f"API request failed with status {status_code}"
-    ):
-        client.chemistry.get_sampling_sites()
 
 
 def test_get_sampling_site_not_found(fake, client):

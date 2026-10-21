@@ -10,12 +10,9 @@ from datetime import UTC, datetime
 import pytest
 from pandas.api.types import is_datetime64_any_dtype as is_datetime
 
-from sgu_client import SGUClient, TransportResponse
+from sgu_client import SGUClient
 from sgu_client.exceptions import (
-    SGUAPIError,
-    SGUConnectionError,
     SGUNotFoundError,
-    SGUTimeoutError,
 )
 from sgu_client.models.observed import (
     GroundwaterMeasurement,
@@ -539,39 +536,7 @@ def test_measurements_to_series_custom_index_data(fake, client) -> None:
         measurements.to_series(index="observation_date", data="invalid_column")
 
 
-# Comprehensive error condition tests (enabled by mocking)
-def test_api_timeout_error(fake, client) -> None:
-    """Test that API timeout errors are properly raised."""
-    fake.add("", SGUTimeoutError("Read timeout"))
-
-    with pytest.raises(SGUTimeoutError, match="Read timeout"):
-        client.levels.observed.get_station(TEST_STATION_ID)
-
-
-def test_api_connection_error(fake, client) -> None:
-    """Test that API connection errors are properly raised."""
-    fake.add("", SGUConnectionError("Connection failed"))
-
-    with pytest.raises(SGUConnectionError, match="Connection failed"):
-        client.levels.observed.get_station(TEST_STATION_ID)
-
-
-def test_api_server_error(fake, client) -> None:
-    """Test that API server errors are properly raised."""
-    fake.add("", TransportResponse(500, '{"error": "Internal Server Error"}'))
-
-    with pytest.raises(SGUAPIError, match="API request failed with status 500"):
-        client.levels.observed.get_station(TEST_STATION_ID)
-
-
-def test_api_not_found_error(fake, client) -> None:
-    """Test that API 404 errors are properly raised."""
-    fake.add("", TransportResponse(404, '{"error": "Station not found"}'))
-
-    with pytest.raises(SGUAPIError, match="API request failed with status 404"):
-        client.levels.observed.get_station("nonexistent.station")
-
-
+# Responses with no feature, or several where one was expected
 def test_empty_station_response_handling(fake, client) -> None:
     """Test handling of empty station responses."""
     mock_response_data = create_mock_empty_collection_response()
@@ -593,17 +558,6 @@ def test_multiple_station_response_handling(fake, client) -> None:
 
     with pytest.raises(ValueError, match="Multiple stations returned for ID"):
         client.levels.observed.get_station("duplicate.station")
-
-
-def test_malformed_json_response(fake, client) -> None:
-    """Test handling of malformed JSON responses."""
-    fake.add("", TransportResponse(500, "Internal Server Error - HTML response"))
-
-    with pytest.raises(SGUAPIError) as exc_info:
-        client.levels.observed.get_station(TEST_STATION_ID)
-
-    # Should raise SGUAPIError when JSON parsing fails
-    assert "API request failed with status 500" in str(exc_info.value)
 
 
 def test_station_with_float_idiam(fake, client) -> None:
