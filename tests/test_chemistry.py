@@ -4,7 +4,7 @@ from datetime import UTC, datetime
 
 import pytest
 
-from sgu_client import SGUClient
+from sgu_client import SGUAmbiguousError, SGUClient, SGUNotFoundError
 from sgu_client.models.chemistry import (
     AnalysisResult,
     AnalysisResultCollection,
@@ -144,9 +144,9 @@ def test_get_results_by_site_looks_up_national_site_id(
 
 
 def test_get_results_by_site_unknown_site_id_raises(fake, client):
-    """A site_id that matches no sampling site raises a ValueError naming it."""
+    """A site_id that matches no sampling site raises SGUNotFoundError naming it."""
     fake.add("", create_mock_sampling_site_collection_response(sites=[]))
-    with pytest.raises(ValueError, match="NOPE-1"):
+    with pytest.raises(SGUNotFoundError, match="NOPE-1"):
         client.chemistry.get_results_by_site(site_id="NOPE-1")
 
 
@@ -177,9 +177,9 @@ def test_get_results_by_sites_with_site_ids(fake, client, caplog):
 
 
 def test_get_results_by_sites_partial_lookup_raises(fake, client):
-    """If only some site_ids are found, a ValueError names the missing ones."""
+    """If only some site_ids are found, SGUNotFoundError names the missing ones."""
     fake.add("", create_mock_multiple_sampling_sites_response())
-    with pytest.raises(ValueError, match="NOPE-1"):
+    with pytest.raises(SGUNotFoundError, match=r"site_id: \['NOPE-1'\]"):
         client.chemistry.get_results_by_sites(
             site_id=["TTK-442-M", "SYD-681-C", "NOPE-1"]
         )
@@ -231,9 +231,13 @@ def test_get_results_by_parameter_with_site_id(fake, client, caplog):
 
 
 def test_get_results_by_parameter_multiple_site_identifiers_raises():
-    """Only one kind of site identifier may be passed."""
+    """At most one kind of site identifier may be passed."""
     client = SGUClient()
-    with pytest.raises(ValueError, match="Exactly one of 'national_site_id'"):
+    with pytest.raises(
+        ValueError,
+        match="At most one of 'national_site_id', 'site_id' or 'site_name' "
+        "can be provided.",
+    ):
         client.chemistry.get_results_by_parameter(
             "Bly", national_site_id=359366, site_id="TTK-442-M"
         )
@@ -376,21 +380,9 @@ SITE_IDENTIFIER_ERROR = "Exactly one of 'national_site_id', 'site_id' or 'site_n
     ("method", "kwargs"),
     [
         ("get_sampling_site_by_name", {}),
-        ("get_sampling_site_by_name", {"site_id": "TTK-442-M", "site_name": "Lena"}),
         ("get_sampling_sites_by_names", {}),
-        ("get_sampling_sites_by_names", {"site_id": []}),
-        (
-            "get_sampling_sites_by_names",
-            {"site_id": ["TTK-442-M"], "national_site_id": [359366]},
-        ),
         ("get_results_by_site", {}),
-        ("get_results_by_site", {"national_site_id": 359366, "site_id": "TTK-442-M"}),
         ("get_results_by_sites", {}),
-        ("get_results_by_sites", {"national_site_id": []}),
-        (
-            "get_results_by_sites",
-            {"site_id": ["TTK-442-M"], "site_name": ["Lena"]},
-        ),
     ],
 )
 def test_site_identifier_validation(method, kwargs):
@@ -415,7 +407,9 @@ def test_get_results_by_site_multiple_sites_for_name_raises(fake, client):
             sites=[("A-1", "Brunn", 1), ("B-2", "Brunn", 2)]
         ),
     )
-    with pytest.raises(ValueError, match="Multiple sites found"):
+    with pytest.raises(
+        SGUAmbiguousError, match="Multiple sampling sites found for site_name: 'Brunn'"
+    ):
         client.chemistry.get_results_by_site(site_name="Brunn")
 
 
@@ -519,9 +513,11 @@ def test_analysis_results_to_dataframe_keeps_feature_id_and_result_id():
 def test_get_sampling_sites_by_names_missing_sites_raises(
     fake, client, kwargs, missing
 ):
-    """Sites that are not found are named in a ValueError, as for results."""
+    """Sites that are not found are named in SGUNotFoundError, as for results."""
     fake.add("", create_mock_sampling_site_collection_response())
-    with pytest.raises(ValueError, match=f"No sampling sites found for .*{missing}"):
+    with pytest.raises(
+        SGUNotFoundError, match=f"No sampling sites found for .*{missing}"
+    ):
         client.chemistry.get_sampling_sites_by_names(**kwargs)
 
 

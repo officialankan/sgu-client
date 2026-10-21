@@ -2,7 +2,7 @@
 
 import logging
 from collections.abc import Mapping
-from typing import Any, Generic
+from typing import Any, Generic, Literal, overload
 
 from sgu_client.client.collection import C, SGUCollection
 from sgu_client.exceptions import SGUAmbiguousError, SGUNotFoundError
@@ -51,6 +51,16 @@ class IdentifierLookup(Generic[C]):
         """Find the features named by exactly one identifier, requiring all of them."""
         identifier, values = self._select(ids)
         return self._find(identifier, values, **query)
+
+    @overload
+    def keys(
+        self, ids: Mapping[str, IdentifierValue], *, required: Literal[True] = True
+    ) -> list[Any]: ...
+
+    @overload
+    def keys(
+        self, ids: Mapping[str, IdentifierValue], *, required: bool
+    ) -> list[Any] | None: ...
 
     def keys(
         self, ids: Mapping[str, IdentifierValue], *, required: bool = True

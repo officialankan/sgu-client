@@ -1,11 +1,11 @@
 """Groundwater chemistry client endpoints."""
 
-import logging
 from datetime import datetime
 from typing import Any
 
 from sgu_client.client.base import BaseClient
 from sgu_client.client.collection import SGUCollection, Where
+from sgu_client.client.identifiers import IdentifierLookup
 from sgu_client.models.chemistry import (
     AnalysisResult,
     AnalysisResultCollection,
@@ -13,12 +13,7 @@ from sgu_client.models.chemistry import (
     SamplingSiteCollection,
 )
 
-logger = logging.getLogger(__name__)
-
 DATASET = "grundvattenkvalitet-analysresultat-provplatser-v2"
-
-# A single site identifier value, or a list of them
-SiteIdentifier = int | str | list[int] | list[str] | None
 
 # Site identifier argument -> (API field, SamplingSiteProperties attribute)
 SITE_IDENTIFIERS: dict[str, tuple[str, str]] = {
@@ -27,11 +22,8 @@ SITE_IDENTIFIERS: dict[str, tuple[str, str]] = {
     "site_name": ("provplatsnamn", "site_name"),
 }
 
-
-def _site_where(identifier: str, values: list[int | str] | list[int]) -> Where:
-    """Condition matching any of the given values of a site identifier."""
-    field, _ = SITE_IDENTIFIERS[identifier]
-    return {field: values}
+# The field analysis results refer to their sampling site by
+RESULT_SITE_FIELD = "nationellt_provplatsid"
 
 
 class GroundwaterChemistryClient:
@@ -58,6 +50,9 @@ class GroundwaterChemistryClient:
             model=AnalysisResultCollection,
             label="Result",
             date_field="provtagningsdatum",
+        )
+        self._site_lookup = IdentifierLookup(
+            self._sites, SITE_IDENTIFIERS, key="national_site_id", noun="sampling site"
         )
 
     # ===== Sampling Sites Methods =====
@@ -136,8 +131,9 @@ class GroundwaterChemistryClient:
             Typed groundwater chemistry sampling site
 
         Raises:
-            ValueError: If not exactly one identifier is provided,
-                       or if no site or multiple sites are found
+            SGUNotFoundError: If no site matches.
+            SGUAmbiguousError: If several sites match.
+            ValueError: If not exactly one identifier is provided.
 
         Example:
 
@@ -153,10 +149,14 @@ class GroundwaterChemistryClient:
             ...     )
             ...     print(site.properties.municipality)
         """
-        identifier, values = self._select_site_identifier(
-            national_site_id, site_id, site_name
+        return self._site_lookup.find_one(
+            {
+                "national_site_id": national_site_id,
+                "site_id": site_id,
+                "site_name": site_name,
+            },
+            **kwargs,
         )
-        return self._sites.find_one(where=_site_where(identifier, values), **kwargs)
 
     def get_sampling_sites_by_names(
         self,
@@ -178,8 +178,8 @@ class GroundwaterChemistryClient:
             Typed collection of groundwater chemistry sampling sites
 
         Raises:
-            ValueError: If not exactly one identifier is provided,
-                       or if any of the requested sites is not found
+            SGUNotFoundError: If any of the requested sites is not found.
+            ValueError: If not exactly one identifier is provided.
 
         Example:
 
@@ -193,10 +193,14 @@ class GroundwaterChemistryClient:
             ...         props = site.properties
             ...         print(f"{props.station_id}: {props.national_site_id}")
         """
-        identifier, values = self._select_site_identifier(
-            national_site_id, site_id, site_name
+        return self._site_lookup.find_all(
+            {
+                "national_site_id": national_site_id,
+                "site_id": site_id,
+                "site_name": site_name,
+            },
+            **kwargs,
         )
-        return self._get_all_sampling_sites(identifier, values, **kwargs)
 
     # ===== Analysis Results Methods =====
 
@@ -290,8 +294,10 @@ class GroundwaterChemistryClient:
             Typed collection of groundwater chemistry analysis results
 
         Raises:
-            ValueError: If not exactly one site identifier is provided,
-                       or if site lookup fails
+            SGUNotFoundError: If a site_id or site_name matches no site.
+            SGUAmbiguousError: If a site_id or site_name matches several sites.
+            ValueError: If not exactly one site identifier is provided, or if the
+                looked-up site has no national_site_id.
 
         Example:
 
@@ -307,14 +313,16 @@ class GroundwaterChemistryClient:
             ...         tmax=datetime(2021, 1, 1, tzinfo=timezone.utc)
             ...     )
         """
-        national_site_ids = self._resolve_national_site_ids(
-            national_site_id, site_id, site_name
+        key = self._site_lookup.key(
+            {
+                "national_site_id": national_site_id,
+                "site_id": site_id,
+                "site_name": site_name,
+            }
         )
-        if len(national_site_ids) > 1:
-            raise ValueError(f"Multiple sites found for {site_id or site_name!r}")
 
         return self._results.query(
-            where=_site_where("national_site_id", national_site_ids),
+            where={RESULT_SITE_FIELD: key},
             tmin=tmin,
             tmax=tmax,
             limit=limit,
@@ -351,8 +359,9 @@ class GroundwaterChemistryClient:
             Typed collection of groundwater chemistry analysis results
 
         Raises:
-            ValueError: If not exactly one site identifier is provided,
-                       or if any site is not found in the lookup
+            SGUNotFoundError: If any site_id or site_name matches no site.
+            ValueError: If not exactly one site identifier is provided, or if a
+                looked-up site has no national_site_id.
 
         Example:
 
@@ -367,12 +376,16 @@ class GroundwaterChemistryClient:
             ...     )
             ...     print(f"Found {len(results.features)} analysis results")
         """
-        national_site_ids = self._resolve_national_site_ids(
-            national_site_id, site_id, site_name
+        keys = self._site_lookup.keys(
+            {
+                "national_site_id": national_site_id,
+                "site_id": site_id,
+                "site_name": site_name,
+            }
         )
 
         return self._results.query(
-            where=_site_where("national_site_id", national_site_ids),
+            where={RESULT_SITE_FIELD: keys},
             tmin=tmin,
             tmax=tmax,
             limit=limit,
@@ -413,8 +426,9 @@ class GroundwaterChemistryClient:
             Typed collection of groundwater chemistry analysis results
 
         Raises:
-            ValueError: If more than one site identifier is provided,
-                       or if any site is not found in the lookup
+            SGUNotFoundError: If any site_id or site_name matches no site.
+            ValueError: If more than one site identifier is provided, or if a
+                looked-up site has no national_site_id.
 
         Example:
 
@@ -440,98 +454,17 @@ class GroundwaterChemistryClient:
         """
         where: Where = {"parameternamn": parameter}
 
-        if national_site_id or site_id or site_name:
-            national_site_ids = self._resolve_national_site_ids(
-                national_site_id, site_id, site_name
-            )
-            where |= _site_where("national_site_id", national_site_ids)
+        keys = self._site_lookup.keys(
+            {
+                "national_site_id": national_site_id,
+                "site_id": site_id,
+                "site_name": site_name,
+            },
+            required=False,
+        )
+        if keys is not None:
+            where[RESULT_SITE_FIELD] = keys
 
         return self._results.query(
             where=where, tmin=tmin, tmax=tmax, limit=limit, **kwargs
         )
-
-    # ===== Internal Helper Methods =====
-
-    def _select_site_identifier(
-        self,
-        national_site_id: SiteIdentifier,
-        site_id: SiteIdentifier,
-        site_name: SiteIdentifier,
-    ) -> tuple[str, list[int | str]]:
-        """Pick the single site identifier provided and return its values as a list.
-
-        Returns:
-            Tuple of the identifier argument name and its value(s) as a list
-
-        Raises:
-            ValueError: If none or more than one identifier is provided
-        """
-        provided = {
-            identifier: value
-            for identifier, value in (
-                ("national_site_id", national_site_id),
-                ("site_id", site_id),
-                ("site_name", site_name),
-            )
-            if value
-        }
-        if len(provided) != 1:
-            raise ValueError(
-                "Exactly one of 'national_site_id', 'site_id' or 'site_name' "
-                "must be provided."
-            )
-        ((identifier, value),) = provided.items()
-        return identifier, list(value) if isinstance(value, list) else [value]
-
-    def _resolve_national_site_ids(
-        self,
-        national_site_id: SiteIdentifier,
-        site_id: SiteIdentifier,
-        site_name: SiteIdentifier,
-    ) -> list[int]:
-        """Resolve any site identifier to the national site IDs results reference.
-
-        Analysis results only reference sampling sites by national site ID, so
-        `site_id` or `site_name` cost one additional API request to look up.
-
-        Raises:
-            ValueError: If not exactly one identifier is provided, if any site is
-                not found, or if a site has no national site ID
-        """
-        identifier, values = self._select_site_identifier(
-            national_site_id, site_id, site_name
-        )
-        if identifier == "national_site_id":
-            return [int(value) for value in values]
-
-        logger.warning(
-            f"Using '{identifier}' requires an additional API request to look up "
-            "the sampling site(s). For better performance, use 'national_site_id' "
-            "directly if available."
-        )
-        sites = self._get_all_sampling_sites(identifier, values)
-
-        national_site_ids = []
-        for site in sites.features:
-            if site.properties.national_site_id is None:
-                raise ValueError(f"Sampling site {site.id} has no national_site_id")
-            national_site_ids.append(site.properties.national_site_id)
-        return national_site_ids
-
-    def _get_all_sampling_sites(
-        self, identifier: str, values: list[int | str], **kwargs: Any
-    ) -> SamplingSiteCollection:
-        """Get the sampling sites matching the identifier values, requiring all of them.
-
-        Raises:
-            ValueError: If any of the requested sites is not found
-        """
-        sites = self._sites.query(where=_site_where(identifier, values), **kwargs)
-
-        _, attribute = SITE_IDENTIFIERS[identifier]
-        found = {getattr(site.properties, attribute) for site in sites.features}
-        missing = [value for value in values if value not in found]
-        if missing:
-            raise ValueError(f"No sampling sites found for {identifier}: {missing}")
-
-        return sites
