@@ -1,12 +1,12 @@
 """Pydantic models for groundwater chemistry data from SGU API."""
 
-from typing import TYPE_CHECKING, Any, Literal
+from typing import TYPE_CHECKING, Any
 
 from pydantic import Field, field_validator
 
-from sgu_client.models.base import SGUBaseModel, SGUResponse
-from sgu_client.models.dates import ApiDatetime, convert_datetime_columns
-from sgu_client.models.shared import CRS, Geometry, Link
+from sgu_client.models.base import SGUBaseModel
+from sgu_client.models.dates import ApiDatetime
+from sgu_client.models.features import Feature, FeatureCollection, TimeSeriesCollection
 from sgu_client.utils.pandas_helpers import get_pandas, optional_pandas_method
 
 if TYPE_CHECKING:
@@ -282,13 +282,8 @@ class SamplingSiteProperties(SGUBaseModel):
     _county_code = field_validator("county_code", mode="before")(_normalize_county_code)
 
 
-class SamplingSite(SGUBaseModel):
+class SamplingSite(Feature[SamplingSiteProperties]):
     """A groundwater chemistry sampling site (GeoJSON Feature)."""
-
-    type: Literal["Feature"] = "Feature"
-    id: str = Field(..., description="Site ID")
-    geometry: Geometry | None = Field(None, description="Site geometry")
-    properties: SamplingSiteProperties = Field(..., description="Site properties")
 
 
 # Analysis result properties (English field names with Swedish API aliases)
@@ -574,210 +569,47 @@ class AnalysisResultProperties(SGUBaseModel):
     _county_code = field_validator("county_code", mode="before")(_normalize_county_code)
 
 
-class AnalysisResult(SGUBaseModel):
+class AnalysisResult(Feature[AnalysisResultProperties]):
     """A groundwater chemistry analysis result (GeoJSON Feature)."""
-
-    type: Literal["Feature"] = "Feature"
-    id: str = Field(..., description="Result ID")
-    geometry: Geometry | None = Field(None, description="Result geometry")
-    properties: AnalysisResultProperties = Field(
-        ..., description="Analysis result properties"
-    )
 
 
 # Collection response models
-class SamplingSiteCollection(SGUResponse):
-    """Collection of groundwater chemistry sampling sites (GeoJSON).
+class SamplingSiteCollection(FeatureCollection[SamplingSite]):
+    """Collection of groundwater chemistry sampling sites (GeoJSON FeatureCollection).
 
-    A GeoJSON FeatureCollection of sampling sites.
+    Its DataFrame has ``longitude`` and ``latitude`` columns, null for sites without
+    a geometry.
+
+    Examples:
+
+        >>> from sgu_client import SGUClient
+        >>> with SGUClient() as client:
+        ...     sites = client.chemistry.get_sampling_sites(limit=10)
+        ...     df = sites.to_dataframe()
+        ...     print(df[['national_site_id', 'station_id', 'site_name']].head())
     """
 
-    type: Literal["FeatureCollection"] = "FeatureCollection"
-    features: list[SamplingSite] = Field(
-        default_factory=list, description="Sampling site features"
-    )
-
-    # OGC API Features metadata
-    totalFeatures: int | None = Field(None, description="Total number of features")
-    numberMatched: int | None = Field(
-        None, description="Number of features matching query"
-    )
-    numberReturned: int | None = Field(None, description="Number of features returned")
-    timeStamp: ApiDatetime = Field(None, description="Response timestamp (UTC)")
-
-    # Links and CRS
-    links: list[Link] | None = Field(None, description="Related links")
-    crs: CRS | None = Field(None, description="Coordinate reference system")
-
-    @optional_pandas_method("to_dataframe() method")
-    def to_dataframe(self) -> "pd.DataFrame":
-        """Convert to pandas DataFrame with flattened sampling site properties.
-
-        Returns:
-            DataFrame containing sampling site data with parsed datetime columns.
-
-        Examples:
-
-            >>> from sgu_client import SGUClient
-            >>> with SGUClient() as client:
-            ...     sites = client.chemistry.get_sampling_sites(limit=10)
-            ...     df = sites.to_dataframe()
-            ...     # one row per site, with the feature ID in 'feature_id'
-            ...     print(df[['national_site_id', 'station_id', 'site_name']].head())
-            ...     # established_date, first_sample_date and latest_sample_date
-            ...     # are parsed as UTC datetimes
-        """
-        data = []
-        for feature in self.features:
-            row: dict[str, Any] = {"feature_id": feature.id}
-            # Add geometry if present
-            if feature.geometry:
-                row.update(
-                    {
-                        "geometry_type": feature.geometry.type,
-                        "longitude": feature.geometry.coordinates[0]
-                        if feature.geometry.coordinates
-                        else None,
-                        "latitude": feature.geometry.coordinates[1]
-                        if len(feature.geometry.coordinates) > 1
-                        else None,
-                    }
-                )
-
-            # Add all properties
-            row.update(feature.properties.model_dump())
-            data.append(row)
-
-        pd = get_pandas()
-        return convert_datetime_columns(pd.DataFrame(data), SamplingSiteProperties)
+    _geometry = "point"
 
 
-class AnalysisResultCollection(SGUResponse):
-    """Collection of groundwater chemistry analysis results (GeoJSON).
+class AnalysisResultCollection(TimeSeriesCollection[AnalysisResult]):
+    """Collection of groundwater chemistry analysis results (GeoJSON FeatureCollection).
 
-    A GeoJSON FeatureCollection of analysis results.
+    Its DataFrame has no geometry columns. Sorted by ``sampling_date``;
+    ``to_series()`` defaults to ``measurement_value``. ``pivot_by_parameter()``
+    gives one column per chemical parameter.
+
+    Examples:
+
+        >>> from sgu_client import SGUClient
+        >>> with SGUClient() as client:
+        ...     results = client.chemistry.get_results_by_site(359366, limit=100)
+        ...     df = results.to_dataframe()
+        ...     print(df[['sampling_date', 'parameter_name', 'measurement_value']])
     """
 
-    type: Literal["FeatureCollection"] = "FeatureCollection"
-    features: list[AnalysisResult] = Field(
-        default_factory=list, description="Analysis result features"
-    )
-
-    # OGC API Features metadata
-    totalFeatures: int | None = Field(None, description="Total number of features")
-    numberMatched: int | None = Field(
-        None, description="Number of features matching query"
-    )
-    numberReturned: int | None = Field(None, description="Number of features returned")
-    timeStamp: ApiDatetime = Field(None, description="Response timestamp (UTC)")
-
-    # Links and CRS
-    links: list[Link] | None = Field(None, description="Related links")
-    crs: CRS | None = Field(None, description="Coordinate reference system")
-
-    @optional_pandas_method("to_dataframe() method")
-    def to_dataframe(self, sort_by_date: bool = True) -> "pd.DataFrame":
-        """Convert to pandas DataFrame with analysis result data.
-
-        Args:
-            sort_by_date: Whether to sort the DataFrame by sampling date.
-
-        Returns:
-            DataFrame containing analysis result data.
-
-        Examples:
-
-            >>> from sgu_client import SGUClient
-            >>> with SGUClient() as client:
-            ...     results = client.chemistry.get_results_by_site(359366, limit=100)
-            ...     df = results.to_dataframe()
-            ...     # one row per result, with the feature ID in 'feature_id'
-            ...     print(df[['sampling_date', 'parameter_name', 'measurement_value']])
-            ...     # sampling_date, sampling_end_date, registration_date and
-            ...     # analysis_date are parsed as UTC datetimes
-        """
-        data = []
-        for feature in self.features:
-            row: dict[str, Any] = {"feature_id": feature.id}
-
-            # Add geometry if present
-            if feature.geometry:
-                row.update(
-                    {
-                        "geometry_type": feature.geometry.type,
-                        "longitude": feature.geometry.coordinates[0]
-                        if feature.geometry.coordinates
-                        else None,
-                        "latitude": feature.geometry.coordinates[1]
-                        if len(feature.geometry.coordinates) > 1
-                        else None,
-                    }
-                )
-
-            # Add all properties
-            row.update(feature.properties.model_dump())
-            data.append(row)
-
-        pd = get_pandas()
-        df = convert_datetime_columns(pd.DataFrame(data), AnalysisResultProperties)
-
-        if sort_by_date and not df.empty and "sampling_date" in df.columns:
-            df = df.sort_values(by="sampling_date")
-
-        return df
-
-    @optional_pandas_method("to_series() method")
-    def to_series(
-        self,
-        index: str | None = None,
-        data: str | None = None,
-        sort_by_date: bool = True,
-    ) -> "pd.Series":
-        """Convert to pandas Series with analysis result data.
-
-        Args:
-            index: Column name to use as index. If None, `sampling_date` is used.
-            data: Column name to use as data. If None, `measurement_value` is used.
-            sort_by_date: Whether to sort the data by sampling date before
-                creating the Series.
-
-        Returns:
-            Series containing analysis result data.
-
-        Examples:
-
-            >>> from sgu_client import SGUClient
-            >>> with SGUClient() as client:
-            ...     results = client.chemistry.get_results_by_site(359366, limit=100)
-            ...     # time series with default columns (sampling_date, measurement_value)
-            ...     series = results.to_series()
-            ...     print(series.head())
-            ...     # use custom columns - e.g., parameter names as data
-            ...     series_params = results.to_series(
-            ...         index="sampling_date",
-            ...         data="parameter_name"
-            ...     )
-        """
-        df = self.to_dataframe(sort_by_date=sort_by_date)
-        pd = get_pandas()
-
-        if data is None:
-            data = "measurement_value"
-        if index is None:
-            index = "sampling_date"
-
-        if df.empty:
-            return pd.Series(dtype=float)
-
-        if index and index not in df.columns:
-            raise ValueError(f"Index column '{index}' not found in DataFrame.")
-
-        if data and data not in df.columns:
-            raise ValueError(f"Data column '{data}' not found in DataFrame.")
-
-        series = pd.Series(data=df[data].values, index=df[index] if index else None)
-        series.name = data
-        return series
+    _date_column = "sampling_date"
+    _series_column = "measurement_value"
 
     @optional_pandas_method("pivot_by_parameter() method")
     def pivot_by_parameter(

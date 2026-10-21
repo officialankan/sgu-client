@@ -1,16 +1,12 @@
 """Pydantic models for modeled groundwater data from SGU API."""
 
-from typing import TYPE_CHECKING, Any, ClassVar, Literal
+from typing import ClassVar
 
 from pydantic import Field, field_validator
 
-from sgu_client.models.base import SGUBaseModel, SGUResponse
-from sgu_client.models.dates import ApiDatetime, convert_datetime_columns
-from sgu_client.models.shared import CRS, Geometry, Link
-from sgu_client.utils.pandas_helpers import get_pandas, optional_pandas_method
-
-if TYPE_CHECKING:
-    import pandas as pd
+from sgu_client.models.base import SGUBaseModel
+from sgu_client.models.dates import ApiDatetime
+from sgu_client.models.features import Feature, FeatureCollection, TimeSeriesCollection
 
 
 # Modeled area properties (from omraden collection)
@@ -25,15 +21,8 @@ class ModeledAreaProperties(SGUBaseModel):
     )
 
 
-class ModeledArea(SGUBaseModel):
+class ModeledArea(Feature[ModeledAreaProperties]):
     """A modeled groundwater area (GeoJSON Feature)."""
-
-    type: Literal["Feature"] = "Feature"
-    id: str = Field(..., description="Area ID")
-    geometry: Geometry = Field(
-        ..., description="Area geometry (typically MultiPolygon)"
-    )
-    properties: ModeledAreaProperties = Field(..., description="Area properties")
 
 
 # Modeled groundwater level properties (from grundvattennivaer-tidigare collection)
@@ -82,211 +71,45 @@ class ModeledGroundwaterLevelProperties(SGUBaseModel):
         return None if v == -1 else v
 
 
-class ModeledGroundwaterLevel(SGUBaseModel):
+class ModeledGroundwaterLevel(Feature[ModeledGroundwaterLevelProperties]):
     """A modeled groundwater level (GeoJSON Feature)."""
-
-    type: Literal["Feature"] = "Feature"
-    id: str = Field(..., description="Level ID")
-    geometry: Geometry | None = Field(
-        None, description="Level geometry (typically null)"
-    )
-    properties: ModeledGroundwaterLevelProperties = Field(
-        ..., description="Level properties"
-    )
 
 
 # Collection response models
-class ModeledAreaCollection(SGUResponse):
-    """Collection of modeled groundwater areas (GeoJSON FeatureCollection)."""
+class ModeledAreaCollection(FeatureCollection[ModeledArea]):
+    """Collection of modeled groundwater areas (GeoJSON FeatureCollection).
 
-    type: Literal["FeatureCollection"] = "FeatureCollection"
-    features: list[ModeledArea] = Field(
-        default_factory=list, description="Area features"
-    )
+    Areas are grid cells, so the DataFrame has ``centroid_longitude`` and
+    ``centroid_latitude`` columns: the centre of the cell. SGU sends only the
+    cell's outline; the centre is computed by sgu-client.
 
-    # OGC API Features metadata
-    totalFeatures: int | None = Field(None, description="Total number of features")
-    numberMatched: int | None = Field(
-        None, description="Number of features matching query"
-    )
-    numberReturned: int | None = Field(None, description="Number of features returned")
-    timeStamp: ApiDatetime = Field(None, description="Response timestamp (UTC)")
+    Examples:
 
-    # Links and CRS
-    links: list[Link] | None = Field(None, description="Related links")
-    crs: CRS | None = Field(None, description="Coordinate reference system")
+        >>> from sgu_client import SGUClient
+        >>> with SGUClient() as client:
+        ...     areas = client.levels.modeled.get_areas(limit=10)
+        ...     df = areas.to_dataframe()
+        ...     print(df[['area_id', 'centroid_longitude', 'centroid_latitude']].head())
+    """
 
-    @field_validator("totalFeatures", mode="before")
-    @classmethod
-    def handle_unknown_total_features(cls, v):
-        """Handle 'unknown' string values for totalFeatures."""
-        return None if v == "unknown" else v
-
-    @optional_pandas_method("to_dataframe() method")
-    def to_dataframe(self) -> "pd.DataFrame":
-        """Convert to pandas DataFrame with flattened area properties.
-
-        Returns:
-            DataFrame containing area data with centroid coordinates.
-
-        Examples:
-
-            >>> from sgu_client import SGUClient
-            >>> with SGUClient() as client:
-            ...     areas = client.levels.modeled.get_areas(limit=10)
-            ...     df = areas.to_dataframe()
-            ...     # dataFrame includes area properties and centroid coordinates
-            ...     print(df.columns)  # feature_id, centroid_longitude, centroid_latitude, area_id, time_series_url
-            ...     print(df[['area_id', 'centroid_longitude', 'centroid_latitude']].head())
-        """
-
-        data = []
-        for feature in self.features:
-            row: dict[str, Any] = {
-                "feature_id": feature.id,
-                "geometry_type": feature.geometry.type,
-            }
-
-            # Add geometry coordinates (MultiPolygon handling)
-            if feature.geometry.coordinates:
-                # For MultiPolygon, take centroid of first polygon's first ring
-                if feature.geometry.type == "MultiPolygon":
-                    try:
-                        # MultiPolygon structure: [polygon][ring][point][lon/lat]
-                        # Type narrowing: we know this is MultiPolygon, so coordinates is list[list[list[list[float]]]]
-                        first_ring = feature.geometry.coordinates[0][0]
-                        # Calculate simple centroid
-                        lons = [point[0] for point in first_ring]
-                        lats = [point[1] for point in first_ring]
-                        row["centroid_longitude"] = sum(lons) / len(lons)
-                        row["centroid_latitude"] = sum(lats) / len(lats)
-                    except (IndexError, TypeError):
-                        row["centroid_longitude"] = None
-                        row["centroid_latitude"] = None
-                else:
-                    row["centroid_longitude"] = None
-                    row["centroid_latitude"] = None
-            else:
-                row["centroid_longitude"] = None
-                row["centroid_latitude"] = None
-
-            # Add all properties using English field names
-            row.update(feature.properties.model_dump(by_alias=False))
-            data.append(row)
-
-        pd = get_pandas()
-        return pd.DataFrame(data)
+    _geometry = "centroid"
 
 
-class ModeledGroundwaterLevelCollection(SGUResponse):
-    """Collection of modeled groundwater levels (GeoJSON FeatureCollection)."""
+class ModeledGroundwaterLevelCollection(TimeSeriesCollection[ModeledGroundwaterLevel]):
+    """Collection of modeled groundwater levels (GeoJSON FeatureCollection).
 
-    type: Literal["FeatureCollection"] = "FeatureCollection"
-    features: list[ModeledGroundwaterLevel] = Field(
-        default_factory=list, description="Level features"
-    )
+    Its DataFrame has no geometry columns. Sorted by ``date``; ``to_series()``
+    defaults to ``relative_level_small_resources``.
 
-    # OGC API Features metadata
-    totalFeatures: int | None = Field(None, description="Total number of features")
-    numberMatched: int | None = Field(
-        None, description="Number of features matching query"
-    )
-    numberReturned: int | None = Field(None, description="Number of features returned")
-    timeStamp: ApiDatetime = Field(None, description="Response timestamp (UTC)")
+    Examples:
 
-    # Links and CRS
-    links: list[Link] | None = Field(None, description="Related links")
-    crs: CRS | None = Field(None, description="Coordinate reference system")
+        >>> from sgu_client import SGUClient
+        >>> with SGUClient() as client:
+        ...     levels = client.levels.modeled.get_levels(limit=100)
+        ...     df = levels.to_dataframe()
+        ...     print(df[['date', 'area_id', 'relative_level_small_resources']].head())
+        ...     series = levels.to_series(data="relative_level_large_resources")
+    """
 
-    @field_validator("totalFeatures", mode="before")
-    @classmethod
-    def handle_unknown_total_features(cls, v):
-        """Handle 'unknown' string values for totalFeatures."""
-        return None if v == "unknown" else v
-
-    @optional_pandas_method("to_dataframe() method")
-    def to_dataframe(self, sort_by_date: bool = True) -> "pd.DataFrame":
-        """Convert to pandas DataFrame with modeled level data.
-
-        Args:
-            sort_by_date: Whether to sort the DataFrame by date.
-
-        Returns:
-            DataFrame containing modeled level data.
-
-        Examples:
-
-            >>> from sgu_client import SGUClient
-            >>> with SGUClient() as client:
-            ...     levels = client.levels.modeled.get_levels(limit=100)
-            ...     df = levels.to_dataframe()
-            ...     # dataFrame includes modeled percentile data sorted by date
-            ...     print(df[['date', 'area_id', 'relative_level_small_resources', 'deviation_small_resources']].head())
-        """
-
-        data = []
-        for feature in self.features:
-            row = {"level_id": feature.id}
-            # Add all properties using English field names
-            row.update(feature.properties.model_dump(by_alias=False))
-            data.append(row)
-
-        pd = get_pandas()
-        df = convert_datetime_columns(
-            pd.DataFrame(data), ModeledGroundwaterLevelProperties
-        )
-        if sort_by_date and "date" in df.columns:
-            df = df.sort_values(by="date")
-        return df
-
-    @optional_pandas_method("to_series() method")
-    def to_series(
-        self,
-        index: str | None = None,
-        data: str | None = None,
-        sort_by_date: bool = True,
-    ) -> "pd.Series":
-        """Convert to pandas Series with modeled data.
-
-        Args:
-            index: Column name to use as index. If None, `date` is used.
-            data: Column name to use as data. If None, `relative_level_small_resources` is used.
-            sort_by_date: Whether to sort the data by observation date before creating the Series.
-
-        Returns:
-            Series containing modeled data.
-
-        Examples:
-
-            >>> from sgu_client import SGUClient
-            >>> with SGUClient() as client:
-            ...     levels = client.levels.modeled.get_levels(limit=100)
-            ...     # create time series with default columns (date, relative_level_small_resources)
-            ...     series = levels.to_series()
-            ...     print(series.head())
-            ...     # use custom columns - compare small vs large resources
-            ...     series_large = levels.to_series(
-            ...         index="date",
-            ...         data="relative_level_large_resources"
-            ...     )
-        """
-        df = self.to_dataframe(sort_by_date=sort_by_date)
-        pd = get_pandas()
-
-        if data is None:
-            data = "relative_level_small_resources"
-        if index is None:
-            index = "date"
-
-        if df.empty:
-            return pd.Series(dtype=float)
-
-        if index and index not in df.columns:
-            raise ValueError(f"Index column '{index}' not found in DataFrame.")
-
-        if data and data not in df.columns:
-            raise ValueError(f"Data column '{data}' not found in DataFrame.")
-
-        series = pd.Series(data=df[data].values, index=df[index] if index else None)
-        series.name = data
-        return series
+    _date_column = "date"
+    _series_column = "relative_level_small_resources"
