@@ -50,7 +50,8 @@ results = client.chemistry.get_results_by_sites([359366, 378865], tmin="2020-01-
 [Dates and times](getting_started.md#dates-and-times).
 
 When sites are given by `site_id` or `site_name`, a lookup that misses any requested
-site raises `ValueError` instead of returning partial results.
+site raises {class}`~sgu_client.SGUNotFoundError` naming them instead of returning
+partial results.
 
 ## Filtering by parameter
 

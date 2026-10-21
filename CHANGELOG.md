@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - `ModeledArea.geometry` may be `None`, like every other feature's geometry; it used to be required (#60)
+- Chemistry lookups raise `SGUNotFoundError` when a site isn't found, and `SGUAmbiguousError` when a `site_id` or `site_name` given to a single-site method such as `get_results_by_site()` matches several sites. They used to raise a plain `ValueError`; both are still `ValueError`s (#61)
+- Observed and chemistry lookups word their errors and the extra-request warning the same way, e.g. `Exactly one of 'station_id' or 'station_name' must be provided.` instead of `Either 'station_id' or 'station_name' must be provided.` / `Only one of ...`. Passing more than one site to `get_results_by_parameter()` says `At most one of ...` (#61)
 
 ### Fixed
 
@@ -44,6 +46,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **`SGUResponse.to_dataframe()` removed**: it only raised `NotImplementedError`. Every collection gets `to_dataframe()` from `FeatureCollection` (#60)
 - **`CRS` and `Link` are no longer importable from `sgu_client.models.observed`**, which only re-exported them by accident. Import them from `sgu_client.models.shared` (#60)
+- **Observed lookups raise for stations that aren't found** instead of leaving them out. `get_stations_by_names()` (with `station_id` or `station_name`) and `get_measurements_by_name(s)()` with `station_name` raise `SGUNotFoundError` naming the missing stations, as chemistry already did for sites. `get_measurements_by_name(s)()` with `station_id` is unchanged (#61)
 
 ## [0.7.0] - 2026-10-20
 

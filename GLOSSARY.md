@@ -22,6 +22,10 @@ _Avoid_: record, row, item
 SGU's technical id for a feature, made of the collection name and a number (e.g. `stationer.4086`). Rarely what a user means by "id".
 _Avoid_: station id, ID
 
+**Identifier**:
+An argument that names a station (`station_id`, `station_name`), a sampling site (`national_site_id`, `site_id`, `site_name`) or an area (`area_id`). Feature ids are not identifiers in this sense.
+_Avoid_: site identifier, key, name (for an id)
+
 ### Groundwater levels
 
 **Station**:
