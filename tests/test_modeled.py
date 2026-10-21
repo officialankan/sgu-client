@@ -6,13 +6,11 @@ real API still works, see test_actual_api.py.
 """
 
 from datetime import UTC, datetime
-from unittest.mock import Mock, patch
 
 import pytest
 from pandas.api.types import is_datetime64_any_dtype as is_datetime
-from requests import Response
 
-from sgu_client import SGUClient
+from sgu_client import SGUClient, TransportResponse
 from sgu_client.exceptions import SGUAPIError, SGUConnectionError, SGUTimeoutError
 from sgu_client.models.modeled import (
     ModeledArea,
@@ -38,30 +36,19 @@ TEST_LEVEL_DATE = datetime(2024, 8, 1, tzinfo=UTC)
 TEST_LEVEL_OBJECTID = 1
 
 
-def create_mock_response(response_data, status_code=200):
-    """Create a mock HTTP response object."""
-    mock_response = Mock(spec=Response)
-    mock_response.ok = True
-    mock_response.status_code = status_code
-    mock_response.json.return_value = response_data
-    return mock_response
-
-
 def test_create_basic_client() -> None:
     client = SGUClient()
     assert hasattr(client, "levels")
     assert hasattr(client.levels, "modeled")
 
 
-@patch("requests.Session.request")
-def test_get_areas(mock_request) -> None:
+def test_get_areas(fake, client) -> None:
     """Test getting modeled areas with mocked response."""
     mock_response_data = create_mock_multiple_modeled_areas_response(
         area_ids=[30125, 30126], limit=10
     )
-    mock_request.return_value = create_mock_response(mock_response_data)
+    fake.add("", mock_response_data)
 
-    client = SGUClient()
     areas = client.levels.modeled.get_areas(limit=10)
     assert areas is not None
     assert isinstance(areas, ModeledAreaCollection)
@@ -69,15 +56,13 @@ def test_get_areas(mock_request) -> None:
     assert all(isinstance(area, ModeledArea) for area in areas.features)
 
 
-@patch("requests.Session.request")
-def test_get_area_by_id(mock_request) -> None:
+def test_get_area_by_id(fake, client) -> None:
     """Test getting a specific area by ID with mocked response."""
     mock_response_data = create_mock_single_modeled_area_response(
         area_id=TEST_AREA_ID, omrade_id=TEST_AREA_OMRADE_ID
     )
-    mock_request.return_value = create_mock_response(mock_response_data)
+    fake.add("", mock_response_data)
 
-    client = SGUClient()
     area = client.levels.modeled.get_area(TEST_AREA_ID)
     assert area is not None
     assert isinstance(area, ModeledArea)
@@ -87,26 +72,22 @@ def test_get_area_by_id(mock_request) -> None:
     assert area.geometry.coordinates is not None
 
 
-def test_get_area_not_found() -> None:
+def test_get_area_not_found(fake, client) -> None:
     """Test handling of non-existent area requests."""
-    with patch("requests.Session.request") as mock_request:
-        mock_response_data = create_mock_empty_modeled_collection_response()
-        mock_request.return_value = create_mock_response(mock_response_data)
+    mock_response_data = create_mock_empty_modeled_collection_response()
+    fake.add("", mock_response_data)
 
-        client = SGUClient()
-        with pytest.raises(ValueError, match="Area .* not found"):
-            client.levels.modeled.get_area("nonexistent.999999")
+    with pytest.raises(ValueError, match="Area .* not found"):
+        client.levels.modeled.get_area("nonexistent.999999")
 
 
-@patch("requests.Session.request")
-def test_get_levels(mock_request) -> None:
+def test_get_levels(fake, client) -> None:
     """Test getting modeled levels with mocked response."""
     mock_response_data = create_mock_multiple_modeled_levels_response(
         omrade_id=TEST_LEVEL_OMRADE_ID, count=5
     )
-    mock_request.return_value = create_mock_response(mock_response_data)
+    fake.add("", mock_response_data)
 
-    client = SGUClient()
     levels = client.levels.modeled.get_levels(limit=10)
     assert levels is not None
     assert isinstance(levels, ModeledGroundwaterLevelCollection)
@@ -114,8 +95,7 @@ def test_get_levels(mock_request) -> None:
     assert all(isinstance(level, ModeledGroundwaterLevel) for level in levels.features)
 
 
-@patch("requests.Session.request")
-def test_get_level_by_id(mock_request) -> None:
+def test_get_level_by_id(fake, client) -> None:
     """Test getting a specific level by ID with mocked response."""
     mock_response_data = create_mock_single_modeled_level_response(
         level_id=TEST_LEVEL_ID,
@@ -123,9 +103,8 @@ def test_get_level_by_id(mock_request) -> None:
         datum=TEST_LEVEL_DATUM,
         objectid=TEST_LEVEL_OBJECTID,
     )
-    mock_request.return_value = create_mock_response(mock_response_data)
+    fake.add("", mock_response_data)
 
-    client = SGUClient()
     level = client.levels.modeled.get_level(TEST_LEVEL_ID)
     assert level is not None
     assert isinstance(level, ModeledGroundwaterLevel)
@@ -135,26 +114,22 @@ def test_get_level_by_id(mock_request) -> None:
     assert level.properties.object_id == TEST_LEVEL_OBJECTID
 
 
-def test_get_level_not_found() -> None:
+def test_get_level_not_found(fake, client) -> None:
     """Test handling of non-existent level requests."""
-    with patch("requests.Session.request") as mock_request:
-        mock_response_data = create_mock_empty_modeled_collection_response()
-        mock_request.return_value = create_mock_response(mock_response_data)
+    mock_response_data = create_mock_empty_modeled_collection_response()
+    fake.add("", mock_response_data)
 
-        client = SGUClient()
-        with pytest.raises(ValueError, match="Level .* not found"):
-            client.levels.modeled.get_level("nonexistent.999999")
+    with pytest.raises(ValueError, match="Level .* not found"):
+        client.levels.modeled.get_level("nonexistent.999999")
 
 
-@patch("requests.Session.request")
-def test_areas_with_bbox(mock_request) -> None:
+def test_areas_with_bbox(fake, client) -> None:
     """Test getting areas with bbox filter using mocked response."""
     mock_response_data = create_mock_multiple_modeled_areas_response(
         area_ids=[30125, 30126], limit=5
     )
-    mock_request.return_value = create_mock_response(mock_response_data)
+    fake.add("", mock_response_data)
 
-    client = SGUClient()
     # Test with a bbox covering southern Sweden
     areas = client.levels.modeled.get_areas(bbox=[12.0, 55.0, 16.0, 58.0], limit=5)
     assert areas is not None
@@ -163,15 +138,13 @@ def test_areas_with_bbox(mock_request) -> None:
     assert len(areas.features) >= 0
 
 
-@patch("requests.Session.request")
-def test_levels_basic_query(mock_request) -> None:
+def test_levels_basic_query(fake, client) -> None:
     """Test basic levels query with mocked response."""
     mock_response_data = create_mock_multiple_modeled_levels_response(
         omrade_id=TEST_LEVEL_OMRADE_ID, count=5
     )
-    mock_request.return_value = create_mock_response(mock_response_data)
+    fake.add("", mock_response_data)
 
-    client = SGUClient()
     # Test basic query without datetime filtering (API seems to have issues with datetime)
     levels = client.levels.modeled.get_levels(limit=10)
     assert levels is not None
@@ -184,15 +157,13 @@ def test_levels_basic_query(mock_request) -> None:
         assert level.properties.object_id is not None
 
 
-@patch("requests.Session.request")
-def test_levels_with_filter_expr(mock_request) -> None:
+def test_levels_with_filter_expr(fake, client) -> None:
     """Test levels query with filter expression using mocked response."""
     mock_response_data = create_mock_multiple_modeled_levels_response(
         omrade_id=TEST_LEVEL_OMRADE_ID, count=3
     )
-    mock_request.return_value = create_mock_response(mock_response_data)
+    fake.add("", mock_response_data)
 
-    client = SGUClient()
     # Test filtering by area ID
     levels = client.levels.modeled.get_levels(
         filter_expr=f"omrade_id = {TEST_LEVEL_OMRADE_ID}", limit=5
@@ -206,8 +177,7 @@ def test_levels_with_filter_expr(mock_request) -> None:
         assert level.properties.area_id == TEST_LEVEL_OMRADE_ID
 
 
-@patch("requests.Session.request")
-def test_levels_with_sortby(mock_request) -> None:
+def test_levels_with_sortby(fake, client) -> None:
     """Test levels query with sorting using mocked response."""
     # Create levels with descending dates
     mock_response_data = create_mock_multiple_modeled_levels_response(
@@ -215,9 +185,8 @@ def test_levels_with_sortby(mock_request) -> None:
     )
     # Reverse the order to simulate descending sort
     mock_response_data["features"].reverse()
-    mock_request.return_value = create_mock_response(mock_response_data)
+    fake.add("", mock_response_data)
 
-    client = SGUClient()
     # Test sorting by date descending
     levels = client.levels.modeled.get_levels(sortby=["-datum"], limit=5)
     assert levels is not None
@@ -232,15 +201,13 @@ def test_levels_with_sortby(mock_request) -> None:
         assert dates[i] >= dates[i + 1]
 
 
-@patch("requests.Session.request")
-def test_areas_to_dataframe(mock_request) -> None:
+def test_areas_to_dataframe(fake, client) -> None:
     """Test converting areas to DataFrame with mocked response."""
     mock_response_data = create_mock_multiple_modeled_areas_response(
         area_ids=[TEST_AREA_OMRADE_ID, 30126], limit=5
     )
-    mock_request.return_value = create_mock_response(mock_response_data)
+    fake.add("", mock_response_data)
 
-    client = SGUClient()
     areas = client.levels.modeled.get_areas(limit=5)
     assert areas is not None
     df = areas.to_dataframe()
@@ -255,15 +222,13 @@ def test_areas_to_dataframe(mock_request) -> None:
     assert TEST_AREA_ID in df["feature_id"].tolist()
 
 
-@patch("requests.Session.request")
-def test_levels_to_dataframe(mock_request) -> None:
+def test_levels_to_dataframe(fake, client) -> None:
     """Test converting levels to DataFrame with mocked response."""
     mock_response_data = create_mock_multiple_modeled_levels_response(
         omrade_id=TEST_LEVEL_OMRADE_ID, count=5
     )
-    mock_request.return_value = create_mock_response(mock_response_data)
+    fake.add("", mock_response_data)
 
-    client = SGUClient()
     levels = client.levels.modeled.get_levels(limit=5)
     assert levels is not None
     df = levels.to_dataframe()
@@ -282,15 +247,13 @@ def test_levels_to_dataframe(mock_request) -> None:
         assert valid_dates.is_monotonic_increasing
 
 
-@patch("requests.Session.request")
-def test_levels_to_series(mock_request) -> None:
+def test_levels_to_series(fake, client) -> None:
     """Test converting levels to Series with mocked response."""
     mock_response_data = create_mock_multiple_modeled_levels_response(
         omrade_id=TEST_LEVEL_OMRADE_ID, count=5
     )
-    mock_request.return_value = create_mock_response(mock_response_data)
+    fake.add("", mock_response_data)
 
-    client = SGUClient()
     levels = client.levels.modeled.get_levels(limit=5)
     assert levels is not None
     series = levels.to_series()
@@ -299,15 +262,13 @@ def test_levels_to_series(mock_request) -> None:
     assert is_datetime(series.index)
 
 
-@patch("requests.Session.request")
-def test_levels_to_series_custom_index_data(mock_request) -> None:
+def test_levels_to_series_custom_index_data(fake, client) -> None:
     """Test converting levels to Series with custom index/data columns using mocked response."""
     mock_response_data = create_mock_multiple_modeled_levels_response(
         omrade_id=TEST_LEVEL_OMRADE_ID, count=5
     )
-    mock_request.return_value = create_mock_response(mock_response_data)
+    fake.add("", mock_response_data)
 
-    client = SGUClient()
     levels = client.levels.modeled.get_levels(limit=5)
     assert levels is not None
     series = levels.to_series(
@@ -322,15 +283,13 @@ def test_levels_to_series_custom_index_data(mock_request) -> None:
         levels.to_series(data="invalid_column")
 
 
-@patch("requests.Session.request")
-def test_levels_to_dataframe_no_sort(mock_request) -> None:
+def test_levels_to_dataframe_no_sort(fake, client) -> None:
     """Test converting levels to DataFrame without sorting using mocked response."""
     mock_response_data = create_mock_multiple_modeled_levels_response(
         omrade_id=TEST_LEVEL_OMRADE_ID, count=5
     )
-    mock_request.return_value = create_mock_response(mock_response_data)
+    fake.add("", mock_response_data)
 
-    client = SGUClient()
     levels = client.levels.modeled.get_levels(limit=5)
     assert levels is not None
     df = levels.to_dataframe(sort_by_date=False)
@@ -338,8 +297,7 @@ def test_levels_to_dataframe_no_sort(mock_request) -> None:
     assert "date" in df.columns
 
 
-@patch("requests.Session.request")
-def test_date_property_parsing(mock_request) -> None:
+def test_date_property_parsing(fake, client) -> None:
     """Test date property parsing with mocked response."""
     mock_response_data = create_mock_single_modeled_level_response(
         level_id=TEST_LEVEL_ID,
@@ -347,22 +305,19 @@ def test_date_property_parsing(mock_request) -> None:
         datum=TEST_LEVEL_DATUM,
         objectid=TEST_LEVEL_OBJECTID,
     )
-    mock_request.return_value = create_mock_response(mock_response_data)
+    fake.add("", mock_response_data)
 
-    client = SGUClient()
     level = client.levels.modeled.get_level(TEST_LEVEL_ID)
     assert level.properties.date == TEST_LEVEL_DATE
 
 
-@patch("requests.Session.request")
-def test_percentile_validation(mock_request) -> None:
+def test_percentile_validation(fake, client) -> None:
     """Test percentile value validation with mocked response."""
     mock_response_data = create_mock_multiple_modeled_levels_response(
         omrade_id=TEST_LEVEL_OMRADE_ID, count=5
     )
-    mock_request.return_value = create_mock_response(mock_response_data)
+    fake.add("", mock_response_data)
 
-    client = SGUClient()
     levels = client.levels.modeled.get_levels(limit=10)
     assert levels is not None
 
@@ -379,15 +334,13 @@ def test_percentile_validation(mock_request) -> None:
             assert 0 <= props.relative_level_large_resources <= 100
 
 
-@patch("requests.Session.request")
-def test_get_levels_by_area(mock_request) -> None:
+def test_get_levels_by_area(fake, client) -> None:
     """Test getting levels by area ID with mocked response."""
     mock_response_data = create_mock_multiple_modeled_levels_response(
         omrade_id=TEST_LEVEL_OMRADE_ID, count=5
     )
-    mock_request.return_value = create_mock_response(mock_response_data)
+    fake.add("", mock_response_data)
 
-    client = SGUClient()
     levels = client.levels.modeled.get_levels_by_area(TEST_LEVEL_OMRADE_ID, limit=10)
     assert levels is not None
     assert isinstance(levels, ModeledGroundwaterLevelCollection)
@@ -398,15 +351,13 @@ def test_get_levels_by_area(mock_request) -> None:
         assert level.properties.area_id == TEST_LEVEL_OMRADE_ID
 
 
-@patch("requests.Session.request")
-def test_get_levels_by_area_to_dataframe(mock_request) -> None:
+def test_get_levels_by_area_to_dataframe(fake, client) -> None:
     """Test converting levels by area to DataFrame with mocked response."""
     mock_response_data = create_mock_multiple_modeled_levels_response(
         omrade_id=TEST_LEVEL_OMRADE_ID, count=5
     )
-    mock_request.return_value = create_mock_response(mock_response_data)
+    fake.add("", mock_response_data)
 
-    client = SGUClient()
     levels = client.levels.modeled.get_levels_by_area(TEST_LEVEL_OMRADE_ID, limit=10)
     df = levels.to_dataframe(sort_by_date=True)
     assert not df.empty
@@ -422,15 +373,13 @@ def test_get_levels_by_area_to_dataframe(mock_request) -> None:
         assert valid_dates.is_monotonic_increasing
 
 
-@patch("requests.Session.request")
-def test_get_levels_by_area_with_limit(mock_request) -> None:
+def test_get_levels_by_area_with_limit(fake, client) -> None:
     """Test getting levels by area with limit using mocked response."""
     mock_response_data = create_mock_multiple_modeled_levels_response(
         omrade_id=TEST_LEVEL_OMRADE_ID, count=3
     )
-    mock_request.return_value = create_mock_response(mock_response_data)
+    fake.add("", mock_response_data)
 
-    client = SGUClient()
     levels = client.levels.modeled.get_levels_by_area(TEST_LEVEL_OMRADE_ID, limit=5)
     assert levels is not None
     assert isinstance(levels, ModeledGroundwaterLevelCollection)
@@ -441,21 +390,16 @@ def test_get_levels_by_area_with_limit(mock_request) -> None:
         assert level.properties.area_id == TEST_LEVEL_OMRADE_ID
 
 
-def test_get_levels_by_area_nonexistent() -> None:
+def test_get_levels_by_area_nonexistent(fake, client) -> None:
     """Test timeout error for non-existent area using mocked response."""
-    import requests.exceptions
+    fake.add("", SGUTimeoutError("Read timeout"))
 
-    with patch("requests.Session.request") as mock_request:
-        mock_request.side_effect = requests.exceptions.ReadTimeout("Read timeout")
-
-        client = SGUClient()
-        # API freezes when searching for non-existent area, so expect timeout
-        with pytest.raises(SGUTimeoutError):
-            client.levels.modeled.get_levels_by_area(999999, limit=10)
+    # API freezes when searching for non-existent area, so expect timeout
+    with pytest.raises(SGUTimeoutError):
+        client.levels.modeled.get_levels_by_area(999999, limit=10)
 
 
-@patch("requests.Session.request")
-def test_get_levels_by_areas(mock_request) -> None:
+def test_get_levels_by_areas(fake, client) -> None:
     """Test getting levels by multiple area IDs with mocked response."""
     area_ids = [TEST_LEVEL_OMRADE_ID, 30126]
     # Create levels for both areas
@@ -474,9 +418,8 @@ def test_get_levels_by_areas(mock_request) -> None:
     mock_response_data = create_mock_multiple_modeled_levels_response(count=0)
     mock_response_data["features"] = all_levels
     mock_response_data["numberReturned"] = len(all_levels)
-    mock_request.return_value = create_mock_response(mock_response_data)
+    fake.add("", mock_response_data)
 
-    client = SGUClient()
     levels = client.levels.modeled.get_levels_by_areas(area_ids, limit=20)
     assert levels is not None
     assert isinstance(levels, ModeledGroundwaterLevelCollection)
@@ -487,15 +430,13 @@ def test_get_levels_by_areas(mock_request) -> None:
         assert level.properties.area_id in area_ids
 
 
-@patch("requests.Session.request")
-def test_get_levels_by_areas_single_area(mock_request) -> None:
+def test_get_levels_by_areas_single_area(fake, client) -> None:
     """Test getting levels by single area ID in list with mocked response."""
     mock_response_data = create_mock_multiple_modeled_levels_response(
         omrade_id=TEST_LEVEL_OMRADE_ID, count=5
     )
-    mock_request.return_value = create_mock_response(mock_response_data)
+    fake.add("", mock_response_data)
 
-    client = SGUClient()
     # Test with single area ID in list (should work same as get_levels_by_area)
     area_ids = [TEST_LEVEL_OMRADE_ID]
     levels = client.levels.modeled.get_levels_by_areas(area_ids, limit=10)
@@ -515,8 +456,7 @@ def test_get_levels_by_areas_empty_list() -> None:
         client.levels.modeled.get_levels_by_areas([], limit=10)
 
 
-@patch("requests.Session.request")
-def test_get_levels_by_areas_to_dataframe(mock_request) -> None:
+def test_get_levels_by_areas_to_dataframe(fake, client) -> None:
     """Test converting levels by multiple areas to DataFrame with mocked response."""
     area_ids = [TEST_LEVEL_OMRADE_ID, 30126]
     # Create combined response
@@ -535,9 +475,8 @@ def test_get_levels_by_areas_to_dataframe(mock_request) -> None:
     mock_response_data = create_mock_multiple_modeled_levels_response(count=0)
     mock_response_data["features"] = all_levels
     mock_response_data["numberReturned"] = len(all_levels)
-    mock_request.return_value = create_mock_response(mock_response_data)
+    fake.add("", mock_response_data)
 
-    client = SGUClient()
     levels = client.levels.modeled.get_levels_by_areas(area_ids, limit=10)
     df = levels.to_dataframe(sort_by_date=True)
     assert not df.empty
@@ -557,16 +496,14 @@ def test_get_levels_by_areas_to_dataframe(mock_request) -> None:
         assert area_id in area_ids
 
 
-@patch("requests.Session.request")
-def test_get_levels_by_areas_with_limit(mock_request) -> None:
+def test_get_levels_by_areas_with_limit(fake, client) -> None:
     """Test getting levels by multiple areas with limit using mocked response."""
     area_ids = [TEST_LEVEL_OMRADE_ID, 30126]
     mock_response_data = create_mock_multiple_modeled_levels_response(
         omrade_id=TEST_LEVEL_OMRADE_ID, count=3
     )
-    mock_request.return_value = create_mock_response(mock_response_data)
+    fake.add("", mock_response_data)
 
-    client = SGUClient()
     levels = client.levels.modeled.get_levels_by_areas(area_ids, limit=5)
     assert levels is not None
     assert isinstance(levels, ModeledGroundwaterLevelCollection)
@@ -577,28 +514,22 @@ def test_get_levels_by_areas_with_limit(mock_request) -> None:
         assert level.properties.area_id in area_ids
 
 
-def test_get_levels_by_areas_nonexistent() -> None:
+def test_get_levels_by_areas_nonexistent(fake, client) -> None:
     """Test timeout error for non-existent areas using mocked response."""
-    import requests.exceptions
+    fake.add("", SGUTimeoutError("Read timeout"))
 
-    with patch("requests.Session.request") as mock_request:
-        mock_request.side_effect = requests.exceptions.ReadTimeout("Read timeout")
-
-        client = SGUClient()
-        # API freezes when searching for non-existent areas, so expect timeout
-        with pytest.raises(SGUTimeoutError):
-            client.levels.modeled.get_levels_by_areas([999998, 999999], limit=10)
+    # API freezes when searching for non-existent areas, so expect timeout
+    with pytest.raises(SGUTimeoutError):
+        client.levels.modeled.get_levels_by_areas([999998, 999999], limit=10)
 
 
-@patch("requests.Session.request")
-def test_get_levels_by_areas_mixed_existing_nonexistent(mock_request) -> None:
+def test_get_levels_by_areas_mixed_existing_nonexistent(fake, client) -> None:
     """Test mixed existing/non-existent area IDs with mocked response."""
     mock_response_data = create_mock_multiple_modeled_levels_response(
         omrade_id=TEST_LEVEL_OMRADE_ID, count=5
     )
-    mock_request.return_value = create_mock_response(mock_response_data)
+    fake.add("", mock_response_data)
 
-    client = SGUClient()
     # Mix existing and non-existent area IDs
     area_ids = [TEST_LEVEL_OMRADE_ID, 999999]
     levels = client.levels.modeled.get_levels_by_areas(area_ids, limit=10)
@@ -610,15 +541,14 @@ def test_get_levels_by_areas_mixed_existing_nonexistent(mock_request) -> None:
         assert level.properties.area_id == TEST_LEVEL_OMRADE_ID
 
 
-@patch("requests.Session.request")
-def test_get_levels_by_coords_single_area(mock_request) -> None:
+def test_get_levels_by_coords_single_area(fake, client) -> None:
     """Test get_levels_by_coords with coordinates that find a single area using mocked response."""
     mock_response_data = create_mock_multiple_modeled_levels_response(
         omrade_id=TEST_LEVEL_OMRADE_ID, count=5
     )
-    mock_request.return_value = create_mock_response(mock_response_data)
+    fake.add("omraden/items", create_mock_single_modeled_area_response())
+    fake.add("grundvattennivaer-tidigare/items", mock_response_data)
 
-    client = SGUClient()
     # Test with coordinates in Gothenburg area (should find single area)
     levels = client.levels.modeled.get_levels_by_coords(
         lat=57.7089, lon=11.9746, limit=5
@@ -632,8 +562,7 @@ def test_get_levels_by_coords_single_area(mock_request) -> None:
     assert len(area_ids) == 1  # Should only find one area
 
 
-@patch("requests.Session.request")
-def test_get_levels_by_coords_boundary_warning(mock_request, caplog) -> None:
+def test_get_levels_by_coords_boundary_warning(fake, client, caplog) -> None:
     """Test get_levels_by_coords with coordinates near boundary (multiple areas) using mocked response."""
     import logging
 
@@ -657,14 +586,12 @@ def test_get_levels_by_coords_boundary_warning(mock_request, caplog) -> None:
     mock_response_data["features"] = all_levels
     mock_response_data["numberReturned"] = len(all_levels)
     # area lookup returns two areas (boundary case), then the levels
-    mock_request.side_effect = [
-        create_mock_response(
-            create_mock_multiple_modeled_areas_response(area_ids=[30125, 30126])
-        ),
-        create_mock_response(mock_response_data),
-    ]
+    fake.add(
+        "",
+        create_mock_multiple_modeled_areas_response(area_ids=[30125, 30126]),
+        mock_response_data,
+    )
 
-    client = SGUClient()
     # Test with coordinates in Stockholm area (known to find multiple areas)
     levels = client.levels.modeled.get_levels_by_coords(
         lat=59.3293, lon=18.0686, limit=5
@@ -695,24 +622,19 @@ def test_get_levels_by_coords_boundary_warning(mock_request, caplog) -> None:
     ), f"Warning should mention multiple areas: {warning_messages}"
 
 
-def test_get_levels_by_coords_outside_sweden() -> None:
+def test_get_levels_by_coords_outside_sweden(fake, client) -> None:
     """Test get_levels_by_coords with coordinates outside Sweden using mocked response."""
-    with patch("requests.Session.request") as mock_request:
-        mock_response_data = create_mock_empty_modeled_collection_response()
-        mock_request.return_value = create_mock_response(mock_response_data)
+    mock_response_data = create_mock_empty_modeled_collection_response()
+    fake.add("", mock_response_data)
 
-        client = SGUClient()
-        # Test with coordinates outside Sweden (London)
-        with pytest.raises(
-            ValueError, match="No modeled groundwater areas found near coordinates"
-        ):
-            client.levels.modeled.get_levels_by_coords(
-                lat=51.5074, lon=-0.1278, limit=5
-            )
+    # Test with coordinates outside Sweden (London)
+    with pytest.raises(
+        ValueError, match="No modeled groundwater areas found near coordinates"
+    ):
+        client.levels.modeled.get_levels_by_coords(lat=51.5074, lon=-0.1278, limit=5)
 
 
-@patch("requests.Session.request")
-def test_get_levels_by_coords_with_datetime(mock_request) -> None:
+def test_get_levels_by_coords_with_datetime(fake, client) -> None:
     """Test get_levels_by_coords with datetime filtering using mocked response."""
     from datetime import UTC, datetime
 
@@ -722,9 +644,9 @@ def test_get_levels_by_coords_with_datetime(mock_request) -> None:
         count=3,
         start_date=datetime(2023, 1, 1, tzinfo=UTC),
     )
-    mock_request.return_value = create_mock_response(mock_response_data)
+    fake.add("omraden/items", create_mock_single_modeled_area_response())
+    fake.add("grundvattennivaer-tidigare/items", mock_response_data)
 
-    client = SGUClient()
     # Test with coordinates and datetime filtering (2023 data)
     levels = client.levels.modeled.get_levels_by_coords(
         lat=57.7089, lon=11.9746, datetime="2023-01-01/2023-12-31", limit=10
@@ -739,154 +661,81 @@ def test_get_levels_by_coords_with_datetime(mock_request) -> None:
             assert level.properties.date.year == 2023
 
 
-@patch("requests.Session.request")
-def test_get_levels_by_coords_custom_buffer(mock_request) -> None:
-    """Test get_levels_by_coords with custom buffer parameter using mocked response."""
-
-    def mock_request_side_effect(*args, **kwargs):
-        # Return fewer areas for small buffer, more for large buffer
-        if "buffer=0.001" in str(kwargs) or (
-            len(args) > 1 and "buffer=0.001" in str(args[1])
-        ):
-            # Small buffer - fewer results
-            data = create_mock_multiple_modeled_levels_response(
-                omrade_id=TEST_LEVEL_OMRADE_ID, count=2
-            )
-        else:
-            # Large buffer - more results
-            data = create_mock_multiple_modeled_levels_response(
-                omrade_id=TEST_LEVEL_OMRADE_ID, count=5
-            )
-        return create_mock_response(data)
-
-    mock_request.side_effect = mock_request_side_effect
-
-    client = SGUClient()
-
-    # Test with small buffer (should find fewer/no areas)
-    small_buffer_levels = client.levels.modeled.get_levels_by_coords(
-        lat=57.7089,
-        lon=11.9746,
-        buffer=0.001,  # Very small buffer (~100m)
-        limit=10,
+def test_get_levels_by_coords_searches_areas_within_the_buffer(fake, client) -> None:
+    """The area lookup covers ``buffer`` degrees around the point."""
+    fake.add("omraden/items", create_mock_single_modeled_area_response())
+    fake.add(
+        "grundvattennivaer-tidigare/items",
+        create_mock_empty_modeled_collection_response(),
     )
 
-    # Test with larger buffer (should find more areas)
-    large_buffer_levels = client.levels.modeled.get_levels_by_coords(
-        lat=57.7089,
-        lon=11.9746,
-        buffer=0.1,  # Large buffer (~10km)
-        limit=10,
-    )
+    client.levels.modeled.get_levels_by_coords(lat=57.5, lon=12.0, buffer=0.25)
 
-    assert small_buffer_levels is not None
-    assert large_buffer_levels is not None
-    assert isinstance(small_buffer_levels, ModeledGroundwaterLevelCollection)
-    assert isinstance(large_buffer_levels, ModeledGroundwaterLevelCollection)
-
-    # Large buffer should find more or equal areas than small buffer
-    small_area_ids = {
-        level.properties.area_id for level in small_buffer_levels.features
-    }
-    large_area_ids = {
-        level.properties.area_id for level in large_buffer_levels.features
-    }
-    assert len(large_area_ids) >= len(small_area_ids)
+    area_lookup = fake.requests[0]
+    assert area_lookup.url.endswith("collections/omraden/items")
+    assert area_lookup.params["bbox"] == "11.75,57.25,12.25,57.75"
 
 
 # Comprehensive error condition tests (enabled by mocking)
-def test_api_timeout_error() -> None:
+def test_api_timeout_error(fake, client) -> None:
     """Test that API timeout errors are properly raised."""
-    import requests.exceptions
+    fake.add("", SGUTimeoutError("Read timeout"))
 
-    with patch("requests.Session.request") as mock_request:
-        mock_request.side_effect = requests.exceptions.ReadTimeout("Read timeout")
-
-        client = SGUClient()
-        with pytest.raises(SGUTimeoutError, match="Read timeout"):
-            client.levels.modeled.get_area(TEST_AREA_ID)
+    with pytest.raises(SGUTimeoutError, match="Read timeout"):
+        client.levels.modeled.get_area(TEST_AREA_ID)
 
 
-def test_api_connection_error() -> None:
+def test_api_connection_error(fake, client) -> None:
     """Test that API connection errors are properly raised."""
-    import requests.exceptions
+    fake.add("", SGUConnectionError("Connection failed"))
 
-    with patch("requests.Session.request") as mock_request:
-        mock_request.side_effect = requests.exceptions.ConnectionError(
-            "Connection failed"
-        )
-
-        client = SGUClient()
-        with pytest.raises(SGUConnectionError, match="Connection failed"):
-            client.levels.modeled.get_area(TEST_AREA_ID)
+    with pytest.raises(SGUConnectionError, match="Connection failed"):
+        client.levels.modeled.get_area(TEST_AREA_ID)
 
 
-def test_api_server_error() -> None:
+def test_api_server_error(fake, client) -> None:
     """Test that API server errors are properly raised."""
-    with patch("requests.Session.request") as mock_request:
-        mock_response = Mock(spec=Response)
-        mock_response.ok = False
-        mock_response.status_code = 500
-        mock_response.json.return_value = {"error": "Internal Server Error"}
-        mock_request.return_value = mock_response
+    fake.add("", TransportResponse(500, '{"error": "Internal Server Error"}'))
 
-        client = SGUClient()
-        with pytest.raises(SGUAPIError, match="API request failed with status 500"):
-            client.levels.modeled.get_area(TEST_AREA_ID)
+    with pytest.raises(SGUAPIError, match="API request failed with status 500"):
+        client.levels.modeled.get_area(TEST_AREA_ID)
 
 
-def test_api_not_found_error() -> None:
+def test_api_not_found_error(fake, client) -> None:
     """Test that API 404 errors are properly raised."""
-    with patch("requests.Session.request") as mock_request:
-        mock_response = Mock(spec=Response)
-        mock_response.ok = False
-        mock_response.status_code = 404
-        mock_response.json.return_value = {"error": "Area not found"}
-        mock_request.return_value = mock_response
+    fake.add("", TransportResponse(404, '{"error": "Area not found"}'))
 
-        client = SGUClient()
-        with pytest.raises(SGUAPIError, match="API request failed with status 404"):
-            client.levels.modeled.get_area("nonexistent.area")
+    with pytest.raises(SGUAPIError, match="API request failed with status 404"):
+        client.levels.modeled.get_area("nonexistent.area")
 
 
-def test_empty_area_response_handling() -> None:
+def test_empty_area_response_handling(fake, client) -> None:
     """Test handling of empty area responses."""
-    with patch("requests.Session.request") as mock_request:
-        mock_response_data = create_mock_empty_modeled_collection_response()
-        mock_request.return_value = create_mock_response(mock_response_data)
+    mock_response_data = create_mock_empty_modeled_collection_response()
+    fake.add("", mock_response_data)
 
-        client = SGUClient()
-        with pytest.raises(ValueError, match="Area .* not found"):
-            client.levels.modeled.get_area("nonexistent.area")
+    with pytest.raises(ValueError, match="Area .* not found"):
+        client.levels.modeled.get_area("nonexistent.area")
 
 
-def test_empty_level_response_handling() -> None:
+def test_empty_level_response_handling(fake, client) -> None:
     """Test handling of empty level responses."""
-    with patch("requests.Session.request") as mock_request:
-        mock_response_data = create_mock_empty_modeled_collection_response()
-        mock_request.return_value = create_mock_response(mock_response_data)
+    mock_response_data = create_mock_empty_modeled_collection_response()
+    fake.add("", mock_response_data)
 
-        client = SGUClient()
-        with pytest.raises(ValueError, match="Level .* not found"):
-            client.levels.modeled.get_level("nonexistent.level")
+    with pytest.raises(ValueError, match="Level .* not found"):
+        client.levels.modeled.get_level("nonexistent.level")
 
 
-def test_malformed_json_response() -> None:
+def test_malformed_json_response(fake, client) -> None:
     """Test handling of malformed JSON responses."""
-    with patch("requests.Session.request") as mock_request:
-        mock_response = Mock(spec=Response)
-        mock_response.ok = False
-        mock_response.status_code = 500
-        mock_response.json.side_effect = ValueError("Invalid JSON")
-        mock_response.text = "Internal Server Error - HTML response"
-        mock_request.return_value = mock_response
+    fake.add("", TransportResponse(500, "Internal Server Error - HTML response"))
 
-        client = SGUClient()
-        with pytest.raises(SGUAPIError) as exc_info:
-            client.levels.modeled.get_area(TEST_AREA_ID)
+    with pytest.raises(SGUAPIError) as exc_info:
+        client.levels.modeled.get_area(TEST_AREA_ID)
 
-        # Should raise SGUAPIError when JSON parsing fails
-        assert "API request failed with status 500" in str(exc_info.value)
+    # Should raise SGUAPIError when JSON parsing fails
+    assert "API request failed with status 500" in str(exc_info.value)
 
 
 @pytest.mark.parametrize(
@@ -896,15 +745,14 @@ def test_malformed_json_response() -> None:
         ([30125, "30126"], "omrade_id in (30125, 30126)"),
     ],
 )
-def test_get_levels_by_areas_sends_area_ids_unquoted(area_ids, expected) -> None:
+def test_get_levels_by_areas_sends_area_ids_unquoted(
+    client, fake, area_ids, expected
+) -> None:
     """Area IDs are numbers in the API, even when passed as strings."""
-    with patch("requests.Session.request") as mock_request:
-        mock_request.return_value = create_mock_response(
-            create_mock_empty_modeled_collection_response()
-        )
-        SGUClient().levels.modeled.get_levels_by_areas(area_ids)
+    fake.add("", create_mock_empty_modeled_collection_response())
+    client.levels.modeled.get_levels_by_areas(area_ids)
 
-    assert mock_request.call_args.kwargs["params"]["filter"] == expected
+    assert fake.params["filter"] == expected
 
 
 DATUM_JAN_2024 = (
@@ -925,52 +773,38 @@ DATUM_JAN_2024 = (
         ),
     ],
 )
-def test_get_levels_by_area_filters_on_date(call, expected_area_filter) -> None:
+def test_get_levels_by_area_filters_on_date(
+    client, fake, call, expected_area_filter
+) -> None:
     """tmin/tmax filter modeled levels on their date, like observed measurements."""
-    with patch("requests.Session.request") as mock_request:
-        mock_request.return_value = create_mock_response(
-            create_mock_empty_modeled_collection_response()
-        )
-        call(
-            SGUClient().levels.modeled,
-            tmin=datetime(2024, 1, 1, tzinfo=UTC),
-            tmax=datetime(2024, 1, 31, tzinfo=UTC),
-        )
-
-    assert mock_request.call_args.kwargs["params"]["filter"] == (
-        f"{expected_area_filter} AND {DATUM_JAN_2024}"
+    fake.add("", create_mock_empty_modeled_collection_response())
+    call(
+        client.levels.modeled,
+        tmin=datetime(2024, 1, 1, tzinfo=UTC),
+        tmax=datetime(2024, 1, 31, tzinfo=UTC),
     )
 
+    assert fake.params["filter"] == (f"{expected_area_filter} AND {DATUM_JAN_2024}")
 
-def test_get_levels_by_coords_filters_on_date() -> None:
+
+def test_get_levels_by_coords_filters_on_date(fake, client) -> None:
     """tmin/tmax reach the levels request, not the area lookup."""
     area = create_mock_single_modeled_area_response()
     area_id = area["features"][0]["properties"]["omrade_id"]
-    with patch("requests.Session.request") as mock_request:
-        mock_request.side_effect = [
-            create_mock_response(area),
-            create_mock_response(create_mock_empty_modeled_collection_response()),
-        ]
-        SGUClient().levels.modeled.get_levels_by_coords(
-            lat=57.7, lon=11.97, tmin="2024-01-01", tmax="2024-01-31"
-        )
-
-    area_params, level_params = (
-        call.kwargs["params"] for call in mock_request.call_args_list
+    fake.add("", area, create_mock_empty_modeled_collection_response())
+    client.levels.modeled.get_levels_by_coords(
+        lat=57.7, lon=11.97, tmin="2024-01-01", tmax="2024-01-31"
     )
+
+    area_params, level_params = (call.params for call in fake.requests)
     assert "filter" not in area_params
     assert level_params["filter"] == (
         f"omrade_id={area_id} AND datum >= '2024-01-01' AND datum <= '2024-01-31'"
     )
 
 
-def test_get_levels_filters_on_date() -> None:
-    with patch("requests.Session.request") as mock_request:
-        mock_request.return_value = create_mock_response(
-            create_mock_empty_modeled_collection_response()
-        )
-        SGUClient().levels.modeled.get_levels(tmin="2024-01-01", tmax="2024-01-31")
+def test_get_levels_filters_on_date(fake, client) -> None:
+    fake.add("", create_mock_empty_modeled_collection_response())
+    client.levels.modeled.get_levels(tmin="2024-01-01", tmax="2024-01-31")
 
-    assert mock_request.call_args.kwargs["params"]["filter"] == (
-        "datum >= '2024-01-01' AND datum <= '2024-01-31'"
-    )
+    assert fake.params["filter"] == ("datum >= '2024-01-01' AND datum <= '2024-01-31'")
