@@ -1,25 +1,22 @@
-"""Basic tests for SGU Client using mocked API responses.
+"""Tests for creating, configuring and closing an SGUClient."""
 
-These tests use mocked HTTP responses to ensure fast, reliable testing without
-depending on external API availability.
-"""
-
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
 import pytest
-from requests import Response
 
-from sgu_client import SGUAPIError, SGUClient, SGUConfig
+from sgu_client import (
+    RequestsTransport,
+    SGUAPIError,
+    SGUClient,
+    SGUConfig,
+    TransportResponse,
+)
+from tests.fakes import FakeTransport, Request
 from tests.mock_responses import create_mock_single_station_response
 
-
-def create_mock_response(response_data, status_code=200):
-    """Create a mock HTTP response object."""
-    mock_response = Mock(spec=Response)
-    mock_response.ok = True
-    mock_response.status_code = status_code
-    mock_response.json.return_value = response_data
-    return mock_response
+OBSERVED_URL = (
+    "https://api.sgu.se/oppnadata/grundvattennivaer-observerade/ogc/features/v1/"
+)
 
 
 def test_create_basic_client():
@@ -41,49 +38,58 @@ def test_client_context_manager():
         assert client is not None
 
 
-def test_context_manager_closes_session():
-    """Test that leaving the with block closes the HTTP session."""
-    with (
-        patch("requests.Session.close") as mock_close,
-        SGUClient(),
-    ):
-        mock_close.assert_not_called()
-    mock_close.assert_called_once()
+def test_client_fetches_through_the_given_transport() -> None:
+    fake = FakeTransport(
+        {"stationer/items/stationer.4086": create_mock_single_station_response()}
+    )
+    client = SGUClient(transport=fake)
+
+    station = client.levels.observed.get_station("stationer.4086")
+
+    assert station.id == "stationer.4086"
+    assert fake.requests == [
+        Request(f"{OBSERVED_URL}collections/stationer/items/stationer.4086", {})
+    ]
 
 
-def test_close_closes_session():
-    """Test that close() closes the HTTP session."""
+def test_context_manager_closes_the_transport_it_created():
+    with patch.object(RequestsTransport, "close") as close, SGUClient():
+        close.assert_not_called()
+    close.assert_called_once()
+
+
+def test_close_closes_the_transport_it_created():
     client = SGUClient()
-    with patch.object(client._base_client._session, "close") as mock_close:
+    with patch.object(RequestsTransport, "close") as close:
         client.close()
-    mock_close.assert_called_once()
+    close.assert_called_once()
 
 
-@patch("requests.Session.request")
-def test_request_with_kwargs(mock_request) -> None:
-    """Test that we can pass additional kwargs to the request method."""
-    mock_response_data = create_mock_single_station_response(
-        station_id="stationer.test",
-        platsbeteckning="TEST_1",
-        obsplatsnamn="Test_Station",
-    )
-    mock_request.return_value = create_mock_response(mock_response_data)
+def test_close_leaves_a_given_transport_open():
+    fake = FakeTransport()
+    with SGUClient(transport=fake):
+        pass
+    assert not fake.closed
 
-    client = SGUClient(config=SGUConfig(log_level="DEBUG"))
-    _ = client.levels.observed.get_stations(
-        limit=1, params={"key": "value"}, data={"key": "value"}
-    )
+
+def test_extra_keyword_arguments_are_sent_as_query_params() -> None:
+    fake = FakeTransport({"stationer/items": create_mock_single_station_response()})
+    client = SGUClient(transport=fake)
+
+    client.levels.observed.get_stations(limit=1, properties="obsplatsnamn")
+
+    assert fake.params == {"limit": 1, "properties": "obsplatsnamn"}
 
 
 def test_http_error() -> None:
     """Test that HTTP errors are properly raised."""
-    with patch("requests.Session.request") as mock_request:
-        mock_response = Mock(spec=Response)
-        mock_response.ok = False
-        mock_response.status_code = 404
-        mock_response.json.return_value = {"error": "Not Found"}
-        mock_request.return_value = mock_response
+    fake = FakeTransport(
+        {"stationer/items": TransportResponse(404, '{"error": "Not Found"}')}
+    )
+    client = SGUClient(transport=fake)
 
-        client = SGUClient(config=SGUConfig(log_level="DEBUG"))
-        with pytest.raises(SGUAPIError):
-            _ = client.levels.observed.get_stations(limit=1)
+    with pytest.raises(SGUAPIError) as exc_info:
+        client.levels.observed.get_stations(limit=1)
+
+    assert exc_info.value.status_code == 404
+    assert exc_info.value.response_data == {"error": "Not Found"}

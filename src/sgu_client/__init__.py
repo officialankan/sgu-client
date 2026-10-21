@@ -11,9 +11,11 @@ from .exceptions import (
     SGUValidationError,
 )
 from .sgu_client import SGUClient
+from .transport import RequestsTransport, Transport, TransportResponse
 
 __version__ = "0.7.0"
 __all__ = [
+    "RequestsTransport",
     "SGUAPIError",
     "SGUAmbiguousError",
     "SGUClient",
@@ -23,4 +25,6 @@ __all__ = [
     "SGUNotFoundError",
     "SGUTimeoutError",
     "SGUValidationError",
+    "Transport",
+    "TransportResponse",
 ]

@@ -4,6 +4,7 @@ from .client.base import BaseClient
 from .client.chemistry import GroundwaterChemistryClient
 from .client.levels import LevelsClient
 from .config import SGUConfig
+from .transport import Transport
 
 
 class SGUClient:
@@ -25,13 +26,20 @@ class SGUClient:
         ...     stations = client.levels.observed.get_stations()
     """
 
-    def __init__(self, config: SGUConfig | None = None):
+    def __init__(
+        self, config: SGUConfig | None = None, *, transport: Transport | None = None
+    ):
         """Initialize the SGU client.
 
         Args:
             config: Configuration object. If None, uses default config.
+            transport: Where requests go. If None, the client talks to SGU over the
+                network with a :class:`~sgu_client.RequestsTransport` built from
+                ``config``, and closes it in :meth:`close`. A transport you pass in
+                is yours to close, and the network settings in ``config``
+                (``timeout``, ``max_retries``, ``user_agent``) don't apply to it.
         """
-        self._base_client = BaseClient(config)
+        self._base_client = BaseClient(config, transport)
 
         # Initialize sub-clients
         self.levels = LevelsClient(self._base_client)
