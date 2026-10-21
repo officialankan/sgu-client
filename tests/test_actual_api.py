@@ -7,6 +7,8 @@ API rate limiting, but comprehensive enough to catch breaking changes.
 
 from datetime import UTC, datetime
 
+import pytest
+
 from sgu_client import SGUClient
 from sgu_client.models.observed import GroundwaterStation
 
@@ -16,6 +18,9 @@ TEST_STATION_PLATSBETECKNING = "95_2"
 TEST_STATION_OBSPLATSNAMN = "Lagga_2"
 TEST_CHEMISTRY_SITE_ID = "TTK-442-M"
 TEST_CHEMISTRY_NATIONAL_SITE_ID = 359366
+
+# The rest of the suite runs with --disable-socket
+pytestmark = pytest.mark.enable_socket
 
 
 def test_real_api_integration_get_lagga_station():

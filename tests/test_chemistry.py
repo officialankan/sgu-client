@@ -1,14 +1,10 @@
-"""Tests for chemistry module with mocked API responses (SGU v2 API)."""
+"""Tests for the chemistry client (SGU v2 API), served canned responses by a fake transport."""
 
 from datetime import UTC, datetime
-from unittest.mock import Mock, patch
 
 import pytest
-import requests.exceptions
-from requests import Response
 
 from sgu_client import SGUClient
-from sgu_client.exceptions import SGUAPIError, SGUConnectionError, SGUTimeoutError
 from sgu_client.models.chemistry import (
     AnalysisResult,
     AnalysisResultCollection,
@@ -25,16 +21,6 @@ from tests.mock_responses import (
     create_mock_sampling_site_collection_response,
     create_mock_sampling_site_feature,
 )
-
-
-def create_mock_response(response_data, status_code=200):
-    """Create a mock HTTP response object."""
-    mock_response = Mock(spec=Response)
-    mock_response.ok = True
-    mock_response.status_code = status_code
-    mock_response.json.return_value = response_data
-    return mock_response
-
 
 # Model parsing tests
 
@@ -93,55 +79,38 @@ def test_county_code_is_zero_padded_string(lanskod, expected):
 # Client request tests
 
 
-def test_get_sampling_sites_requests_v2_api():
+def test_get_sampling_sites_requests_v2_api(fake, client):
     """Sampling sites are fetched from the v2 grundvattenkvalitet dataset."""
-    client = SGUClient()
+    fake.add("", create_mock_sampling_site_collection_response())
+    sites = client.chemistry.get_sampling_sites(limit=1)
 
-    with patch.object(client.chemistry._client._session, "request") as mock_request:
-        mock_request.return_value = create_mock_response(
-            create_mock_sampling_site_collection_response()
-        )
-        sites = client.chemistry.get_sampling_sites(limit=1)
-
-    assert mock_request.call_args.kwargs["url"] == (
+    assert fake.requests[-1].url == (
         f"{CHEMISTRY_V2_BASE_URL}collections/provplatser/items"
     )
     assert sites.features[0].properties.station_id == "TTK-442-M"
 
 
-def test_get_analysis_results_requests_v2_api():
+def test_get_analysis_results_requests_v2_api(fake, client):
     """Analysis results are fetched from the v2 grundvattenkvalitet dataset."""
-    client = SGUClient()
+    fake.add("", create_mock_analysis_result_collection_response())
+    results = client.chemistry.get_analysis_results(limit=1)
 
-    with patch.object(client.chemistry._client._session, "request") as mock_request:
-        mock_request.return_value = create_mock_response(
-            create_mock_analysis_result_collection_response()
-        )
-        results = client.chemistry.get_analysis_results(limit=1)
-
-    assert mock_request.call_args.kwargs["url"] == (
+    assert fake.requests[-1].url == (
         f"{CHEMISTRY_V2_BASE_URL}collections/analysresultat/items"
     )
     assert results.features[0].properties.parameter_name == "Nitratkväve"
 
 
-def test_get_results_by_site_with_national_site_id(caplog):
+def test_get_results_by_site_with_national_site_id(fake, client, caplog):
     """national_site_id is the first argument and filters results in one request."""
-    client = SGUClient()
-
-    with patch.object(client.chemistry._client._session, "request") as mock_request:
-        mock_request.return_value = create_mock_response(
-            create_mock_multiple_analysis_results_response(
-                nationellt_provplatsid=359366
-            )
-        )
-        results = client.chemistry.get_results_by_site(359366)
-
-    assert mock_request.call_count == 1
-    assert (
-        mock_request.call_args.kwargs["params"]["filter"]
-        == "nationellt_provplatsid=359366"
+    fake.add(
+        "",
+        create_mock_multiple_analysis_results_response(nationellt_provplatsid=359366),
     )
+    results = client.chemistry.get_results_by_site(359366)
+
+    assert len(fake.requests) == 1
+    assert fake.params["filter"] == "nationellt_provplatsid=359366"
     assert len(results.features) == 3
     assert "additional API request" not in caplog.text
 
@@ -154,94 +123,68 @@ def test_get_results_by_site_with_national_site_id(caplog):
     ],
 )
 def test_get_results_by_site_looks_up_national_site_id(
-    caplog, kwargs, expected_lookup_filter
+    fake, client, caplog, kwargs, expected_lookup_filter
 ):
     """site_id/site_name are resolved to a national_site_id, with a warning."""
-    client = SGUClient()
+    fake.add(
+        "",
+        create_mock_sampling_site_collection_response(),
+        create_mock_multiple_analysis_results_response(),
+    )
+    results = client.chemistry.get_results_by_site(**kwargs)
 
-    with patch.object(client.chemistry._client._session, "request") as mock_request:
-        mock_request.side_effect = [
-            create_mock_response(create_mock_sampling_site_collection_response()),
-            create_mock_response(create_mock_multiple_analysis_results_response()),
-        ]
-        results = client.chemistry.get_results_by_site(**kwargs)
-
-    lookup_call, results_call = mock_request.call_args_list
-    assert lookup_call.kwargs["url"].endswith("collections/provplatser/items")
-    assert lookup_call.kwargs["params"]["filter"] == expected_lookup_filter
-    assert results_call.kwargs["url"].endswith("collections/analysresultat/items")
-    assert results_call.kwargs["params"]["filter"] == "nationellt_provplatsid=359366"
+    lookup_call, results_call = fake.requests
+    assert lookup_call.url.endswith("collections/provplatser/items")
+    assert lookup_call.params["filter"] == expected_lookup_filter
+    assert results_call.url.endswith("collections/analysresultat/items")
+    assert results_call.params["filter"] == "nationellt_provplatsid=359366"
     assert len(results.features) == 3
     assert "additional API request" in caplog.text
     assert "national_site_id" in caplog.text
 
 
-def test_get_results_by_site_unknown_site_id_raises():
+def test_get_results_by_site_unknown_site_id_raises(fake, client):
     """A site_id that matches no sampling site raises a ValueError naming it."""
-    client = SGUClient()
-
-    with patch.object(client.chemistry._client._session, "request") as mock_request:
-        mock_request.return_value = create_mock_response(
-            create_mock_sampling_site_collection_response(sites=[])
-        )
-        with pytest.raises(ValueError, match="NOPE-1"):
-            client.chemistry.get_results_by_site(site_id="NOPE-1")
+    fake.add("", create_mock_sampling_site_collection_response(sites=[]))
+    with pytest.raises(ValueError, match="NOPE-1"):
+        client.chemistry.get_results_by_site(site_id="NOPE-1")
 
 
-def test_get_results_by_sites_with_national_site_ids():
+def test_get_results_by_sites_with_national_site_ids(fake, client):
     """A list of national_site_ids filters results with a single IN clause."""
-    client = SGUClient()
+    fake.add("", create_mock_multiple_analysis_results_response())
+    client.chemistry.get_results_by_sites([359366, 378865])
 
-    with patch.object(client.chemistry._client._session, "request") as mock_request:
-        mock_request.return_value = create_mock_response(
-            create_mock_multiple_analysis_results_response()
-        )
-        client.chemistry.get_results_by_sites([359366, 378865])
-
-    assert mock_request.call_count == 1
-    assert (
-        mock_request.call_args.kwargs["params"]["filter"]
-        == "nationellt_provplatsid in (359366, 378865)"
-    )
+    assert len(fake.requests) == 1
+    assert fake.params["filter"] == "nationellt_provplatsid in (359366, 378865)"
 
 
-def test_get_results_by_sites_with_site_ids(caplog):
+def test_get_results_by_sites_with_site_ids(fake, client, caplog):
     """A list of site_ids is resolved to national_site_ids in one lookup request."""
-    client = SGUClient()
-
-    with patch.object(client.chemistry._client._session, "request") as mock_request:
-        mock_request.side_effect = [
-            create_mock_response(create_mock_multiple_sampling_sites_response()),
-            create_mock_response(create_mock_multiple_analysis_results_response()),
-        ]
-        client.chemistry.get_results_by_sites(site_id=["TTK-442-M", "SYD-681-C"])
-
-    lookup_call, results_call = mock_request.call_args_list
-    assert (
-        lookup_call.kwargs["params"]["filter"]
-        == "platsbeteckning in ('TTK-442-M', 'SYD-681-C')"
+    fake.add(
+        "",
+        create_mock_multiple_sampling_sites_response(),
+        create_mock_multiple_analysis_results_response(),
     )
+    client.chemistry.get_results_by_sites(site_id=["TTK-442-M", "SYD-681-C"])
+
+    lookup_call, results_call = fake.requests
     assert (
-        results_call.kwargs["params"]["filter"]
-        == "nationellt_provplatsid in (359366, 378865)"
+        lookup_call.params["filter"] == "platsbeteckning in ('TTK-442-M', 'SYD-681-C')"
     )
+    assert results_call.params["filter"] == "nationellt_provplatsid in (359366, 378865)"
     assert "additional API request" in caplog.text
 
 
-def test_get_results_by_sites_partial_lookup_raises():
+def test_get_results_by_sites_partial_lookup_raises(fake, client):
     """If only some site_ids are found, a ValueError names the missing ones."""
-    client = SGUClient()
-
-    with patch.object(client.chemistry._client._session, "request") as mock_request:
-        mock_request.return_value = create_mock_response(
-            create_mock_multiple_sampling_sites_response()
+    fake.add("", create_mock_multiple_sampling_sites_response())
+    with pytest.raises(ValueError, match="NOPE-1"):
+        client.chemistry.get_results_by_sites(
+            site_id=["TTK-442-M", "SYD-681-C", "NOPE-1"]
         )
-        with pytest.raises(ValueError, match="NOPE-1"):
-            client.chemistry.get_results_by_sites(
-                site_id=["TTK-442-M", "SYD-681-C", "NOPE-1"]
-            )
 
-    assert mock_request.call_count == 1
+    assert len(fake.requests) == 1
 
 
 @pytest.mark.parametrize(
@@ -263,34 +206,26 @@ def test_get_results_by_sites_partial_lookup_raises():
         ),
     ],
 )
-def test_get_results_by_parameter_filters(kwargs, expected_filter):
+def test_get_results_by_parameter_filters(fake, client, kwargs, expected_filter):
     """Results are filtered on parameternamn, optionally by site and time."""
-    client = SGUClient()
+    fake.add("", create_mock_analysis_result_collection_response())
+    client.chemistry.get_results_by_parameter("Bly", **kwargs)
 
-    with patch.object(client.chemistry._client._session, "request") as mock_request:
-        mock_request.return_value = create_mock_response(
-            create_mock_analysis_result_collection_response()
-        )
-        client.chemistry.get_results_by_parameter("Bly", **kwargs)
-
-    assert mock_request.call_count == 1
-    assert mock_request.call_args.kwargs["params"]["filter"] == expected_filter
+    assert len(fake.requests) == 1
+    assert fake.params["filter"] == expected_filter
 
 
-def test_get_results_by_parameter_with_site_id(caplog):
+def test_get_results_by_parameter_with_site_id(fake, client, caplog):
     """A site_id filter is resolved to a national_site_id, like get_results_by_site."""
-    client = SGUClient()
-
-    with patch.object(client.chemistry._client._session, "request") as mock_request:
-        mock_request.side_effect = [
-            create_mock_response(create_mock_sampling_site_collection_response()),
-            create_mock_response(create_mock_analysis_result_collection_response()),
-        ]
-        client.chemistry.get_results_by_parameter("Bly", site_id="TTK-442-M")
+    fake.add(
+        "",
+        create_mock_sampling_site_collection_response(),
+        create_mock_analysis_result_collection_response(),
+    )
+    client.chemistry.get_results_by_parameter("Bly", site_id="TTK-442-M")
 
     assert (
-        mock_request.call_args.kwargs["params"]["filter"]
-        == "parameternamn='Bly' AND nationellt_provplatsid=359366"
+        fake.params["filter"] == "parameternamn='Bly' AND nationellt_provplatsid=359366"
     )
     assert "additional API request" in caplog.text
 
@@ -312,18 +247,13 @@ def test_get_results_by_parameter_multiple_site_identifiers_raises():
         ({"national_site_id": 359366}, "nationellt_provplatsid=359366"),
     ],
 )
-def test_get_sampling_site_by_name(caplog, kwargs, expected_filter):
+def test_get_sampling_site_by_name(fake, client, caplog, kwargs, expected_filter):
     """A sampling site can be looked up by any identifier in a single request."""
-    client = SGUClient()
+    fake.add("", create_mock_sampling_site_collection_response())
+    site = client.chemistry.get_sampling_site_by_name(**kwargs)
 
-    with patch.object(client.chemistry._client._session, "request") as mock_request:
-        mock_request.return_value = create_mock_response(
-            create_mock_sampling_site_collection_response()
-        )
-        site = client.chemistry.get_sampling_site_by_name(**kwargs)
-
-    assert mock_request.call_count == 1
-    assert mock_request.call_args.kwargs["params"]["filter"] == expected_filter
+    assert len(fake.requests) == 1
+    assert fake.params["filter"] == expected_filter
     assert site.properties.national_site_id == 359366
     assert "additional API request" not in caplog.text
 
@@ -345,17 +275,12 @@ def test_get_sampling_site_by_name(caplog, kwargs, expected_filter):
         ),
     ],
 )
-def test_get_sampling_sites_by_names(kwargs, expected_filter):
+def test_get_sampling_sites_by_names(fake, client, kwargs, expected_filter):
     """Multiple sampling sites can be looked up by any identifier."""
-    client = SGUClient()
+    fake.add("", create_mock_multiple_sampling_sites_response())
+    sites = client.chemistry.get_sampling_sites_by_names(**kwargs)
 
-    with patch.object(client.chemistry._client._session, "request") as mock_request:
-        mock_request.return_value = create_mock_response(
-            create_mock_multiple_sampling_sites_response()
-        )
-        sites = client.chemistry.get_sampling_sites_by_names(**kwargs)
-
-    assert mock_request.call_args.kwargs["params"]["filter"] == expected_filter
+    assert fake.params["filter"] == expected_filter
     assert [site.properties.national_site_id for site in sites.features] == [
         359366,
         378865,
@@ -426,21 +351,16 @@ def test_analysis_results_pivot_by_parameter():
     assert df_pivot["Nitratkväve"].dropna().tolist() == [2.99]
 
 
-def test_get_results_by_site_with_datetime_objects():
+def test_get_results_by_site_with_datetime_objects(fake, client):
     """datetime tmin/tmax are sent as ISO strings on provtagningsdatum."""
-    client = SGUClient()
+    fake.add("", create_mock_analysis_result_collection_response())
+    client.chemistry.get_results_by_site(
+        359366,
+        tmin=datetime(2020, 1, 1, tzinfo=UTC),
+        tmax=datetime(2021, 1, 1, tzinfo=UTC),
+    )
 
-    with patch.object(client.chemistry._client._session, "request") as mock_request:
-        mock_request.return_value = create_mock_response(
-            create_mock_analysis_result_collection_response()
-        )
-        client.chemistry.get_results_by_site(
-            359366,
-            tmin=datetime(2020, 1, 1, tzinfo=UTC),
-            tmax=datetime(2021, 1, 1, tzinfo=UTC),
-        )
-
-    assert mock_request.call_args.kwargs["params"]["filter"] == (
+    assert fake.params["filter"] == (
         "nationellt_provplatsid=359366"
         " AND provtagningsdatum >= '2020-01-01T00:00:00+00:00'"
         " AND provtagningsdatum <= '2021-01-01T00:00:00+00:00'"
@@ -487,98 +407,43 @@ def test_get_results_by_parameter_no_parameter():
         client.chemistry.get_results_by_parameter()  # ty: ignore[missing-argument]
 
 
-def test_get_results_by_site_multiple_sites_for_name_raises():
+def test_get_results_by_site_multiple_sites_for_name_raises(fake, client):
     """A site_name matching several sites is ambiguous for a single-site lookup."""
-    client = SGUClient()
-
-    with patch.object(client.chemistry._client._session, "request") as mock_request:
-        mock_request.return_value = create_mock_response(
-            create_mock_multiple_sampling_sites_response(
-                sites=[("A-1", "Brunn", 1), ("B-2", "Brunn", 2)]
-            )
-        )
-        with pytest.raises(ValueError, match="Multiple sites found"):
-            client.chemistry.get_results_by_site(site_name="Brunn")
+    fake.add(
+        "",
+        create_mock_multiple_sampling_sites_response(
+            sites=[("A-1", "Brunn", 1), ("B-2", "Brunn", 2)]
+        ),
+    )
+    with pytest.raises(ValueError, match="Multiple sites found"):
+        client.chemistry.get_results_by_site(site_name="Brunn")
 
 
 # Error condition tests
 
 
-def test_api_timeout_error():
-    """API timeout errors are raised as SGUTimeoutError."""
-    with patch("requests.Session.request") as mock_request:
-        mock_request.side_effect = requests.exceptions.ReadTimeout("Read timeout")
-
-        client = SGUClient()
-        with pytest.raises(SGUTimeoutError, match="Read timeout"):
-            client.chemistry.get_sampling_sites()
-
-
-def test_api_connection_error():
-    """API connection errors are raised as SGUConnectionError."""
-    with patch("requests.Session.request") as mock_request:
-        mock_request.side_effect = requests.exceptions.ConnectionError(
-            "Connection failed"
-        )
-
-        client = SGUClient()
-        with pytest.raises(SGUConnectionError, match="Connection failed"):
-            client.chemistry.get_sampling_sites()
-
-
-@pytest.mark.parametrize("status_code", [404, 500])
-def test_api_error_status(status_code):
-    """Non-2xx responses are raised as SGUAPIError."""
-    with patch("requests.Session.request") as mock_request:
-        mock_response = Mock(spec=Response)
-        mock_response.ok = False
-        mock_response.status_code = status_code
-        mock_response.json.side_effect = ValueError("Invalid JSON")
-        mock_response.text = "error page"
-        mock_request.return_value = mock_response
-
-        client = SGUClient()
-        with pytest.raises(
-            SGUAPIError, match=f"API request failed with status {status_code}"
-        ):
-            client.chemistry.get_sampling_sites()
-
-
-def test_get_sampling_site_not_found():
+def test_get_sampling_site_not_found(fake, client):
     """An empty response for a single site ID raises ValueError."""
-    with patch("requests.Session.request") as mock_request:
-        mock_request.return_value = create_mock_response(
-            create_mock_empty_chemistry_collection_response()
-        )
+    fake.add("", create_mock_empty_chemistry_collection_response())
 
-        client = SGUClient()
-        with pytest.raises(ValueError, match="Site .* not found"):
-            client.chemistry.get_sampling_site("provplatser.0")
+    with pytest.raises(ValueError, match="Site .* not found"):
+        client.chemistry.get_sampling_site("provplatser.0")
 
 
-def test_get_analysis_result_not_found():
+def test_get_analysis_result_not_found(fake, client):
     """An empty response for a single result ID raises ValueError."""
-    with patch("requests.Session.request") as mock_request:
-        mock_request.return_value = create_mock_response(
-            create_mock_empty_chemistry_collection_response()
-        )
+    fake.add("", create_mock_empty_chemistry_collection_response())
 
-        client = SGUClient()
-        with pytest.raises(ValueError, match="Result .* not found"):
-            client.chemistry.get_analysis_result("analysresultat.0")
+    with pytest.raises(ValueError, match="Result .* not found"):
+        client.chemistry.get_analysis_result("analysresultat.0")
 
 
-def test_get_sampling_site_by_id():
+def test_get_sampling_site_by_id(fake, client):
     """A single sampling site is fetched by its feature ID."""
-    client = SGUClient()
+    fake.add("", create_mock_sampling_site_collection_response())
+    site = client.chemistry.get_sampling_site("provplatser.1560")
 
-    with patch.object(client.chemistry._client._session, "request") as mock_request:
-        mock_request.return_value = create_mock_response(
-            create_mock_sampling_site_collection_response()
-        )
-        site = client.chemistry.get_sampling_site("provplatser.1560")
-
-    assert mock_request.call_args.kwargs["url"] == (
+    assert fake.requests[-1].url == (
         f"{CHEMISTRY_V2_BASE_URL}collections/provplatser/items/provplatser.1560"
     )
     assert site.properties.station_id == "TTK-442-M"
@@ -651,44 +516,31 @@ def test_analysis_results_to_dataframe_keeps_feature_id_and_result_id():
         ({"national_site_id": [359366, 1]}, "1"),
     ],
 )
-def test_get_sampling_sites_by_names_missing_sites_raises(kwargs, missing):
+def test_get_sampling_sites_by_names_missing_sites_raises(
+    fake, client, kwargs, missing
+):
     """Sites that are not found are named in a ValueError, as for results."""
-    client = SGUClient()
-
-    with patch.object(client.chemistry._client._session, "request") as mock_request:
-        mock_request.return_value = create_mock_response(
-            create_mock_sampling_site_collection_response()
-        )
-        with pytest.raises(
-            ValueError, match=f"No sampling sites found for .*{missing}"
-        ):
-            client.chemistry.get_sampling_sites_by_names(**kwargs)
+    fake.add("", create_mock_sampling_site_collection_response())
+    with pytest.raises(ValueError, match=f"No sampling sites found for .*{missing}"):
+        client.chemistry.get_sampling_sites_by_names(**kwargs)
 
 
-def test_get_results_by_site_lookup_without_national_site_id_raises():
+def test_get_results_by_site_lookup_without_national_site_id_raises(fake, client):
     """A looked-up site without a national_site_id raises instead of sending bad CQL."""
-    client = SGUClient()
     site = create_mock_sampling_site_feature()
     site["properties"]["nationellt_provplatsid"] = None
 
-    with patch.object(client.chemistry._client._session, "request") as mock_request:
-        mock_request.return_value = create_mock_response(
-            create_mock_sampling_site_collection_response([site])
-        )
-        with pytest.raises(ValueError, match="no national_site_id"):
-            client.chemistry.get_results_by_site(site_id="TTK-442-M")
+    fake.add("", create_mock_sampling_site_collection_response([site]))
+    with pytest.raises(ValueError, match="no national_site_id"):
+        client.chemistry.get_results_by_site(site_id="TTK-442-M")
 
-    assert mock_request.call_count == 1
+    assert len(fake.requests) == 1
 
 
-def test_get_analysis_results_filters_on_sampling_date():
-    client = SGUClient()
-    with patch.object(client.chemistry._client._session, "request") as mock_request:
-        mock_request.return_value = create_mock_response(
-            create_mock_empty_chemistry_collection_response()
-        )
-        client.chemistry.get_analysis_results(tmin="2020-01-01", tmax="2021-01-01")
+def test_get_analysis_results_filters_on_sampling_date(fake, client):
+    fake.add("", create_mock_empty_chemistry_collection_response())
+    client.chemistry.get_analysis_results(tmin="2020-01-01", tmax="2021-01-01")
 
-    assert mock_request.call_args.kwargs["params"]["filter"] == (
+    assert fake.params["filter"] == (
         "provtagningsdatum >= '2020-01-01' AND provtagningsdatum <= '2021-01-01'"
     )
