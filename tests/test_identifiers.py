@@ -32,7 +32,7 @@ def stations(fake):
             "station_id": ("platsbeteckning", "station_id"),
             "station_name": ("obsplatsnamn", "station_name"),
         },
-        key="station_id",
+        ref="station_id",
         noun="station",
     )
 
@@ -121,20 +121,20 @@ def test_find_all_requires_exactly_one_identifier(stations):
         stations.find_all({"station_id": ["95_2"], "station_name": ["Lagga_2"]})
 
 
-def test_keys_passes_station_ids_through_without_a_request(fake, stations, caplog):
-    keys = stations.keys({"station_id": ["95_2", "101_1"], "station_name": None})
+def test_refs_passes_station_ids_through_without_a_request(fake, stations, caplog):
+    refs = stations.refs({"station_id": ["95_2", "101_1"], "station_name": None})
 
-    assert keys == ["95_2", "101_1"]
+    assert refs == ["95_2", "101_1"]
     assert fake.requests == []
     assert "additional API request" not in caplog.text
 
 
-def test_keys_looks_up_the_station_ids_of_station_names(fake, stations, caplog):
+def test_refs_looks_up_the_station_ids_of_station_names(fake, stations, caplog):
     fake.add("", stations_response(("95_2", "Lagga_2"), ("101_1", "Ugglebo")))
 
-    keys = stations.keys({"station_id": None, "station_name": ["Lagga_2", "Ugglebo"]})
+    refs = stations.refs({"station_id": None, "station_name": ["Lagga_2", "Ugglebo"]})
 
-    assert keys == ["95_2", "101_1"]
+    assert refs == ["95_2", "101_1"]
     assert fake.params["filter"] == "obsplatsnamn in ('Lagga_2', 'Ugglebo')"
     assert (
         "Using 'station_name' requires an additional API request to look up the "
@@ -142,52 +142,52 @@ def test_keys_looks_up_the_station_ids_of_station_names(fake, stations, caplog):
     ) in caplog.text
 
 
-def test_keys_raises_not_found_for_a_missing_station_name(fake, stations):
+def test_refs_raises_not_found_for_a_missing_station_name(fake, stations):
     fake.add("", stations_response(("95_2", "Lagga_2")))
 
     with pytest.raises(SGUNotFoundError, match=r"station_name: \['typo'\]"):
-        stations.keys({"station_id": None, "station_name": ["Lagga_2", "typo"]})
+        stations.refs({"station_id": None, "station_name": ["Lagga_2", "typo"]})
 
 
-def test_keys_raises_when_a_looked_up_station_has_no_station_id(fake, stations):
+def test_refs_raises_when_a_looked_up_station_has_no_station_id(fake, stations):
     station = create_mock_station_feature(obsplatsnamn="Lagga_2")
     station["properties"]["platsbeteckning"] = None
     fake.add("", create_mock_station_collection_response([station]))
 
     with pytest.raises(ValueError, match="Station stationer.4086 has no station_id"):
-        stations.keys({"station_id": None, "station_name": ["Lagga_2"]})
+        stations.refs({"station_id": None, "station_name": ["Lagga_2"]})
 
 
-def test_keys_is_none_when_optional_and_no_identifier_is_given(fake, stations):
+def test_refs_is_none_when_optional_and_no_identifier_is_given(fake, stations):
     assert (
-        stations.keys({"station_id": None, "station_name": None}, required=False)
+        stations.refs({"station_id": None, "station_name": None}, required=False)
         is None
     )
     assert fake.requests == []
 
 
-def test_keys_still_rejects_two_identifiers_when_optional(stations):
+def test_refs_still_rejects_two_identifiers_when_optional(stations):
     with pytest.raises(
         ValueError,
         match="At most one of 'station_id' or 'station_name' can be provided.",
     ):
-        stations.keys({"station_id": "95_2", "station_name": "Lagga_2"}, required=False)
+        stations.refs({"station_id": "95_2", "station_name": "Lagga_2"}, required=False)
 
 
-def test_key_passes_a_station_id_through_without_a_request(fake, stations):
-    assert stations.key({"station_id": "95_2", "station_name": None}) == "95_2"
+def test_ref_passes_a_station_id_through_without_a_request(fake, stations):
+    assert stations.ref({"station_id": "95_2", "station_name": None}) == "95_2"
     assert fake.requests == []
 
 
-def test_key_looks_up_the_station_id_of_a_station_name(fake, stations, caplog):
+def test_ref_looks_up_the_station_id_of_a_station_name(fake, stations, caplog):
     fake.add("", stations_response(("95_2", "Lagga_2")))
 
-    assert stations.key({"station_id": None, "station_name": "Lagga_2"}) == "95_2"
+    assert stations.ref({"station_id": None, "station_name": "Lagga_2"}) == "95_2"
     assert "additional API request" in caplog.text
 
 
-def test_key_raises_ambiguous_when_several_stations_share_the_name(fake, stations):
+def test_ref_raises_ambiguous_when_several_stations_share_the_name(fake, stations):
     fake.add("", stations_response(("95_2", "Lagga"), ("95_3", "Lagga")))
 
     with pytest.raises(SGUAmbiguousError, match="Multiple stations found"):
-        stations.key({"station_id": None, "station_name": "Lagga"})
+        stations.ref({"station_id": None, "station_name": "Lagga"})

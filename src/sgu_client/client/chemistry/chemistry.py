@@ -5,7 +5,7 @@ from typing import Any
 
 from sgu_client.client.base import BaseClient
 from sgu_client.client.collection import SGUCollection, Where
-from sgu_client.client.identifiers import IdentifierLookup
+from sgu_client.client.identifiers import IdentifierLookup, IdentifierValue
 from sgu_client.models.chemistry import (
     AnalysisResult,
     AnalysisResultCollection,
@@ -24,6 +24,19 @@ SITE_IDENTIFIERS: dict[str, tuple[str, str]] = {
 
 # The field analysis results refer to their sampling site by
 RESULT_SITE_FIELD = "nationellt_provplatsid"
+
+
+def _sites_given(
+    national_site_id: IdentifierValue,
+    site_id: IdentifierValue,
+    site_name: IdentifierValue,
+) -> dict[str, IdentifierValue]:
+    """A site lookup method's identifier arguments, for IdentifierLookup."""
+    return {
+        "national_site_id": national_site_id,
+        "site_id": site_id,
+        "site_name": site_name,
+    }
 
 
 class GroundwaterChemistryClient:
@@ -52,7 +65,7 @@ class GroundwaterChemistryClient:
             date_field="provtagningsdatum",
         )
         self._site_lookup = IdentifierLookup(
-            self._sites, SITE_IDENTIFIERS, key="national_site_id", noun="sampling site"
+            self._sites, SITE_IDENTIFIERS, ref="national_site_id", noun="sampling site"
         )
 
     # ===== Sampling Sites Methods =====
@@ -150,11 +163,7 @@ class GroundwaterChemistryClient:
             ...     print(site.properties.municipality)
         """
         return self._site_lookup.find_one(
-            {
-                "national_site_id": national_site_id,
-                "site_id": site_id,
-                "site_name": site_name,
-            },
+            _sites_given(national_site_id, site_id, site_name),
             **kwargs,
         )
 
@@ -194,11 +203,7 @@ class GroundwaterChemistryClient:
             ...         print(f"{props.station_id}: {props.national_site_id}")
         """
         return self._site_lookup.find_all(
-            {
-                "national_site_id": national_site_id,
-                "site_id": site_id,
-                "site_name": site_name,
-            },
+            _sites_given(national_site_id, site_id, site_name),
             **kwargs,
         )
 
@@ -296,7 +301,8 @@ class GroundwaterChemistryClient:
         Raises:
             SGUNotFoundError: If a site_id or site_name matches no site.
             SGUAmbiguousError: If a site_id or site_name matches several sites.
-            ValueError: If not exactly one site identifier is provided, or if the
+            ValueError: If not exactly one of national_site_id, site_id or
+                site_name is provided, or if the
                 looked-up site has no national_site_id.
 
         Example:
@@ -313,16 +319,10 @@ class GroundwaterChemistryClient:
             ...         tmax=datetime(2021, 1, 1, tzinfo=timezone.utc)
             ...     )
         """
-        key = self._site_lookup.key(
-            {
-                "national_site_id": national_site_id,
-                "site_id": site_id,
-                "site_name": site_name,
-            }
-        )
+        ref = self._site_lookup.ref(_sites_given(national_site_id, site_id, site_name))
 
         return self._results.query(
-            where={RESULT_SITE_FIELD: key},
+            where={RESULT_SITE_FIELD: ref},
             tmin=tmin,
             tmax=tmax,
             limit=limit,
@@ -360,7 +360,8 @@ class GroundwaterChemistryClient:
 
         Raises:
             SGUNotFoundError: If any site_id or site_name matches no site.
-            ValueError: If not exactly one site identifier is provided, or if a
+            ValueError: If not exactly one of national_site_id, site_id or
+                site_name is provided, or if a
                 looked-up site has no national_site_id.
 
         Example:
@@ -376,16 +377,12 @@ class GroundwaterChemistryClient:
             ...     )
             ...     print(f"Found {len(results.features)} analysis results")
         """
-        keys = self._site_lookup.keys(
-            {
-                "national_site_id": national_site_id,
-                "site_id": site_id,
-                "site_name": site_name,
-            }
+        refs = self._site_lookup.refs(
+            _sites_given(national_site_id, site_id, site_name)
         )
 
         return self._results.query(
-            where={RESULT_SITE_FIELD: keys},
+            where={RESULT_SITE_FIELD: refs},
             tmin=tmin,
             tmax=tmax,
             limit=limit,
@@ -427,7 +424,8 @@ class GroundwaterChemistryClient:
 
         Raises:
             SGUNotFoundError: If any site_id or site_name matches no site.
-            ValueError: If more than one site identifier is provided, or if a
+            ValueError: If more than one of national_site_id, site_id or
+                site_name is provided, or if a
                 looked-up site has no national_site_id.
 
         Example:
@@ -454,16 +452,12 @@ class GroundwaterChemistryClient:
         """
         where: Where = {"parameternamn": parameter}
 
-        keys = self._site_lookup.keys(
-            {
-                "national_site_id": national_site_id,
-                "site_id": site_id,
-                "site_name": site_name,
-            },
+        refs = self._site_lookup.refs(
+            _sites_given(national_site_id, site_id, site_name),
             required=False,
         )
-        if keys is not None:
-            where[RESULT_SITE_FIELD] = keys
+        if refs is not None:
+            where[RESULT_SITE_FIELD] = refs
 
         return self._results.query(
             where=where, tmin=tmin, tmax=tmax, limit=limit, **kwargs

@@ -5,7 +5,7 @@ from typing import Any
 
 from sgu_client.client.base import BaseClient
 from sgu_client.client.collection import SGUCollection
-from sgu_client.client.identifiers import IdentifierLookup
+from sgu_client.client.identifiers import IdentifierLookup, IdentifierValue
 from sgu_client.models.observed import (
     GroundwaterMeasurement,
     GroundwaterMeasurementCollection,
@@ -23,6 +23,13 @@ STATION_IDENTIFIERS: dict[str, tuple[str, str]] = {
 
 # The field measurements refer to their station by
 MEASUREMENT_STATION_FIELD = "platsbeteckning"
+
+
+def _stations_given(
+    station_id: IdentifierValue, station_name: IdentifierValue
+) -> dict[str, IdentifierValue]:
+    """A station lookup method's identifier arguments, for IdentifierLookup."""
+    return {"station_id": station_id, "station_name": station_name}
 
 
 class ObservedGroundwaterLevelClient:
@@ -51,7 +58,7 @@ class ObservedGroundwaterLevelClient:
             date_field="obsdatum",
         )
         self._station_lookup = IdentifierLookup(
-            self._stations, STATION_IDENTIFIERS, key="station_id", noun="station"
+            self._stations, STATION_IDENTIFIERS, ref="station_id", noun="station"
         )
 
     def get_stations(
@@ -205,7 +212,7 @@ class ObservedGroundwaterLevelClient:
             ...     print(station.properties.aquifer_description)
         """
         return self._station_lookup.find_one(
-            {"station_id": station_id, "station_name": station_name}, **kwargs
+            _stations_given(station_id, station_name), **kwargs
         )
 
     def get_stations_by_names(
@@ -241,7 +248,7 @@ class ObservedGroundwaterLevelClient:
             ...         print(f"{station.properties.station_id}: {station.properties.aquifer_code}")
         """
         return self._station_lookup.find_all(
-            {"station_id": station_id, "station_name": station_name}, **kwargs
+            _stations_given(station_id, station_name), **kwargs
         )
 
     def get_measurements_by_name(
@@ -295,11 +302,9 @@ class ObservedGroundwaterLevelClient:
             ...         tmax="2021-01-01T00:00:00Z"
             ...     )
         """
-        key = self._station_lookup.key(
-            {"station_id": station_id, "station_name": station_name}
-        )
+        ref = self._station_lookup.ref(_stations_given(station_id, station_name))
         return self._measurements.query(
-            where={MEASUREMENT_STATION_FIELD: key},
+            where={MEASUREMENT_STATION_FIELD: ref},
             tmin=tmin,
             tmax=tmax,
             limit=limit,
@@ -346,11 +351,9 @@ class ObservedGroundwaterLevelClient:
             ...     )
             ...     print(f"Found {len(measurements.features)} measurements")
         """
-        keys = self._station_lookup.keys(
-            {"station_id": station_id, "station_name": station_name}
-        )
+        refs = self._station_lookup.refs(_stations_given(station_id, station_name))
         return self._measurements.query(
-            where={MEASUREMENT_STATION_FIELD: keys},
+            where={MEASUREMENT_STATION_FIELD: refs},
             tmin=tmin,
             tmax=tmax,
             limit=limit,

@@ -28,6 +28,23 @@ def _condition(field: str, value: FilterValue | Sequence[FilterValue]) -> str:
     return f"{field} in ({', '.join(_literal(v) for v in values)})"
 
 
+def only_feature(
+    collection: FeatureCollection[Any], *, not_found: str, ambiguous: str
+) -> Any:
+    """The collection's only feature.
+
+    Raises:
+        SGUNotFoundError: With the ``not_found`` message, if it has none.
+        SGUAmbiguousError: With the ``ambiguous`` message, if it has several.
+    """
+    features = collection.features
+    if not features:
+        raise SGUNotFoundError(not_found)
+    if len(features) > 1:
+        raise SGUAmbiguousError(ambiguous)
+    return features[0]
+
+
 class SGUCollection(Generic[C]):
     """Access to one collection (e.g. ``stationer``) of one SGU dataset.
 
@@ -127,7 +144,7 @@ class SGUCollection(Generic[C]):
             SGUAmbiguousError: If several features are returned.
         """
         collection = self._fetch(f"{self._items}/{feature_id}", {})
-        return self._one(
+        return only_feature(
             collection,
             not_found=f"{self._label} {feature_id} not found",
             ambiguous=f"Multiple {self._plural} returned for ID {feature_id}",
@@ -149,7 +166,7 @@ class SGUCollection(Generic[C]):
         params = self._params(**query)
         collection = self._fetch(self._items, params)
         filter_text = params.get("filter")
-        return self._one(
+        return only_feature(
             collection,
             not_found=f"No {self._plural} found for {filter_text}",
             ambiguous=f"Multiple {self._plural} found for {filter_text}",
@@ -200,14 +217,3 @@ class SGUCollection(Generic[C]):
     def _fetch(self, endpoint: str, params: dict[str, Any]) -> C:
         response = self._client.get(endpoint, params=params, base_url=self._dataset_url)
         return self._model(**response)
-
-    @staticmethod
-    def _one(
-        collection: FeatureCollection[Any], *, not_found: str, ambiguous: str
-    ) -> Any:
-        features = collection.features
-        if not features:
-            raise SGUNotFoundError(not_found)
-        if len(features) > 1:
-            raise SGUAmbiguousError(ambiguous)
-        return features[0]
