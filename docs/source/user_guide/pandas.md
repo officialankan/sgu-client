@@ -27,22 +27,48 @@ df = measurements.to_dataframe()
 df.groupby("station_id")["water_level_masl_m"].mean()
 ```
 
-The GeoJSON structure is flattened:
+The GeoJSON structure is flattened the same way for every collection:
 
-- Each feature becomes a row.
-- Point coordinates become `longitude` and `latitude` columns.
-- Every property becomes a top-level column, using its English field name.
+- Each feature becomes a row. The index is the row's position in the API response.
+- The first column is `feature_id`, SGU's id for the feature (e.g. `stationer.4086`).
+- Next come the collection's geometry columns, if it has any (see below).
+- Then every property becomes a column, using its English field name, in the order of
+  the properties model.
 - Date columns are `datetime64[ns, UTC]`, even when every value is missing (`NaT`).
   See [Dates and times](getting_started.md#dates-and-times).
-- Measurement, level and result collections are sorted by date (pass
-  `sort_by_date=False` to keep the API order).
+- An empty collection gives an empty DataFrame that still has all of these columns.
 
 ```text
-# GeoJSON feature                                   # DataFrame row
-{"geometry": {"type": "Point",                      longitude  latitude  station_id  ...
-              "coordinates": [15.5, 58.3]},              15.5      58.3        95_2  ...
+# GeoJSON feature                          # DataFrame row
+{"id": "stationer.4086",                   feature_id      longitude  latitude  station_id  ...
+ "geometry": {"type": "Point",             stationer.4086       15.5      58.3        95_2  ...
+              "coordinates": [15.5, 58.3]},
  "properties": {"platsbeteckning": "95_2", ...}}
 ```
+
+## How the collections differ
+
+Which geometry columns a collection has, whether it is sorted, and whether it has
+`to_series()` depends on the collection, never on what a particular response contains:
+
+| Collection | Geometry columns | Sorted by | `to_series()` |
+| --- | --- | --- | --- |
+| Observed stations | `longitude`, `latitude` | — | — |
+| Observed measurements | — | `observation_date` | ✓ |
+| Modeled areas | `centroid_longitude`, `centroid_latitude` | — | — |
+| Modeled levels | — | `date` | ✓ |
+| Sampling sites | `longitude`, `latitude` | — | — |
+| Analysis results | — | `sampling_date` | ✓ |
+
+- Point coordinates are null for stations and sites that SGU publishes without a
+  location.
+- Areas are square grid cells. SGU sends only each cell's outline, so sgu-client
+  computes `centroid_longitude`/`centroid_latitude` as the centre of the cell. Modeled
+  levels have no geometry of their own: join them to areas on `area_id` to map them.
+- The sorted collections take `sort_by_date` (default `True`). Rows with the same date
+  keep their API order, and the index stays the API position, so
+  `to_dataframe(sort_by_date=False)` or `df.sort_index()` gives the API order back.
+- Analysis results also have `pivot_by_parameter()`; see below.
 
 ## Series
 

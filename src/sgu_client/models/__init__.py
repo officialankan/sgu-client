@@ -9,6 +9,7 @@ from .chemistry import (
     SamplingSiteCollection,
     SamplingSiteProperties,
 )
+from .features import Feature, FeatureCollection, TimeSeriesCollection
 from .modeled import (
     ModeledArea,
     ModeledAreaCollection,
@@ -30,6 +31,8 @@ __all__ = [
     "AnalysisResult",
     "AnalysisResultCollection",
     "AnalysisResultProperties",
+    "Feature",
+    "FeatureCollection",
     "GroundwaterMeasurement",
     "GroundwaterMeasurementCollection",
     "GroundwaterMeasurementProperties",
@@ -47,4 +50,5 @@ __all__ = [
     "SamplingSite",
     "SamplingSiteCollection",
     "SamplingSiteProperties",
+    "TimeSeriesCollection",
 ]

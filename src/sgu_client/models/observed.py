@@ -1,16 +1,10 @@
 """Pydantic models for groundwater data from SGU API."""
 
-from typing import TYPE_CHECKING, Literal
-
 from pydantic import Field
 
-from sgu_client.models.base import SGUBaseModel, SGUResponse
-from sgu_client.models.dates import ApiDatetime, convert_datetime_columns
-from sgu_client.models.shared import CRS, Geometry, Link
-from sgu_client.utils.pandas_helpers import get_pandas, optional_pandas_method
-
-if TYPE_CHECKING:
-    import pandas as pd
+from sgu_client.models.base import SGUBaseModel
+from sgu_client.models.dates import ApiDatetime
+from sgu_client.models.features import Feature, FeatureCollection, TimeSeriesCollection
 
 
 # Groundwater station properties (English field names with Swedish API aliases)
@@ -137,17 +131,11 @@ class GroundwaterStationProperties(SGUBaseModel):
     comments: str | None = Field(None, alias="kommentar", description="Comment")
 
 
-class GroundwaterStation(SGUBaseModel):
-    """A groundwater monitoring station (GeoJSON Feature)."""
+class GroundwaterStation(Feature[GroundwaterStationProperties]):
+    """A groundwater monitoring station (GeoJSON Feature).
 
-    type: Literal["Feature"] = "Feature"
-    id: str = Field(..., description="Station ID")
-    geometry: Geometry | None = Field(
-        None, description="Station geometry (null for stations without location)"
-    )
-    properties: GroundwaterStationProperties = Field(
-        ..., description="Station properties"
-    )
+    ``geometry`` is null for stations without a location.
+    """
 
 
 # Groundwater measurement properties (English field names with Swedish API aliases)
@@ -194,203 +182,46 @@ class GroundwaterMeasurementProperties(SGUBaseModel):
     )
 
 
-class GroundwaterMeasurement(SGUBaseModel):
+class GroundwaterMeasurement(Feature[GroundwaterMeasurementProperties]):
     """A groundwater level measurement (GeoJSON Feature)."""
-
-    type: Literal["Feature"] = "Feature"
-    id: str = Field(..., description="Measurement ID")
-    geometry: Geometry | None = Field(None, description="Measurement geometry")
-    properties: GroundwaterMeasurementProperties = Field(
-        ..., description="Measurement properties"
-    )
 
 
 # Collection response models
-class GroundwaterStationCollection(SGUResponse):
-    """Collection of groundwater monitoring stations (GeoJSON FeatureCollection)."""
+class GroundwaterStationCollection(FeatureCollection[GroundwaterStation]):
+    """Collection of groundwater monitoring stations (GeoJSON FeatureCollection).
 
-    type: Literal["FeatureCollection"] = "FeatureCollection"
-    features: list[GroundwaterStation] = Field(
-        default_factory=list, description="Station features"
-    )
+    Its DataFrame has ``longitude`` and ``latitude`` columns, null for stations
+    without a location.
 
-    # OGC API Features metadata
-    totalFeatures: int | None = Field(None, description="Total number of features")
-    numberMatched: int | None = Field(
-        None, description="Number of features matching query"
-    )
-    numberReturned: int | None = Field(None, description="Number of features returned")
-    timeStamp: ApiDatetime = Field(None, description="Response timestamp (UTC)")
+    Examples:
 
-    # Links and CRS
-    links: list[Link] | None = Field(None, description="Related links")
-    crs: CRS | None = Field(None, description="Coordinate reference system")
+        >>> from sgu_client import SGUClient
+        >>> with SGUClient() as client:
+        ...     stations = client.levels.observed.get_stations(limit=10)
+        ...     df = stations.to_dataframe()
+        ...     print(df[['station_id', 'station_name', 'longitude', 'latitude']].head())
+    """
 
-    @optional_pandas_method("to_dataframe() method")
-    def to_dataframe(
-        self,
-    ) -> "pd.DataFrame":
-        """Convert to pandas DataFrame with flattened station properties.
-
-        Returns:
-            DataFrame containing station data with geometry columns.
-
-        Examples:
-
-            >>> from sgu_client import SGUClient
-            >>> with SGUClient() as client:
-            ...     stations = client.levels.observed.get_stations(limit=10)
-            ...     df = stations.to_dataframe()
-            ...     # dataFrame includes flattened properties and geometry coordinates
-            ...     print(df.columns)  # station_id, longitude, latitude, station_name, municipality, etc.
-            ...     print(df[['station_id', 'station_name', 'municipality', 'longitude', 'latitude']].head())
-        """
-
-        data = []
-        for feature in self.features:
-            geometry = feature.geometry
-            coordinates = geometry.coordinates if geometry else []
-            # stations without geometry keep the columns, with null values
-            row = {
-                "station_id": feature.id,
-                "geometry_type": geometry.type if geometry else None,
-                "longitude": coordinates[0] if coordinates else None,
-                "latitude": coordinates[1] if len(coordinates) > 1 else None,
-            }
-            # Add all properties
-            row.update(feature.properties.model_dump())
-            data.append(row)
-
-        pd = get_pandas()
-        return convert_datetime_columns(
-            pd.DataFrame(data), GroundwaterStationProperties
-        )
+    _geometry = "point"
 
 
-class GroundwaterMeasurementCollection(SGUResponse):
-    """Collection of groundwater level measurements (GeoJSON FeatureCollection)."""
+class GroundwaterMeasurementCollection(TimeSeriesCollection[GroundwaterMeasurement]):
+    """Collection of groundwater level measurements (GeoJSON FeatureCollection).
 
-    type: Literal["FeatureCollection"] = "FeatureCollection"
-    features: list[GroundwaterMeasurement] = Field(
-        default_factory=list, description="Measurement features"
-    )
+    Its DataFrame has no geometry columns. Sorted by ``observation_date``;
+    ``to_series()`` defaults to ``water_level_masl_m``.
 
-    # OGC API Features metadata
-    totalFeatures: int | None = Field(None, description="Total number of features")
-    numberMatched: int | None = Field(
-        None, description="Number of features matching query"
-    )
-    numberReturned: int | None = Field(None, description="Number of features returned")
-    timeStamp: ApiDatetime = Field(None, description="Response timestamp (UTC)")
+    Examples:
 
-    # Links and CRS
-    links: list[Link] | None = Field(None, description="Related links")
-    crs: CRS | None = Field(None, description="Coordinate reference system")
+        >>> from sgu_client import SGUClient
+        >>> with SGUClient() as client:
+        ...     measurements = client.levels.observed.get_measurements_by_name(
+        ...         station_id="95_2", limit=100
+        ...     )
+        ...     df = measurements.to_dataframe()
+        ...     print(df[['observation_date', 'water_level_masl_m', 'station_id']].head())
+        ...     series = measurements.to_series()
+    """
 
-    @optional_pandas_method("to_dataframe() method")
-    def to_dataframe(self, sort_by_date: bool = True) -> "pd.DataFrame":
-        """Convert to pandas DataFrame with measurement data.
-
-        Args:
-            sort_by_date: Whether to sort the DataFrame by observation date.
-
-        Returns:
-            DataFrame containing measurement data.
-
-        Examples:
-
-            >>> from sgu_client import SGUClient
-            >>> with SGUClient() as client:
-            ...     measurements = client.levels.observed.get_measurements(limit=100)
-            ...     df = measurements.to_dataframe()
-            ...     # dataFrame is sorted by observation_date by default
-            ...     print(df[['observation_date', 'water_level_masl_m', 'station_id']].head())
-        """
-
-        data = []
-        for feature in self.features:
-            # observation_date stays the second column, as before
-            row = {
-                "measurement_id": feature.id,
-                "observation_date": feature.properties.observation_date,
-            }
-            # Add geometry if present
-            if feature.geometry:
-                row.update(
-                    {
-                        "geometry_type": feature.geometry.type,
-                        "longitude": feature.geometry.coordinates[0]
-                        if feature.geometry.coordinates
-                        else None,
-                        "latitude": feature.geometry.coordinates[1]
-                        if len(feature.geometry.coordinates) > 1
-                        else None,
-                    }
-                )
-
-            # Add all properties
-            row.update(feature.properties.model_dump())
-            data.append(row)
-
-        pd = get_pandas()
-        df = convert_datetime_columns(
-            pd.DataFrame(data), GroundwaterMeasurementProperties
-        )
-
-        if sort_by_date:
-            df = df.sort_values(by="observation_date")
-        return df
-
-    @optional_pandas_method("to_series() method")
-    def to_series(
-        self,
-        index: str | None = None,
-        data: str | None = None,
-        sort_by_date: bool = True,
-    ) -> "pd.Series":
-        """Convert to pandas Series with measurement data.
-
-        Args:
-            index: Column name to use as index. If None, `observation_date` is used.
-            data: Column name to use as data. If None, `water_level_masl_m` is used.
-            sort_by_date: Whether to sort the data by observation date before creating the Series.
-
-        Returns:
-            Series containing measurement data.
-
-        Examples:
-
-            >>> from sgu_client import SGUClient
-            >>> with SGUClient() as client:
-            ...     measurements = client.levels.observed.get_measurements_by_name(
-            ...         station_id="95_2", limit=100
-            ...     )
-            ...     # create time series with default columns (observation_date, water_level_masl_m)
-            ...     series = measurements.to_series()
-            ...     print(series.head())
-            ...     # use custom columns for index and data
-            ...     series_custom = measurements.to_series(
-            ...         index="observation_date",
-            ...         data="water_level_below_ground_m"
-            ...     )
-        """
-        df = self.to_dataframe(sort_by_date=sort_by_date)
-        pd = get_pandas()
-
-        if data is None:
-            data = "water_level_masl_m"
-        if index is None:
-            index = "observation_date"
-
-        if df.empty:
-            return pd.Series(dtype=float)
-
-        if index and index not in df.columns:
-            raise ValueError(f"Index column '{index}' not found in DataFrame.")
-
-        if data and data not in df.columns:
-            raise ValueError(f"Data column '{data}' not found in DataFrame.")
-
-        series = pd.Series(data=df[data].values, index=df[index] if index else None)
-        series.name = data
-        return series
+    _date_column = "observation_date"
+    _series_column = "water_level_masl_m"

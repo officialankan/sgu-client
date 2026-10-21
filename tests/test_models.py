@@ -13,17 +13,17 @@ from sgu_client.models.modeled import (
     ModeledGroundwaterLevelProperties,
 )
 from sgu_client.models.observed import (
-    CRS,
     GroundwaterMeasurement,
     GroundwaterMeasurementCollection,
     GroundwaterMeasurementProperties,
     GroundwaterStation,
     GroundwaterStationCollection,
     GroundwaterStationProperties,
-    Link,
 )
 from sgu_client.models.shared import (
+    CRS,
     LineString,
+    Link,
     MultiPoint,
     MultiPolygon,
     Point,
@@ -66,17 +66,6 @@ def test_sgu_response_to_dict():
     response = TestResponse(value="test")
     result = response.to_dict()
     assert result == {"value": "test"}
-
-
-def test_sgu_response_to_dataframe_not_implemented():
-    """Test that base to_dataframe raises NotImplementedError."""
-
-    class TestResponse(SGUResponse):
-        value: str
-
-    response = TestResponse(value="test")
-    with pytest.raises(NotImplementedError, match="Subclasses must implement"):
-        response.to_dataframe()
 
 
 def test_point_geometry_valid():
@@ -228,7 +217,7 @@ def test_groundwater_station_collection_to_dataframe_null_geometry():
 
     assert len(df) == 2
     assert df.loc[0, "longitude"] == 15.5
-    assert df.loc[1, ["geometry_type", "longitude", "latitude"]].isna().all()
+    assert df.loc[1, ["longitude", "latitude"]].isna().all()
 
 
 def test_groundwater_measurement_properties_minimal():

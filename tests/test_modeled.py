@@ -210,11 +210,6 @@ def test_areas_to_dataframe(fake, client) -> None:
     assert areas is not None
     df = areas.to_dataframe()
     assert not df.empty
-    assert "feature_id" in df.columns
-    assert "area_id" in df.columns
-    assert "geometry_type" in df.columns
-    assert "centroid_longitude" in df.columns
-    assert "centroid_latitude" in df.columns
 
     # Check that we have the expected area
     assert TEST_AREA_ID in df["feature_id"].tolist()
@@ -231,11 +226,6 @@ def test_levels_to_dataframe(fake, client) -> None:
     assert levels is not None
     df = levels.to_dataframe()
     assert not df.empty
-    assert "level_id" in df.columns
-    assert "date" in df.columns
-    assert "area_id" in df.columns
-    assert "date" in df.columns
-    assert "object_id" in df.columns
 
     # Assert that it is sorted by date by default
     assert is_datetime(df["date"])
@@ -359,7 +349,7 @@ def test_get_levels_by_area_to_dataframe(fake, client) -> None:
     levels = client.levels.modeled.get_levels_by_area(TEST_LEVEL_OMRADE_ID, limit=10)
     df = levels.to_dataframe(sort_by_date=True)
     assert not df.empty
-    assert "level_id" in df.columns
+    assert "feature_id" in df.columns
     assert "date" in df.columns
     assert "area_id" in df.columns
     assert "date" in df.columns
@@ -469,7 +459,7 @@ def test_get_levels_by_areas_to_dataframe(fake, client) -> None:
     levels = client.levels.modeled.get_levels_by_areas(area_ids, limit=10)
     df = levels.to_dataframe(sort_by_date=True)
     assert not df.empty
-    assert "level_id" in df.columns
+    assert "feature_id" in df.columns
     assert "date" in df.columns
     assert "area_id" in df.columns
     assert "date" in df.columns

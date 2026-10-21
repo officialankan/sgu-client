@@ -6,9 +6,9 @@ from typing import Any, Generic, TypeVar
 
 from sgu_client.client.base import BaseClient
 from sgu_client.exceptions import SGUAmbiguousError, SGUNotFoundError
-from sgu_client.models.base import SGUResponse
+from sgu_client.models.features import FeatureCollection
 
-C = TypeVar("C", bound=SGUResponse)
+C = TypeVar("C", bound=FeatureCollection[Any])
 
 FilterValue = int | str
 Where = dict[str, FilterValue | Sequence[FilterValue]]
@@ -202,8 +202,10 @@ class SGUCollection(Generic[C]):
         return self._model(**response)
 
     @staticmethod
-    def _one(collection: SGUResponse, *, not_found: str, ambiguous: str) -> Any:
-        features = collection.features  # ty: ignore[unresolved-attribute]
+    def _one(
+        collection: FeatureCollection[Any], *, not_found: str, ambiguous: str
+    ) -> Any:
+        features = collection.features
         if not features:
             raise SGUNotFoundError(not_found)
         if len(features) > 1:

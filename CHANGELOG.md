@@ -10,10 +10,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - `SGUClient(transport=...)` sends requests through a transport of your own, for example canned responses in your tests. `Transport`, `TransportResponse` and the default `RequestsTransport` are exported from `sgu_client` (#59)
+- `FeatureCollection` and `TimeSeriesCollection`, the shared bases of the six collection models, and `Feature`, the shared base of their features, exported from `sgu_client.models`. `TimeSeriesCollection` (measurements, modeled levels, analysis results) adds sorting by date and `to_series()` (#60)
+- The pandas user guide has a table of how the collections' DataFrames differ (#60)
+
+### Changed
+
+- `ModeledArea.geometry` may be `None`, like every other feature's geometry; it used to be required (#60)
+
+### Fixed
+
+- `GroundwaterStationCollection.to_dataframe()` keeps the feature id instead of overwriting it with the station id (#58)
+- `to_dataframe()` on an empty measurement collection returns an empty DataFrame instead of raising `KeyError` (#60)
+- Modeled area `centroid_longitude`/`centroid_latitude` are the centre of the grid cell. The ring's repeated closing corner was counted twice, which put the centroid about 500 m off-centre (#60)
+- Rows with the same date keep their API order when sorted by date, e.g. the parameters of one chemistry sample (#60)
+- Every collection accepts `totalFeatures: "unknown"`, not just the modeled ones (#60)
 
 ### Removed
 
 - `BaseClient.post()` and the `data` and `**kwargs` arguments of the internal `BaseClient`; nothing used them (#59)
+
+### BREAKING CHANGES
+
+- **DataFrame columns are the same shape for every collection**: `feature_id`, then the collection's geometry columns, then the properties in model order. An empty collection keeps all these columns. See the pandas user guide for each collection's geometry columns (#60)
+
+  | Collection | Before | After |
+  | --- | --- | --- |
+  | Stations | `station_id` held the station id (the feature id was lost), `geometry_type` | `feature_id` + `station_id`; no `geometry_type` |
+  | Measurements | `measurement_id`, `observation_date` second; `geometry_type`/`longitude`/`latitude` when the response had geometry | `feature_id`; `observation_date` in model order; no geometry columns |
+  | Modeled areas | `geometry_type` | no `geometry_type` |
+  | Modeled levels | `level_id` | `feature_id` |
+  | Sampling sites | `geometry_type`/`longitude`/`latitude` only when the response had geometry | `longitude`/`latitude` always, null without geometry; no `geometry_type` |
+  | Analysis results | `geometry_type`/`longitude`/`latitude` when the response had geometry | no geometry columns |
+
+- **`SGUResponse.to_dataframe()` removed**: it only raised `NotImplementedError`. Every collection gets `to_dataframe()` from `FeatureCollection` (#60)
+- **`CRS` and `Link` are no longer importable from `sgu_client.models.observed`**, which only re-exported them by accident. Import them from `sgu_client.models.shared` (#60)
 
 ## [0.7.0] - 2026-10-20
 
