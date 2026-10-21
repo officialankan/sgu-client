@@ -1,11 +1,11 @@
 """Observed groundwater level client endpoints."""
 
-import logging
 from datetime import datetime
 from typing import Any
 
 from sgu_client.client.base import BaseClient
 from sgu_client.client.collection import SGUCollection
+from sgu_client.client.identifiers import IdentifierLookup
 from sgu_client.models.observed import (
     GroundwaterMeasurement,
     GroundwaterMeasurementCollection,
@@ -13,9 +13,16 @@ from sgu_client.models.observed import (
     GroundwaterStationCollection,
 )
 
-logger = logging.getLogger(__name__)
-
 DATASET = "grundvattennivaer-observerade"
+
+# Station identifier argument -> (API field, GroundwaterStationProperties attribute)
+STATION_IDENTIFIERS: dict[str, tuple[str, str]] = {
+    "station_id": ("platsbeteckning", "station_id"),
+    "station_name": ("obsplatsnamn", "station_name"),
+}
+
+# The field measurements refer to their station by
+MEASUREMENT_STATION_FIELD = "platsbeteckning"
 
 
 class ObservedGroundwaterLevelClient:
@@ -42,6 +49,9 @@ class ObservedGroundwaterLevelClient:
             model=GroundwaterMeasurementCollection,
             label="Measurement",
             date_field="obsdatum",
+        )
+        self._station_lookup = IdentifierLookup(
+            self._stations, STATION_IDENTIFIERS, key="station_id", noun="station"
         )
 
     def get_stations(
@@ -177,8 +187,10 @@ class ObservedGroundwaterLevelClient:
             Typed groundwater monitoring station
 
         Raises:
-            ValueError: If neither parameter is provided, both are provided,
-                       or if multiple stations are found
+            SGUNotFoundError: If no station matches.
+            SGUAmbiguousError: If several stations match.
+            ValueError: If not exactly one of station_id or station_name is
+                provided.
 
         Example:
 
@@ -192,21 +204,9 @@ class ObservedGroundwaterLevelClient:
             ...     )
             ...     print(station.properties.aquifer_description)
         """
-        if station_id and station_name:
-            raise ValueError(
-                "Only one of 'station_id' or 'station_name' can be provided."
-            )
-
-        # Map English parameter names to Swedish API field names
-        if station_id:
-            name_type = "platsbeteckning"
-            station = station_id
-        elif station_name:
-            name_type = "obsplatsnamn"
-            station = station_name
-        else:
-            raise ValueError("Either 'station_id' or 'station_name' must be provided.")
-        return self._stations.find_one(where={name_type: station}, **kwargs)
+        return self._station_lookup.find_one(
+            {"station_id": station_id, "station_name": station_name}, **kwargs
+        )
 
     def get_stations_by_names(
         self,
@@ -225,7 +225,9 @@ class ObservedGroundwaterLevelClient:
             Typed collection of groundwater monitoring stations
 
         Raises:
-            ValueError: If neither parameter is provided or both are provided
+            SGUNotFoundError: If any of the requested stations is not found.
+            ValueError: If not exactly one of station_id or station_name is
+                provided.
 
         Example:
 
@@ -238,21 +240,9 @@ class ObservedGroundwaterLevelClient:
             ...     for station in stations.features:
             ...         print(f"{station.properties.station_id}: {station.properties.aquifer_code}")
         """
-        if station_id and station_name:
-            raise ValueError(
-                "Only one of 'station_id' or 'station_name' can be provided."
-            )
-
-        # Map English parameter names to Swedish API field names
-        if station_id:
-            name_type = "platsbeteckning"
-            stations = station_id
-        elif station_name:
-            name_type = "obsplatsnamn"
-            stations = station_name
-        else:
-            raise ValueError("Either 'station_id' or 'station_name' must be provided.")
-        return self._stations.query(where={name_type: stations}, **kwargs)
+        return self._station_lookup.find_all(
+            {"station_id": station_id, "station_name": station_name}, **kwargs
+        )
 
     def get_measurements_by_name(
         self,
@@ -277,8 +267,10 @@ class ObservedGroundwaterLevelClient:
             Typed collection of groundwater level measurements
 
         Raises:
-            ValueError: If neither or both name parameters are provided,
-                       or if station lookup fails
+            SGUNotFoundError: If a station_name matches no station.
+            SGUAmbiguousError: If a station_name matches several stations.
+            ValueError: If not exactly one of station_id or station_name is
+                provided, or if the looked-up station has no station_id.
 
         Example:
 
@@ -303,31 +295,11 @@ class ObservedGroundwaterLevelClient:
             ...         tmax="2021-01-01T00:00:00Z"
             ...     )
         """
-        if station_id and station_name:
-            raise ValueError(
-                "Only one of 'station_id' or 'station_name' can be provided."
-            )
-
-        # If station_name provided, look up the station to get station_id
-        if station_name:
-            logger.warning(
-                "Using 'station_name' requires an additional API request to lookup the station. "
-                "For better performance, use 'station_id' directly if available."
-            )
-            # Don't pass kwargs to station lookup as it's a single result operation
-            station = self.get_station_by_name(station_name=station_name)
-            target_platsbeteckning = station.properties.station_id
-            if not target_platsbeteckning:
-                raise ValueError(
-                    f"Station with station_name '{station_name}' has no station_id"
-                )
-        elif station_id:
-            target_platsbeteckning = station_id
-        else:
-            raise ValueError("Either 'station_id' or 'station_name' must be provided.")
-
+        key = self._station_lookup.key(
+            {"station_id": station_id, "station_name": station_name}
+        )
         return self._measurements.query(
-            where={"platsbeteckning": target_platsbeteckning},
+            where={MEASUREMENT_STATION_FIELD: key},
             tmin=tmin,
             tmax=tmax,
             limit=limit,
@@ -357,8 +329,9 @@ class ObservedGroundwaterLevelClient:
             Typed collection of groundwater level measurements
 
         Raises:
-            ValueError: If neither or both name parameters are provided,
-                       or if station lookup fails
+            SGUNotFoundError: If any station_name matches no station.
+            ValueError: If not exactly one of station_id or station_name is
+                provided, or if a looked-up station has no station_id.
 
         Example:
 
@@ -373,35 +346,11 @@ class ObservedGroundwaterLevelClient:
             ...     )
             ...     print(f"Found {len(measurements.features)} measurements")
         """
-        if station_id and station_name:
-            raise ValueError(
-                "Only one of 'station_id' or 'station_name' can be provided."
-            )
-
-        # If station_name provided, look up stations to get station_id values
-        if station_name:
-            logger.warning(
-                "Using 'station_name' requires an additional API request to lookup stations. "
-                "For better performance, use 'station_id' directly if available."
-            )
-            # Don't pass kwargs to station lookup as it's a separate operation
-            stations = self.get_stations_by_names(station_name=station_name)
-            target_platsbeteckningar = []
-            for station in stations.features:
-                if station.properties.station_id:
-                    target_platsbeteckningar.append(station.properties.station_id)
-                else:
-                    raise ValueError(
-                        f"Station {station.id} with station_name '{station.properties.station_name}' "
-                        f"has no station_id"
-                    )
-        elif station_id:
-            target_platsbeteckningar = station_id
-        else:
-            raise ValueError("Either 'station_id' or 'station_name' must be provided.")
-
+        keys = self._station_lookup.keys(
+            {"station_id": station_id, "station_name": station_name}
+        )
         return self._measurements.query(
-            where={"platsbeteckning": target_platsbeteckningar},
+            where={MEASUREMENT_STATION_FIELD: keys},
             tmin=tmin,
             tmax=tmax,
             limit=limit,
