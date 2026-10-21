@@ -1,7 +1,6 @@
 """Tests for SGUCollection, the module every client uses to reach one SGU collection."""
 
 from datetime import UTC, datetime
-from unittest.mock import Mock, patch
 
 import pytest
 
@@ -14,6 +13,7 @@ from sgu_client.models.observed import (
     GroundwaterStation,
     GroundwaterStationCollection,
 )
+from tests.fakes import FakeTransport
 from tests.mock_responses import (
     create_mock_empty_collection_response,
     create_mock_multiple_stations_response,
@@ -25,8 +25,13 @@ DATASET_URL = f"{ROOT}grundvattennivaer-observerade/ogc/features/v1/"
 
 
 @pytest.fixture
-def base_client():
-    return BaseClient(config=SGUConfig(base_url=ROOT))
+def fake():
+    return FakeTransport()
+
+
+@pytest.fixture
+def base_client(fake):
+    return BaseClient(config=SGUConfig(base_url=ROOT), transport=fake)
 
 
 @pytest.fixture
@@ -40,32 +45,22 @@ def stations(base_client):
     )
 
 
-def mock_response(data):
-    response = Mock()
-    response.ok = True
-    response.status_code = 200
-    response.json.return_value = data
-    return response
-
-
-def test_get_returns_the_feature_from_the_collection_url(base_client, stations):
-    with patch.object(base_client._session, "request") as request:
-        request.return_value = mock_response(create_mock_single_station_response())
-        station = stations.get("stationer.4086")
+def test_get_returns_the_feature_from_the_collection_url(fake, stations):
+    fake.add("", create_mock_single_station_response())
+    station = stations.get("stationer.4086")
 
     assert isinstance(station, GroundwaterStation)
     assert station.id == "stationer.4086"
     assert (
-        request.call_args.kwargs["url"]
+        fake.requests[-1].url
         == f"{DATASET_URL}collections/stationer/items/stationer.4086"
     )
 
 
-def test_get_raises_not_found_when_no_feature_matches(base_client, stations):
-    with patch.object(base_client._session, "request") as request:
-        request.return_value = mock_response(create_mock_empty_collection_response())
-        with pytest.raises(SGUNotFoundError, match="Station NOPE not found"):
-            stations.get("NOPE")
+def test_get_raises_not_found_when_no_feature_matches(fake, stations):
+    fake.add("", create_mock_empty_collection_response())
+    with pytest.raises(SGUNotFoundError, match="Station NOPE not found"):
+        stations.get("NOPE")
 
 
 def test_not_found_is_still_a_value_error():
@@ -73,13 +68,12 @@ def test_not_found_is_still_a_value_error():
     assert issubclass(SGUNotFoundError, SGUClientError)
 
 
-def test_get_raises_ambiguous_when_several_features_match(base_client, stations):
-    with patch.object(base_client._session, "request") as request:
-        request.return_value = mock_response(create_mock_multiple_stations_response())
-        with pytest.raises(
-            SGUAmbiguousError, match="Multiple stations returned for ID stationer.4086"
-        ):
-            stations.get("stationer.4086")
+def test_get_raises_ambiguous_when_several_features_match(fake, stations):
+    fake.add("", create_mock_multiple_stations_response())
+    with pytest.raises(
+        SGUAmbiguousError, match="Multiple stations returned for ID stationer.4086"
+    ):
+        stations.get("stationer.4086")
 
 
 def test_ambiguous_is_still_a_value_error():
@@ -87,28 +81,21 @@ def test_ambiguous_is_still_a_value_error():
     assert issubclass(SGUAmbiguousError, SGUClientError)
 
 
-def sent_params(request):
-    return request.call_args.kwargs["params"]
-
-
-def test_query_returns_the_collection_and_encodes_params(base_client, stations):
-    with patch.object(base_client._session, "request") as request:
-        request.return_value = mock_response(create_mock_multiple_stations_response())
-        result = stations.query(
-            bbox=[12.0, 55.0, 16.0, 58.0],
-            sortby=["+datum", "-omrade_id"],
-            limit=100,
-            datetime="2024-08-01Z",
-            filter_expr="kommun='Mora'",
-            properties="obsplatsnamn",
-        )
+def test_query_returns_the_collection_and_encodes_params(fake, stations):
+    fake.add("", create_mock_multiple_stations_response())
+    result = stations.query(
+        bbox=[12.0, 55.0, 16.0, 58.0],
+        sortby=["+datum", "-omrade_id"],
+        limit=100,
+        datetime="2024-08-01Z",
+        filter_expr="kommun='Mora'",
+        properties="obsplatsnamn",
+    )
 
     assert isinstance(result, GroundwaterStationCollection)
     assert len(result.features) == 2
-    assert (
-        request.call_args.kwargs["url"] == f"{DATASET_URL}collections/stationer/items"
-    )
-    assert sent_params(request) == {
+    assert fake.requests[-1].url == f"{DATASET_URL}collections/stationer/items"
+    assert fake.params == {
         "bbox": "12.0,55.0,16.0,58.0",
         "sortby": "+datum,-omrade_id",
         "limit": 100,
@@ -118,12 +105,11 @@ def test_query_returns_the_collection_and_encodes_params(base_client, stations):
     }
 
 
-def test_query_leaves_out_params_that_are_not_given(base_client, stations):
-    with patch.object(base_client._session, "request") as request:
-        request.return_value = mock_response(create_mock_empty_collection_response())
-        stations.query(limit=10, bbox=None, datetime=None)
+def test_query_leaves_out_params_that_are_not_given(fake, stations):
+    fake.add("", create_mock_empty_collection_response())
+    stations.query(limit=10, bbox=None, datetime=None)
 
-    assert sent_params(request) == {"limit": 10}
+    assert fake.params == {"limit": 10}
 
 
 @pytest.mark.parametrize(
@@ -146,28 +132,25 @@ def test_query_leaves_out_params_that_are_not_given(base_client, stations):
         ),
     ],
 )
-def test_query_where_builds_the_filter(base_client, stations, where, expected):
-    with patch.object(base_client._session, "request") as request:
-        request.return_value = mock_response(create_mock_empty_collection_response())
-        stations.query(where=where)
+def test_query_where_builds_the_filter(fake, stations, where, expected):
+    fake.add("", create_mock_empty_collection_response())
+    stations.query(where=where)
 
-    assert sent_params(request)["filter"] == expected
-
-
-def test_query_where_is_combined_with_a_raw_filter(base_client, stations):
-    with patch.object(base_client._session, "request") as request:
-        request.return_value = mock_response(create_mock_empty_collection_response())
-        stations.query(where={"platsbeteckning": "95_2"}, filter_expr="kommun='Mora'")
-
-    assert sent_params(request)["filter"] == "platsbeteckning='95_2' AND kommun='Mora'"
+    assert fake.params["filter"] == expected
 
 
-def test_query_where_escapes_single_quotes(base_client, stations):
-    with patch.object(base_client._session, "request") as request:
-        request.return_value = mock_response(create_mock_empty_collection_response())
-        stations.query(where={"obsplatsnamn": ["O'Brien", "Lagga_2"]})
+def test_query_where_is_combined_with_a_raw_filter(fake, stations):
+    fake.add("", create_mock_empty_collection_response())
+    stations.query(where={"platsbeteckning": "95_2"}, filter_expr="kommun='Mora'")
 
-    assert sent_params(request)["filter"] == "obsplatsnamn in ('O''Brien', 'Lagga_2')"
+    assert fake.params["filter"] == "platsbeteckning='95_2' AND kommun='Mora'"
+
+
+def test_query_where_escapes_single_quotes(fake, stations):
+    fake.add("", create_mock_empty_collection_response())
+    stations.query(where={"obsplatsnamn": ["O'Brien", "Lagga_2"]})
+
+    assert fake.params["filter"] == "obsplatsnamn in ('O''Brien', 'Lagga_2')"
 
 
 @pytest.fixture
@@ -204,32 +187,27 @@ TMAX = datetime(2021, 1, 1, tzinfo=UTC)
         ),
     ],
 )
-def test_query_filters_on_the_date_field(
-    base_client, measurements, tmin, tmax, expected
-):
-    with patch.object(base_client._session, "request") as request:
-        request.return_value = mock_response(create_mock_empty_collection_response())
-        measurements.query(tmin=tmin, tmax=tmax)
+def test_query_filters_on_the_date_field(fake, measurements, tmin, tmax, expected):
+    fake.add("", create_mock_empty_collection_response())
+    measurements.query(tmin=tmin, tmax=tmax)
 
-    assert sent_params(request)["filter"] == expected
+    assert fake.params["filter"] == expected
 
 
-def test_query_without_dates_sends_no_filter(base_client, measurements):
-    with patch.object(base_client._session, "request") as request:
-        request.return_value = mock_response(create_mock_empty_collection_response())
-        measurements.query(tmin=None, tmax=None)
+def test_query_without_dates_sends_no_filter(fake, measurements):
+    fake.add("", create_mock_empty_collection_response())
+    measurements.query(tmin=None, tmax=None)
 
-    assert "filter" not in sent_params(request)
+    assert "filter" not in fake.params
 
 
-def test_query_puts_where_first_then_dates_then_raw_filter(base_client, measurements):
-    with patch.object(base_client._session, "request") as request:
-        request.return_value = mock_response(create_mock_empty_collection_response())
-        measurements.query(
-            where={"platsbeteckning": "95_2"}, tmin=TMIN, filter_expr="metod='x'"
-        )
+def test_query_puts_where_first_then_dates_then_raw_filter(fake, measurements):
+    fake.add("", create_mock_empty_collection_response())
+    measurements.query(
+        where={"platsbeteckning": "95_2"}, tmin=TMIN, filter_expr="metod='x'"
+    )
 
-    assert sent_params(request)["filter"] == (
+    assert fake.params["filter"] == (
         "platsbeteckning='95_2'"
         " AND obsdatum >= '2020-01-01T00:00:00+00:00'"
         " AND metod='x'"
@@ -241,46 +219,42 @@ def test_query_rejects_dates_on_a_collection_without_a_date_field(stations):
         stations.query(tmin=TMIN)
 
 
-def test_find_one_returns_the_single_match(base_client, stations):
-    with patch.object(base_client._session, "request") as request:
-        request.return_value = mock_response(create_mock_single_station_response())
-        station = stations.find_one(where={"obsplatsnamn": "Lagga_2"})
+def test_find_one_returns_the_single_match(fake, stations):
+    fake.add("", create_mock_single_station_response())
+    station = stations.find_one(where={"obsplatsnamn": "Lagga_2"})
 
     assert isinstance(station, GroundwaterStation)
-    assert sent_params(request)["filter"] == "obsplatsnamn='Lagga_2'"
+    assert fake.params["filter"] == "obsplatsnamn='Lagga_2'"
 
 
-def test_find_one_raises_not_found_naming_the_filter(base_client, stations):
-    with patch.object(base_client._session, "request") as request:
-        request.return_value = mock_response(create_mock_empty_collection_response())
-        with pytest.raises(
-            SGUNotFoundError, match="No stations found for obsplatsnamn='Nope'"
-        ):
-            stations.find_one(where={"obsplatsnamn": "Nope"})
+def test_find_one_raises_not_found_naming_the_filter(fake, stations):
+    fake.add("", create_mock_empty_collection_response())
+    with pytest.raises(
+        SGUNotFoundError, match="No stations found for obsplatsnamn='Nope'"
+    ):
+        stations.find_one(where={"obsplatsnamn": "Nope"})
 
 
-def test_find_one_raises_ambiguous_naming_the_filter(base_client, stations):
-    with patch.object(base_client._session, "request") as request:
-        request.return_value = mock_response(create_mock_multiple_stations_response())
-        with pytest.raises(
-            SGUAmbiguousError, match="Multiple stations found for obsplatsnamn='Dup'"
-        ):
-            stations.find_one(where={"obsplatsnamn": "Dup"})
+def test_find_one_raises_ambiguous_naming_the_filter(fake, stations):
+    fake.add("", create_mock_multiple_stations_response())
+    with pytest.raises(
+        SGUAmbiguousError, match="Multiple stations found for obsplatsnamn='Dup'"
+    ):
+        stations.find_one(where={"obsplatsnamn": "Dup"})
 
 
-def test_default_config_points_at_the_sgu_open_data_root():
+def test_default_config_points_at_the_sgu_open_data_root(fake):
     stations = SGUCollection(
-        BaseClient(),
+        BaseClient(transport=fake),
         dataset="grundvattennivaer-observerade",
         name="stationer",
         model=GroundwaterStationCollection,
         label="Station",
     )
-    with patch.object(stations._client._session, "request") as request:
-        request.return_value = mock_response(create_mock_empty_collection_response())
-        stations.query()
+    fake.add("", create_mock_empty_collection_response())
+    stations.query()
 
-    assert request.call_args.kwargs["url"] == (
+    assert fake.requests[-1].url == (
         "https://api.sgu.se/oppnadata/grundvattennivaer-observerade"
         "/ogc/features/v1/collections/stationer/items"
     )

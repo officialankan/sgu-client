@@ -19,9 +19,10 @@ class Request:
 class FakeTransport:
     """Serves queued responses by route and records every request.
 
-    A route is the end of a URL, e.g. ``"collections/stationer/items"``. When
-    several routes match a URL, the longest wins. A request with no matching
-    route, or whose route has run out of responses, fails the test.
+    A route is the end of a URL, e.g. ``"collections/stationer/items"``, and
+    ``""`` matches any URL. When several routes match, the longest wins. A
+    request with no matching route, or whose route has run out of responses,
+    fails the test.
     """
 
     def __init__(self, routes: dict[str, Response | list[Response]] | None = None):
