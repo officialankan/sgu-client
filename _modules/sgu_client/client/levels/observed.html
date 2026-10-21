@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../../_static/documentation_options.js?v=8fa8b3e9"></script>
+    <script src="../../../../_static/documentation_options.js?v=fe7df9b0"></script>
     <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -384,6 +384,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">sgu_client.client.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseClient</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sgu_client.client.collection</span><span class="w"> </span><span class="kn">import</span> <span class="n">SGUCollection</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">sgu_client.models.observed</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">GroundwaterMeasurement</span><span class="p">,</span>
     <span class="n">GroundwaterMeasurementCollection</span><span class="p">,</span>
@@ -393,13 +394,13 @@
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
+<span class="n">DATASET</span> <span class="o">=</span> <span class="s2">&quot;grundvattennivaer-observerade&quot;</span>
+
 
 <div class="viewcode-block" id="ObservedGroundwaterLevelClient">
 <a class="viewcode-back" href="../../../../api/observed.html#sgu_client.client.levels.observed.ObservedGroundwaterLevelClient">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">ObservedGroundwaterLevelClient</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Client for observed groundwater level-related SGU API endpoints.&quot;&quot;&quot;</span>
-
-    <span class="n">BASE_PATH</span> <span class="o">=</span> <span class="s2">&quot;collections&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">base_client</span><span class="p">:</span> <span class="n">BaseClient</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize observed groundwater level client.</span>
@@ -408,6 +409,21 @@
 <span class="sd">            base_client: Base HTTP client instance</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_client</span> <span class="o">=</span> <span class="n">base_client</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_stations</span> <span class="o">=</span> <span class="n">SGUCollection</span><span class="p">(</span>
+            <span class="n">base_client</span><span class="p">,</span>
+            <span class="n">dataset</span><span class="o">=</span><span class="n">DATASET</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="s2">&quot;stationer&quot;</span><span class="p">,</span>
+            <span class="n">model</span><span class="o">=</span><span class="n">GroundwaterStationCollection</span><span class="p">,</span>
+            <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Station&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_measurements</span> <span class="o">=</span> <span class="n">SGUCollection</span><span class="p">(</span>
+            <span class="n">base_client</span><span class="p">,</span>
+            <span class="n">dataset</span><span class="o">=</span><span class="n">DATASET</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="s2">&quot;nivaer&quot;</span><span class="p">,</span>
+            <span class="n">model</span><span class="o">=</span><span class="n">GroundwaterMeasurementCollection</span><span class="p">,</span>
+            <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Measurement&quot;</span><span class="p">,</span>
+            <span class="n">date_field</span><span class="o">=</span><span class="s2">&quot;obsdatum&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
 
 <div class="viewcode-block" id="ObservedGroundwaterLevelClient.get_stations">
 <a class="viewcode-back" href="../../../../api/observed.html#sgu_client.client.levels.observed.ObservedGroundwaterLevelClient.get_stations">[docs]</a>
@@ -446,17 +462,14 @@
 <span class="sd">            ...         filter_expr=&quot;kommun=&#39;Uppsala&#39; AND akvifer=&#39;JS&#39;&quot;</span>
 <span class="sd">            ...     )</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">endpoint</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">BASE_PATH</span><span class="si">}</span><span class="s2">/stationer/items&quot;</span>
-        <span class="n">params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_query_params</span><span class="p">(</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stations</span><span class="o">.</span><span class="n">query</span><span class="p">(</span>
             <span class="n">bbox</span><span class="o">=</span><span class="n">bbox</span><span class="p">,</span>
             <span class="n">datetime</span><span class="o">=</span><span class="n">datetime</span><span class="p">,</span>
             <span class="n">limit</span><span class="o">=</span><span class="n">limit</span><span class="p">,</span>
-            <span class="nb">filter</span><span class="o">=</span><span class="n">filter_expr</span><span class="p">,</span>
+            <span class="n">filter_expr</span><span class="o">=</span><span class="n">filter_expr</span><span class="p">,</span>
             <span class="n">sortby</span><span class="o">=</span><span class="n">sortby</span><span class="p">,</span>
             <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
-        <span class="p">)</span>
-        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_request</span><span class="p">(</span><span class="n">endpoint</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">GroundwaterStationCollection</span><span class="p">(</span><span class="o">**</span><span class="n">response</span><span class="p">)</span></div>
+        <span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="ObservedGroundwaterLevelClient.get_station">
@@ -474,17 +487,7 @@
 <span class="sd">        Raises:</span>
 <span class="sd">            ValueError: If station not found or multiple stations returned</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">endpoint</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">BASE_PATH</span><span class="si">}</span><span class="s2">/stationer/items/</span><span class="si">{</span><span class="n">station_id</span><span class="si">}</span><span class="s2">&quot;</span>
-        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_request</span><span class="p">(</span><span class="n">endpoint</span><span class="p">,</span> <span class="p">{})</span>
-
-        <span class="c1"># SGU API returns a FeatureCollection even for single items</span>
-        <span class="n">collection</span> <span class="o">=</span> <span class="n">GroundwaterStationCollection</span><span class="p">(</span><span class="o">**</span><span class="n">response</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">collection</span><span class="o">.</span><span class="n">features</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Station </span><span class="si">{</span><span class="n">station_id</span><span class="si">}</span><span class="s2"> not found&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">collection</span><span class="o">.</span><span class="n">features</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Multiple stations returned for ID </span><span class="si">{</span><span class="n">station_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">collection</span><span class="o">.</span><span class="n">features</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stations</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">station_id</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="ObservedGroundwaterLevelClient.get_measurements">
@@ -496,6 +499,8 @@
         <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">filter_expr</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">sortby</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">tmin</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">datetime</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">tmax</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">datetime</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GroundwaterMeasurementCollection</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get groundwater level measurements.</span>
@@ -507,26 +512,27 @@
 
 <span class="sd">        Args:</span>
 <span class="sd">            bbox: Bounding box as [min_lon, min_lat, max_lon, max_lat]</span>
-<span class="sd">            datetime: Date/time filter (RFC 3339 format or interval)</span>
+<span class="sd">            datetime: Raw OGC date/time filter; prefer ``tmin``/``tmax``</span>
 <span class="sd">            limit: Maximum number of features to return (automatically paginated if needed)</span>
 <span class="sd">            filter_expr: CQL filter expression</span>
 <span class="sd">            sortby: List of sort expressions (e.g., [&#39;+date&#39;, &#39;-value&#39;])</span>
+<span class="sd">            tmin: Earliest observation date (ISO string or datetime object)</span>
+<span class="sd">            tmax: Latest observation date (ISO string or datetime object)</span>
 <span class="sd">            **kwargs: Additional query parameters</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Typed collection of groundwater level measurements</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">endpoint</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">BASE_PATH</span><span class="si">}</span><span class="s2">/nivaer/items&quot;</span>
-        <span class="n">params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_query_params</span><span class="p">(</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_measurements</span><span class="o">.</span><span class="n">query</span><span class="p">(</span>
             <span class="n">bbox</span><span class="o">=</span><span class="n">bbox</span><span class="p">,</span>
             <span class="n">datetime</span><span class="o">=</span><span class="n">datetime</span><span class="p">,</span>
             <span class="n">limit</span><span class="o">=</span><span class="n">limit</span><span class="p">,</span>
-            <span class="nb">filter</span><span class="o">=</span><span class="n">filter_expr</span><span class="p">,</span>
+            <span class="n">filter_expr</span><span class="o">=</span><span class="n">filter_expr</span><span class="p">,</span>
             <span class="n">sortby</span><span class="o">=</span><span class="n">sortby</span><span class="p">,</span>
+            <span class="n">tmin</span><span class="o">=</span><span class="n">tmin</span><span class="p">,</span>
+            <span class="n">tmax</span><span class="o">=</span><span class="n">tmax</span><span class="p">,</span>
             <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
-        <span class="p">)</span>
-        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_request</span><span class="p">(</span><span class="n">endpoint</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">GroundwaterMeasurementCollection</span><span class="p">(</span><span class="o">**</span><span class="n">response</span><span class="p">)</span></div>
+        <span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="ObservedGroundwaterLevelClient.get_measurement">
@@ -544,17 +550,7 @@
 <span class="sd">        Raises:</span>
 <span class="sd">            ValueError: If measurement not found or multiple measurements returned</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">endpoint</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">BASE_PATH</span><span class="si">}</span><span class="s2">/nivaer/items/</span><span class="si">{</span><span class="n">measurement_id</span><span class="si">}</span><span class="s2">&quot;</span>
-        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_request</span><span class="p">(</span><span class="n">endpoint</span><span class="p">,</span> <span class="p">{})</span>
-
-        <span class="c1"># SGU API returns a FeatureCollection even for single items</span>
-        <span class="n">collection</span> <span class="o">=</span> <span class="n">GroundwaterMeasurementCollection</span><span class="p">(</span><span class="o">**</span><span class="n">response</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">collection</span><span class="o">.</span><span class="n">features</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Measurement </span><span class="si">{</span><span class="n">measurement_id</span><span class="si">}</span><span class="s2"> not found&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">collection</span><span class="o">.</span><span class="n">features</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Multiple measurements returned for ID </span><span class="si">{</span><span class="n">measurement_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">collection</span><span class="o">.</span><span class="n">features</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_measurements</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">measurement_id</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="ObservedGroundwaterLevelClient.get_station_by_name">
@@ -605,11 +601,7 @@
             <span class="n">station</span> <span class="o">=</span> <span class="n">station_name</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Either &#39;station_id&#39; or &#39;station_name&#39; must be provided.&quot;</span><span class="p">)</span>
-        <span class="n">filter_expr</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name_type</span><span class="si">}</span><span class="s2">=&#39;</span><span class="si">{</span><span class="n">station</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
-        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_stations</span><span class="p">(</span><span class="n">filter_expr</span><span class="o">=</span><span class="n">filter_expr</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">features</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Multiple stations found for </span><span class="si">{</span><span class="n">filter_expr</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">features</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stations</span><span class="o">.</span><span class="n">find_one</span><span class="p">(</span><span class="n">where</span><span class="o">=</span><span class="p">{</span><span class="n">name_type</span><span class="p">:</span> <span class="n">station</span><span class="p">},</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="ObservedGroundwaterLevelClient.get_stations_by_names">
@@ -658,12 +650,7 @@
             <span class="n">stations</span> <span class="o">=</span> <span class="n">station_name</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Either &#39;station_id&#39; or &#39;station_name&#39; must be provided.&quot;</span><span class="p">)</span>
-
-        <span class="c1"># Build filter expression for multiple stations using IN clause</span>
-        <span class="n">quoted_stations</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="n">station</span><span class="si">}</span><span class="s2">&#39;&quot;</span> <span class="k">for</span> <span class="n">station</span> <span class="ow">in</span> <span class="n">stations</span><span class="p">]</span>
-        <span class="n">filter_expr</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name_type</span><span class="si">}</span><span class="s2"> in (</span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">quoted_stations</span><span class="p">)</span><span class="si">}</span><span class="s2">)&quot;</span>
-
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_stations</span><span class="p">(</span><span class="n">filter_expr</span><span class="o">=</span><span class="n">filter_expr</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stations</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">where</span><span class="o">=</span><span class="p">{</span><span class="n">name_type</span><span class="p">:</span> <span class="n">stations</span><span class="p">},</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="ObservedGroundwaterLevelClient.get_measurements_by_name">
@@ -740,18 +727,10 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Either &#39;station_id&#39; or &#39;station_name&#39; must be provided.&quot;</span><span class="p">)</span>
 
-        <span class="c1"># Build filter expressions</span>
-        <span class="n">filters</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;platsbeteckning=&#39;</span><span class="si">{</span><span class="n">target_platsbeteckning</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">]</span>
-
-        <span class="c1"># Add datetime filters if tmin/tmax provided</span>
-        <span class="n">datetime_filters</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_datetime_filters</span><span class="p">(</span><span class="n">tmin</span><span class="p">,</span> <span class="n">tmax</span><span class="p">)</span>
-        <span class="n">filters</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">datetime_filters</span><span class="p">)</span>
-
-        <span class="c1"># Combine all filters with AND</span>
-        <span class="n">combined_filter</span> <span class="o">=</span> <span class="s2">&quot; AND &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">filters</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_measurements</span><span class="p">(</span>
-            <span class="n">filter_expr</span><span class="o">=</span><span class="n">combined_filter</span><span class="p">,</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_measurements</span><span class="o">.</span><span class="n">query</span><span class="p">(</span>
+            <span class="n">where</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;platsbeteckning&quot;</span><span class="p">:</span> <span class="n">target_platsbeteckning</span><span class="p">},</span>
+            <span class="n">tmin</span><span class="o">=</span><span class="n">tmin</span><span class="p">,</span>
+            <span class="n">tmax</span><span class="o">=</span><span class="n">tmax</span><span class="p">,</span>
             <span class="n">limit</span><span class="o">=</span><span class="n">limit</span><span class="p">,</span>
             <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
         <span class="p">)</span></div>
@@ -825,94 +804,14 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Either &#39;station_id&#39; or &#39;station_name&#39; must be provided.&quot;</span><span class="p">)</span>
 
-        <span class="c1"># Build filter expressions</span>
-        <span class="n">quoted_stations</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="n">station</span><span class="si">}</span><span class="s2">&#39;&quot;</span> <span class="k">for</span> <span class="n">station</span> <span class="ow">in</span> <span class="n">target_platsbeteckningar</span><span class="p">]</span>
-        <span class="n">filters</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;platsbeteckning in (</span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">quoted_stations</span><span class="p">)</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">]</span>
-
-        <span class="c1"># Add datetime filters if tmin/tmax provided</span>
-        <span class="n">datetime_filters</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_datetime_filters</span><span class="p">(</span><span class="n">tmin</span><span class="p">,</span> <span class="n">tmax</span><span class="p">)</span>
-        <span class="n">filters</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">datetime_filters</span><span class="p">)</span>
-
-        <span class="c1"># Combine all filters with AND</span>
-        <span class="n">combined_filter</span> <span class="o">=</span> <span class="s2">&quot; AND &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">filters</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_measurements</span><span class="p">(</span>
-            <span class="n">filter_expr</span><span class="o">=</span><span class="n">combined_filter</span><span class="p">,</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_measurements</span><span class="o">.</span><span class="n">query</span><span class="p">(</span>
+            <span class="n">where</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;platsbeteckning&quot;</span><span class="p">:</span> <span class="n">target_platsbeteckningar</span><span class="p">},</span>
+            <span class="n">tmin</span><span class="o">=</span><span class="n">tmin</span><span class="p">,</span>
+            <span class="n">tmax</span><span class="o">=</span><span class="n">tmax</span><span class="p">,</span>
             <span class="n">limit</span><span class="o">=</span><span class="n">limit</span><span class="p">,</span>
             <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
         <span class="p">)</span></div>
-
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">_build_query_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Build query parameters for API requests.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            **params: Raw parameter values</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            Cleaned dictionary of query parameters</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">query_params</span> <span class="o">=</span> <span class="p">{}</span>
-
-        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">params</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">continue</span>
-
-            <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;bbox&quot;</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
-                <span class="n">query_params</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">))</span>
-            <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;sortby&quot;</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
-                <span class="n">query_params</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">query_params</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
-
-        <span class="k">return</span> <span class="n">query_params</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">_build_datetime_filters</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">tmin</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">datetime</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">tmax</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">datetime</span> <span class="o">|</span> <span class="kc">None</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Build CQL datetime filter expressions from tmin/tmax parameters.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            tmin: Start time (ISO string or datetime object)</span>
-<span class="sd">            tmax: End time (ISO string or datetime object)</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            List of CQL filter expressions for datetime constraints</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">filters</span> <span class="o">=</span> <span class="p">[]</span>
-
-        <span class="c1"># Convert datetime objects to ISO strings</span>
-        <span class="k">def</span><span class="w"> </span><span class="nf">to_iso_string</span><span class="p">(</span><span class="n">dt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">datetime</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">dt</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">return</span> <span class="kc">None</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dt</span><span class="p">,</span> <span class="n">datetime</span><span class="p">):</span>
-                <span class="k">return</span> <span class="n">dt</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span>
-            <span class="k">return</span> <span class="n">dt</span>
-
-        <span class="k">if</span> <span class="n">tmin</span><span class="p">:</span>
-            <span class="n">tmin_str</span> <span class="o">=</span> <span class="n">to_iso_string</span><span class="p">(</span><span class="n">tmin</span><span class="p">)</span>
-            <span class="n">filters</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;obsdatum &gt;= &#39;</span><span class="si">{</span><span class="n">tmin_str</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">tmax</span><span class="p">:</span>
-            <span class="n">tmax_str</span> <span class="o">=</span> <span class="n">to_iso_string</span><span class="p">(</span><span class="n">tmax</span><span class="p">)</span>
-            <span class="n">filters</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;obsdatum &lt;= &#39;</span><span class="si">{</span><span class="n">tmax_str</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">filters</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">_make_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">endpoint</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Make HTTP request to SGU API.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            endpoint: API endpoint path</span>
-<span class="sd">            params: Query parameters</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            JSON response data</span>
-
-<span class="sd">        Raises:</span>
-<span class="sd">            Various HTTP and API exceptions via base client</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">endpoint</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span></div>
+</div>
 
 </pre></div>
 

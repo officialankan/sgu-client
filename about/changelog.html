@@ -43,7 +43,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../_static/documentation_options.js?v=8fa8b3e9"></script>
+    <script src="../_static/documentation_options.js?v=fe7df9b0"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -386,23 +386,54 @@ and this project adheres to <a class="reference external" href="https://semver.o
 <h2><a class="reference external" href="https://github.com/username/sgu-client/compare/v0.2.0...HEAD">Unreleased</a><a class="headerlink" href="#unreleased" title="Link to this heading">#</a></h2>
 </section>
 <section id="id1">
-<h2>[0.6.0] - 2026-10-19<a class="headerlink" href="#id1" title="Link to this heading">#</a></h2>
+<h2>[0.7.0] - 2026-10-20<a class="headerlink" href="#id1" title="Link to this heading">#</a></h2>
 <section id="added">
 <h3>Added<a class="headerlink" href="#added" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">SGUNotFoundError</span></code> and <code class="docutils literal notranslate"><span class="pre">SGUAmbiguousError</span></code>, raised when a lookup matches no feature or several. Both subclass <code class="docutils literal notranslate"><span class="pre">ValueError</span></code>, so existing <code class="docutils literal notranslate"><span class="pre">except</span> <span class="pre">ValueError</span></code> code keeps working (#62)</p></li>
+<li><p><strong>Modeled levels</strong>: <code class="docutils literal notranslate"><span class="pre">get_levels_by_area()</span></code>, <code class="docutils literal notranslate"><span class="pre">get_levels_by_areas()</span></code> and <code class="docutils literal notranslate"><span class="pre">get_levels_by_coords()</span></code> take <code class="docutils literal notranslate"><span class="pre">tmin</span></code> and <code class="docutils literal notranslate"><span class="pre">tmax</span></code> (ISO strings or <code class="docutils literal notranslate"><span class="pre">datetime</span></code> objects), filtering on the level’s date like the observed measurement lookups (#62)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">get_measurements()</span></code>, <code class="docutils literal notranslate"><span class="pre">get_levels()</span></code> and <code class="docutils literal notranslate"><span class="pre">get_analysis_results()</span></code> take <code class="docutils literal notranslate"><span class="pre">tmin</span></code> and <code class="docutils literal notranslate"><span class="pre">tmax</span></code> too, filtering on the observation, level or sampling date. Docs and examples now use <code class="docutils literal notranslate"><span class="pre">tmin</span></code>/<code class="docutils literal notranslate"><span class="pre">tmax</span></code> instead of the OGC <code class="docutils literal notranslate"><span class="pre">datetime</span></code> interval (#62)</p></li>
+</ul>
+</section>
+<section id="changed">
+<h3>Changed<a class="headerlink" href="#changed" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p><strong>Filter text</strong>: a single value is sent as <code class="docutils literal notranslate"><span class="pre">field=value</span></code> and several as <code class="docutils literal notranslate"><span class="pre">field</span> <span class="pre">in</span> <span class="pre">(...)</span></code> on every dataset. Modeled area filters were <code class="docutils literal notranslate"><span class="pre">omrade_id</span> <span class="pre">=</span> <span class="pre">1</span></code> / <code class="docutils literal notranslate"><span class="pre">omrade_id</span> <span class="pre">IN</span> <span class="pre">(1,</span> <span class="pre">2)</span></code>, and observed sent one-element lists as <code class="docutils literal notranslate"><span class="pre">in</span> <span class="pre">(...)</span></code>. Same results, different filter text (#62)</p></li>
+</ul>
+</section>
+<section id="fixed">
+<h3>Fixed<a class="headerlink" href="#fixed" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">get_station_by_name()</span></code> raises <code class="docutils literal notranslate"><span class="pre">SGUNotFoundError</span></code> instead of a bare <code class="docutils literal notranslate"><span class="pre">IndexError</span></code> when no station matches (#57)</p></li>
+<li><p>Single quotes in station, site or parameter names are escaped in filters instead of producing an invalid query (#62)</p></li>
+</ul>
+</section>
+<section id="breaking-changes">
+<h3>BREAKING CHANGES<a class="headerlink" href="#breaking-changes" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">SGUConfig.base_url</span></code></strong> is now the root of SGU’s open data APIs (<code class="docutils literal notranslate"><span class="pre">https://api.sgu.se/oppnadata/</span></code>) and applies to the observed, modeled and chemistry datasets alike. It used to be the full observed-levels URL and was ignored by the other two. If you set it, drop the <code class="docutils literal notranslate"><span class="pre">grundvattennivaer-observerade/ogc/features/v1/</span></code> suffix (#62)</p></li>
+<li><p><strong>Internal URL constants removed</strong>: <code class="docutils literal notranslate"><span class="pre">BASE_PATH</span></code> on the three clients, <code class="docutils literal notranslate"><span class="pre">ModeledGroundwaterLevelClient.MODELED_BASE_URL</span></code> and <code class="docutils literal notranslate"><span class="pre">GroundwaterChemistryClient.CHEMISTRY_BASE_URL</span></code>. Dataset URLs now come from <code class="docutils literal notranslate"><span class="pre">SGUConfig.base_url</span></code> (#62)</p></li>
+</ul>
+</section>
+</section>
+<section id="id2">
+<h2>[0.6.0] - 2026-10-19<a class="headerlink" href="#id2" title="Link to this heading">#</a></h2>
+<section id="id3">
+<h3>Added<a class="headerlink" href="#id3" title="Link to this heading">#</a></h3>
 <ul class="simple">
 <li><p><strong>Python 3.14</strong>: supported and tested in CI (#48)</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">SGUClient.close()</span></code> closes the HTTP session for clients created without a <code class="docutils literal notranslate"><span class="pre">with</span></code> block</p></li>
 <li><p><strong>Type checking</strong>: the package’s type hints are now verified with <a class="reference external" href="https://github.com/astral-sh/ty">ty</a> on every supported Python version, so editors and type checkers see accurate types (#45)</p></li>
 </ul>
 </section>
-<section id="changed">
-<h3>Changed<a class="headerlink" href="#changed" title="Link to this heading">#</a></h3>
+<section id="id4">
+<h3>Changed<a class="headerlink" href="#id4" title="Link to this heading">#</a></h3>
 <ul class="simple">
 <li><p><strong>Documentation</strong>: restructured into User Guide, API Reference and About sections; the README is now a short landing page that links to the docs (#44)</p></li>
 </ul>
 </section>
-<section id="fixed">
-<h3>Fixed<a class="headerlink" href="#fixed" title="Link to this heading">#</a></h3>
+<section id="id5">
+<h3>Fixed<a class="headerlink" href="#id5" title="Link to this heading">#</a></h3>
 <ul class="simple">
 <li><p>Methods wrapped by <code class="docutils literal notranslate"><span class="pre">optional_pandas_method</span></code> keep their original signature and docstring</p></li>
 <li><p>Stale docstring examples (the removed <code class="docutils literal notranslate"><span class="pre">debug</span></code> config option, an API alias passed as a keyword, an invalid date)</p></li>
@@ -410,8 +441,8 @@ and this project adheres to <a class="reference external" href="https://semver.o
 <li><p><strong>pandas 3</strong>: date columns stay <code class="docutils literal notranslate"><span class="pre">datetime64[ns,</span> <span class="pre">UTC]</span></code>; pandas 3 otherwise picks the resolution per column (<code class="docutils literal notranslate"><span class="pre">us</span></code>, or <code class="docutils literal notranslate"><span class="pre">s</span></code> when every value is missing)</p></li>
 </ul>
 </section>
-<section id="breaking-changes">
-<h3>BREAKING CHANGES<a class="headerlink" href="#breaking-changes" title="Link to this heading">#</a></h3>
+<section id="id6">
+<h3>BREAKING CHANGES<a class="headerlink" href="#id6" title="Link to this heading">#</a></h3>
 <ul class="simple">
 <li><p><strong>Dates are parsed everywhere</strong> (#51): every date field on the observed, modeled and chemistry models, and <code class="docutils literal notranslate"><span class="pre">timeStamp</span></code> on every collection, is now a timezone-aware <code class="docutils literal notranslate"><span class="pre">datetime</span></code> in UTC instead of a string. Date-only values (<code class="docutils literal notranslate"><span class="pre">&quot;1996-04-29Z&quot;</span></code>) become midnight UTC. Values that can’t be parsed, or have no timezone, become <code class="docutils literal notranslate"><span class="pre">None</span></code> and log a warning</p></li>
 <li><p><strong>Helper properties removed</strong>: <code class="docutils literal notranslate"><span class="pre">observation_datetime</span></code>, <code class="docutils literal notranslate"><span class="pre">last_updated_datetime</span></code>, <code class="docutils literal notranslate"><span class="pre">date_parsed</span></code>, <code class="docutils literal notranslate"><span class="pre">established_datetime</span></code> and <code class="docutils literal notranslate"><span class="pre">sampling_datetime</span></code>; use the fields themselves</p></li>
@@ -420,16 +451,16 @@ and this project adheres to <a class="reference external" href="https://semver.o
 </ul>
 </section>
 </section>
-<section id="id2">
-<h2>[0.5.0] - 2026-10-15<a class="headerlink" href="#id2" title="Link to this heading">#</a></h2>
-<section id="id3">
-<h3>Changed<a class="headerlink" href="#id3" title="Link to this heading">#</a></h3>
+<section id="id7">
+<h2>[0.5.0] - 2026-10-15<a class="headerlink" href="#id7" title="Link to this heading">#</a></h2>
+<section id="id8">
+<h3>Changed<a class="headerlink" href="#id8" title="Link to this heading">#</a></h3>
 <ul class="simple">
 <li><p><strong>Groundwater chemistry API v2</strong>: <code class="docutils literal notranslate"><span class="pre">client.chemistry</span></code> now uses SGU’s <code class="docutils literal notranslate"><span class="pre">grundvattenkvalitet-analysresultat-provplatser-v2</span></code> dataset; the previous dataset no longer publishes any collections (#42)</p></li>
 </ul>
 </section>
-<section id="id4">
-<h3>BREAKING CHANGES<a class="headerlink" href="#id4" title="Link to this heading">#</a></h3>
+<section id="id9">
+<h3>BREAKING CHANGES<a class="headerlink" href="#id9" title="Link to this heading">#</a></h3>
 <ul class="simple">
 <li><p><strong>Chemistry models</strong>: <code class="docutils literal notranslate"><span class="pre">SamplingSiteProperties</span></code> and <code class="docutils literal notranslate"><span class="pre">AnalysisResultProperties</span></code> now type every v2 field. Fields that kept their meaning keep their attribute names (e.g. <code class="docutils literal notranslate"><span class="pre">parameter_name</span></code>, <code class="docutils literal notranslate"><span class="pre">sampling_date</span></code>, <code class="docutils literal notranslate"><span class="pre">analyses_csv_url</span></code>); fields SGU removed are gone:</p>
 <ul>
@@ -445,17 +476,17 @@ and this project adheres to <a class="reference external" href="https://semver.o
 <li><p><strong>pandas</strong>: the feature ID column in chemistry <code class="docutils literal notranslate"><span class="pre">to_dataframe()</span></code> output is now <code class="docutils literal notranslate"><span class="pre">feature_id</span></code> (previously <code class="docutils literal notranslate"><span class="pre">site_id</span></code> for sites and <code class="docutils literal notranslate"><span class="pre">result_id</span></code> for results, which clashed with the new <code class="docutils literal notranslate"><span class="pre">result_id</span></code> field); <code class="docutils literal notranslate"><span class="pre">pivot_by_parameter()</span></code> pivots on <code class="docutils literal notranslate"><span class="pre">parameter_name</span></code> by default; <code class="docutils literal notranslate"><span class="pre">to_dataframe()</span></code> parses <code class="docutils literal notranslate"><span class="pre">sampling_date</span></code>, <code class="docutils literal notranslate"><span class="pre">sampling_end_date</span></code>, <code class="docutils literal notranslate"><span class="pre">registration_date</span></code> and <code class="docutils literal notranslate"><span class="pre">analysis_date</span></code> (results) and <code class="docutils literal notranslate"><span class="pre">established_date</span></code>, <code class="docutils literal notranslate"><span class="pre">first_sample_date</span></code>, <code class="docutils literal notranslate"><span class="pre">latest_sample_date</span></code> (sites) as UTC datetimes</p></li>
 </ul>
 </section>
-<section id="id5">
-<h3>Added<a class="headerlink" href="#id5" title="Link to this heading">#</a></h3>
+<section id="id10">
+<h3>Added<a class="headerlink" href="#id10" title="Link to this heading">#</a></h3>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">national_site_id</span></code> option for <code class="docutils literal notranslate"><span class="pre">get_sampling_site_by_name()</span></code> and <code class="docutils literal notranslate"><span class="pre">get_sampling_sites_by_names()</span></code></p></li>
 </ul>
 </section>
 </section>
-<section id="id6">
-<h2><a class="reference external" href="https://github.com/username/sgu-client/compare/v0.1.0...v0.2.0">0.2.0</a> - 2025-09-11<a class="headerlink" href="#id6" title="Link to this heading">#</a></h2>
-<section id="id7">
-<h3>Added<a class="headerlink" href="#id7" title="Link to this heading">#</a></h3>
+<section id="id11">
+<h2><a class="reference external" href="https://github.com/username/sgu-client/compare/v0.1.0...v0.2.0">0.2.0</a> - 2025-09-11<a class="headerlink" href="#id11" title="Link to this heading">#</a></h2>
+<section id="id12">
+<h3>Added<a class="headerlink" href="#id12" title="Link to this heading">#</a></h3>
 <ul class="simple">
 <li><p><strong>Pagination Support</strong>: Automatic handling of SGU API pagination for large datasets (#11)</p></li>
 <li><p><strong>Collection Series Export</strong>: New <code class="docutils literal notranslate"><span class="pre">to_series()</span></code> convenience method for converting collections to pandas Series (#7)</p></li>
@@ -469,18 +500,18 @@ and this project adheres to <a class="reference external" href="https://semver.o
 <li><p><strong>Documentation</strong>: Added coverage badge and improved GitFlow-lite workflow documentation (#3)</p></li>
 </ul>
 </section>
-<section id="id8">
-<h3>Fixed<a class="headerlink" href="#id8" title="Link to this heading">#</a></h3>
+<section id="id13">
+<h3>Fixed<a class="headerlink" href="#id13" title="Link to this heading">#</a></h3>
 <ul class="simple">
 <li><p><strong>API Response Handling</strong>: Improved pagination handling for SGU API responses to prevent data loss</p></li>
 <li><p><strong>Test Performance</strong>: Streamlined testing workflow for better development experience</p></li>
 </ul>
 </section>
 </section>
-<section id="id9">
-<h2><a class="reference external" href="https://github.com/username/sgu-client/releases/tag/v0.1.0">0.1.0</a> - 2025-09-05<a class="headerlink" href="#id9" title="Link to this heading">#</a></h2>
-<section id="id10">
-<h3>Added<a class="headerlink" href="#id10" title="Link to this heading">#</a></h3>
+<section id="id14">
+<h2><a class="reference external" href="https://github.com/username/sgu-client/releases/tag/v0.1.0">0.1.0</a> - 2025-09-05<a class="headerlink" href="#id14" title="Link to this heading">#</a></h2>
+<section id="id15">
+<h3>Added<a class="headerlink" href="#id15" title="Link to this heading">#</a></h3>
 <ul class="simple">
 <li><p>Initial release of sgu-client</p></li>
 <li><p>Complete SGU groundwater data API client with type safety</p></li>
@@ -540,27 +571,34 @@ and this project adheres to <a class="reference external" href="https://semver.o
   <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#unreleased">Unreleased</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">[0.6.0] - 2026-10-19</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">[0.7.0] - 2026-10-20</a><ul class="visible nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#added">Added</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#changed">Changed</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fixed">Fixed</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#breaking-changes">BREAKING CHANGES</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">[0.5.0] - 2026-10-15</a><ul class="visible nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">Changed</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">BREAKING CHANGES</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">Added</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">[0.6.0] - 2026-10-19</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">Added</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">Changed</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">Fixed</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id6">BREAKING CHANGES</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id6">0.2.0 - 2025-09-11</a><ul class="visible nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id7">Added</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#enhanced">Enhanced</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id8">Fixed</a></li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id9">0.1.0 - 2025-09-05</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id7">[0.5.0] - 2026-10-15</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id8">Changed</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id9">BREAKING CHANGES</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id10">Added</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id11">0.2.0 - 2025-09-11</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id12">Added</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#enhanced">Enhanced</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id13">Fixed</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id14">0.1.0 - 2025-09-05</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id15">Added</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#key-features">Key Features</a></li>
 </ul>
 </li>

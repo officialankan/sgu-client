@@ -43,7 +43,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../_static/documentation_options.js?v=8fa8b3e9"></script>
+    <script src="../_static/documentation_options.js?v=fe7df9b0"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -601,7 +601,7 @@ features are returned in the server’s default order.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="sgu_client.client.chemistry.chemistry.GroundwaterChemistryClient.get_analysis_results">
-<span class="sig-name descname"><span class="pre">get_analysis_results</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bbox</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">datetime</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter_expr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sortby</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sgu_client/client/chemistry/chemistry.html#GroundwaterChemistryClient.get_analysis_results"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sgu_client.client.chemistry.chemistry.GroundwaterChemistryClient.get_analysis_results" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">get_analysis_results</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bbox</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">datetime</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter_expr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sortby</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tmin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sgu_client/client/chemistry/chemistry.html#GroundwaterChemistryClient.get_analysis_results"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sgu_client.client.chemistry.chemistry.GroundwaterChemistryClient.get_analysis_results" title="Link to this definition">#</a></dt>
 <dd><p>Get groundwater chemistry analysis results.</p>
 <p>This method is used internally by convenience functions like
 <cite>get_results_by_site()</cite> by constructing filter expressions. A user may also
@@ -611,12 +611,14 @@ functions.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>bbox</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>] | <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span>) – Bounding box as [min_lon, min_lat, max_lon, max_lat]</p></li>
-<li><p><strong>datetime</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span>) – Date/time filter (RFC 3339 format or interval)</p></li>
+<li><p><strong>datetime</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span>) – Raw OGC date/time filter; prefer <code class="docutils literal notranslate"><span class="pre">tmin</span></code>/<code class="docutils literal notranslate"><span class="pre">tmax</span></code></p></li>
 <li><p><strong>limit</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span>) – Maximum number of features to return (paginated automatically)</p></li>
 <li><p><strong>filter_expr</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span>) – CQL filter expression</p></li>
 <li><p><strong>sortby</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>] | <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span>) – List of sort expressions (e.g., [‘+date’, ‘-value’])
 Note: the SGU v2 chemistry API currently ignores sortby;
 features are returned in the server’s default order.</p></li>
+<li><p><strong>tmin</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">datetime</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span>) – Earliest sampling date (ISO string or datetime object)</p></li>
+<li><p><strong>tmax</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">datetime</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span>) – Latest sampling date (ISO string or datetime object)</p></li>
 <li><p><strong>**kwargs</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a></span>) – Additional query parameters</p></li>
 </ul>
 </dd>
@@ -1184,7 +1186,7 @@ e.g. ‘pH’, ‘Bly’, ‘Nitratkväve’, ‘Klorid’</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Constraints<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>func</strong> = &lt;function _parse_api_datetime at 0x7ff874eb9800&gt;</p></li>
+<li><p><strong>func</strong> = &lt;function _parse_api_datetime at 0x7f03d1f4c7c0&gt;</p></li>
 <li><p><strong>json_schema_input_type</strong> = PydanticUndefined</p></li>
 </ul>
 </dd>
@@ -1198,7 +1200,7 @@ e.g. ‘pH’, ‘Bly’, ‘Nitratkväve’, ‘Klorid’</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Constraints<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>func</strong> = &lt;function _parse_api_datetime at 0x7ff874eb9800&gt;</p></li>
+<li><p><strong>func</strong> = &lt;function _parse_api_datetime at 0x7f03d1f4c7c0&gt;</p></li>
 <li><p><strong>json_schema_input_type</strong> = PydanticUndefined</p></li>
 </ul>
 </dd>
@@ -1212,7 +1214,7 @@ e.g. ‘pH’, ‘Bly’, ‘Nitratkväve’, ‘Klorid’</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Constraints<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>func</strong> = &lt;function _parse_api_datetime at 0x7ff874eb9800&gt;</p></li>
+<li><p><strong>func</strong> = &lt;function _parse_api_datetime at 0x7f03d1f4c7c0&gt;</p></li>
 <li><p><strong>json_schema_input_type</strong> = PydanticUndefined</p></li>
 </ul>
 </dd>
@@ -1495,7 +1497,7 @@ e.g. ‘pH’, ‘Bly’, ‘Nitratkväve’, ‘Klorid’</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Constraints<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>func</strong> = &lt;function _parse_api_datetime at 0x7ff874eb9800&gt;</p></li>
+<li><p><strong>func</strong> = &lt;function _parse_api_datetime at 0x7f03d1f4c7c0&gt;</p></li>
 <li><p><strong>json_schema_input_type</strong> = PydanticUndefined</p></li>
 </ul>
 </dd>
@@ -1509,7 +1511,7 @@ e.g. ‘pH’, ‘Bly’, ‘Nitratkväve’, ‘Klorid’</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Constraints<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>func</strong> = &lt;function _parse_api_datetime at 0x7ff874eb9800&gt;</p></li>
+<li><p><strong>func</strong> = &lt;function _parse_api_datetime at 0x7f03d1f4c7c0&gt;</p></li>
 <li><p><strong>json_schema_input_type</strong> = PydanticUndefined</p></li>
 </ul>
 </dd>
@@ -1655,7 +1657,7 @@ e.g. ‘pH’, ‘Bly’, ‘Nitratkväve’, ‘Klorid’</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Constraints<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>func</strong> = &lt;function _parse_api_datetime at 0x7ff874eb9800&gt;</p></li>
+<li><p><strong>func</strong> = &lt;function _parse_api_datetime at 0x7f03d1f4c7c0&gt;</p></li>
 <li><p><strong>json_schema_input_type</strong> = PydanticUndefined</p></li>
 </ul>
 </dd>
@@ -1669,7 +1671,7 @@ e.g. ‘pH’, ‘Bly’, ‘Nitratkväve’, ‘Klorid’</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Constraints<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>func</strong> = &lt;function _parse_api_datetime at 0x7ff874eb9800&gt;</p></li>
+<li><p><strong>func</strong> = &lt;function _parse_api_datetime at 0x7f03d1f4c7c0&gt;</p></li>
 <li><p><strong>json_schema_input_type</strong> = PydanticUndefined</p></li>
 </ul>
 </dd>
@@ -1964,7 +1966,7 @@ e.g. ‘pH’, ‘Bly’, ‘Nitratkväve’, ‘Klorid’</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Constraints<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>func</strong> = &lt;function _parse_api_datetime at 0x7ff874eb9800&gt;</p></li>
+<li><p><strong>func</strong> = &lt;function _parse_api_datetime at 0x7f03d1f4c7c0&gt;</p></li>
 <li><p><strong>json_schema_input_type</strong> = PydanticUndefined</p></li>
 </ul>
 </dd>
@@ -2051,7 +2053,7 @@ e.g. ‘pH’, ‘Bly’, ‘Nitratkväve’, ‘Klorid’</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Constraints<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>func</strong> = &lt;function _parse_api_datetime at 0x7ff874eb9800&gt;</p></li>
+<li><p><strong>func</strong> = &lt;function _parse_api_datetime at 0x7f03d1f4c7c0&gt;</p></li>
 <li><p><strong>json_schema_input_type</strong> = PydanticUndefined</p></li>
 </ul>
 </dd>

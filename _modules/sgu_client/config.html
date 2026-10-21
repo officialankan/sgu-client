@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../_static/documentation_options.js?v=8fa8b3e9"></script>
+    <script src="../../_static/documentation_options.js?v=fe7df9b0"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -391,8 +391,8 @@
 
     <span class="c1"># HTTP settings</span>
     <span class="n">base_url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
-        <span class="n">default</span><span class="o">=</span><span class="s2">&quot;https://api.sgu.se/oppnadata/grundvattennivaer-observerade/ogc/features/v1/&quot;</span><span class="p">,</span>
-        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Base URL for SGU API&quot;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="s2">&quot;https://api.sgu.se/oppnadata/&quot;</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Root URL of the SGU open data APIs; every dataset is found below it&quot;</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
         <span class="n">default</span><span class="o">=</span><span class="mf">30.0</span><span class="p">,</span> <span class="n">ge</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Request timeout in seconds&quot;</span>

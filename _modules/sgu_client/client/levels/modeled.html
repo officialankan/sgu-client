@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../../_static/documentation_options.js?v=8fa8b3e9"></script>
+    <script src="../../../../_static/documentation_options.js?v=fe7df9b0"></script>
     <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -380,9 +380,11 @@
 <span></span><span class="sd">&quot;&quot;&quot;Modeled groundwater level client endpoints.&quot;&quot;&quot;</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">sgu_client.client.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseClient</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sgu_client.client.collection</span><span class="w"> </span><span class="kn">import</span> <span class="n">SGUCollection</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">sgu_client.models.modeled</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">ModeledArea</span><span class="p">,</span>
     <span class="n">ModeledAreaCollection</span><span class="p">,</span>
@@ -392,14 +394,13 @@
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
+<span class="n">DATASET</span> <span class="o">=</span> <span class="s2">&quot;grundvattennivaer-sgu-hype-omraden&quot;</span>
+
 
 <div class="viewcode-block" id="ModeledGroundwaterLevelClient">
 <a class="viewcode-back" href="../../../../api/modeled.html#sgu_client.client.levels.modeled.ModeledGroundwaterLevelClient">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">ModeledGroundwaterLevelClient</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Client for modeled groundwater level-related SGU API endpoints.&quot;&quot;&quot;</span>
-
-    <span class="n">BASE_PATH</span> <span class="o">=</span> <span class="s2">&quot;collections&quot;</span>
-    <span class="n">MODELED_BASE_URL</span> <span class="o">=</span> <span class="s2">&quot;https://api.sgu.se/oppnadata/grundvattennivaer-sgu-hype-omraden/ogc/features/v1/&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">base_client</span><span class="p">:</span> <span class="n">BaseClient</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize modeled groundwater level client.</span>
@@ -408,6 +409,21 @@
 <span class="sd">            base_client: Base HTTP client instance</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_client</span> <span class="o">=</span> <span class="n">base_client</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_areas</span> <span class="o">=</span> <span class="n">SGUCollection</span><span class="p">(</span>
+            <span class="n">base_client</span><span class="p">,</span>
+            <span class="n">dataset</span><span class="o">=</span><span class="n">DATASET</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="s2">&quot;omraden&quot;</span><span class="p">,</span>
+            <span class="n">model</span><span class="o">=</span><span class="n">ModeledAreaCollection</span><span class="p">,</span>
+            <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Area&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_levels</span> <span class="o">=</span> <span class="n">SGUCollection</span><span class="p">(</span>
+            <span class="n">base_client</span><span class="p">,</span>
+            <span class="n">dataset</span><span class="o">=</span><span class="n">DATASET</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="s2">&quot;grundvattennivaer-tidigare&quot;</span><span class="p">,</span>
+            <span class="n">model</span><span class="o">=</span><span class="n">ModeledGroundwaterLevelCollection</span><span class="p">,</span>
+            <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Level&quot;</span><span class="p">,</span>
+            <span class="n">date_field</span><span class="o">=</span><span class="s2">&quot;datum&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
 
 <div class="viewcode-block" id="ModeledGroundwaterLevelClient.get_areas">
 <a class="viewcode-back" href="../../../../api/modeled.html#sgu_client.client.levels.modeled.ModeledGroundwaterLevelClient.get_areas">[docs]</a>
@@ -444,16 +460,13 @@
 <span class="sd">            ...     for area in areas.features:</span>
 <span class="sd">            ...         print(f&quot;area: {area.properties.area_id}&quot;)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">endpoint</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">BASE_PATH</span><span class="si">}</span><span class="s2">/omraden/items&quot;</span>
-        <span class="n">params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_query_params</span><span class="p">(</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_areas</span><span class="o">.</span><span class="n">query</span><span class="p">(</span>
             <span class="n">bbox</span><span class="o">=</span><span class="n">bbox</span><span class="p">,</span>
             <span class="n">limit</span><span class="o">=</span><span class="n">limit</span><span class="p">,</span>
-            <span class="nb">filter</span><span class="o">=</span><span class="n">filter_expr</span><span class="p">,</span>
+            <span class="n">filter_expr</span><span class="o">=</span><span class="n">filter_expr</span><span class="p">,</span>
             <span class="n">sortby</span><span class="o">=</span><span class="n">sortby</span><span class="p">,</span>
             <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
-        <span class="p">)</span>
-        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_request</span><span class="p">(</span><span class="n">endpoint</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">ModeledAreaCollection</span><span class="p">(</span><span class="o">**</span><span class="n">response</span><span class="p">)</span></div>
+        <span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="ModeledGroundwaterLevelClient.get_area">
@@ -472,17 +485,7 @@
 <span class="sd">            ValueError: If area not found or multiple areas returned</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">endpoint</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">BASE_PATH</span><span class="si">}</span><span class="s2">/omraden/items/</span><span class="si">{</span><span class="n">area_id</span><span class="si">}</span><span class="s2">&quot;</span>
-        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_request</span><span class="p">(</span><span class="n">endpoint</span><span class="p">,</span> <span class="p">{})</span>
-
-        <span class="c1"># SGU API returns a FeatureCollection even for single items</span>
-        <span class="n">collection</span> <span class="o">=</span> <span class="n">ModeledAreaCollection</span><span class="p">(</span><span class="o">**</span><span class="n">response</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">collection</span><span class="o">.</span><span class="n">features</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Area </span><span class="si">{</span><span class="n">area_id</span><span class="si">}</span><span class="s2"> not found&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">collection</span><span class="o">.</span><span class="n">features</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Multiple areas returned for ID </span><span class="si">{</span><span class="n">area_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">collection</span><span class="o">.</span><span class="n">features</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_areas</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">area_id</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="ModeledGroundwaterLevelClient.get_levels">
@@ -494,16 +497,20 @@
         <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">filter_expr</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">sortby</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">tmin</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">datetime</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">tmax</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">datetime</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ModeledGroundwaterLevelCollection</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get modeled groundwater levels.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            bbox: Bounding box as [min_lon, min_lat, max_lon, max_lat]</span>
-<span class="sd">            datetime: Date/time filter (RFC 3339 format or interval)</span>
+<span class="sd">            datetime: Raw OGC date/time filter; prefer ``tmin``/``tmax``</span>
 <span class="sd">            limit: Maximum number of features to return (automatically paginated if needed)</span>
 <span class="sd">            filter_expr: CQL filter expression</span>
 <span class="sd">            sortby: List of sort expressions (e.g., [&#39;+datum&#39;, &#39;-omrade_id&#39;] - use Swedish field names for API)</span>
+<span class="sd">            tmin: Earliest date (ISO string or datetime object)</span>
+<span class="sd">            tmax: Latest date (ISO string or datetime object)</span>
 <span class="sd">            **kwargs: Additional query parameters</span>
 
 <span class="sd">        Returns:</span>
@@ -517,21 +524,21 @@
 <span class="sd">            ...     levels = client.levels.modeled.get_levels(limit=100)</span>
 <span class="sd">            ...     # get levels for a specific time period</span>
 <span class="sd">            ...     levels = client.levels.modeled.get_levels(</span>
-<span class="sd">            ...         datetime=&quot;2023-01-01/2024-01-01&quot;,</span>
+<span class="sd">            ...         tmin=&quot;2023-01-01&quot;,</span>
+<span class="sd">            ...         tmax=&quot;2024-01-01&quot;,</span>
 <span class="sd">            ...         limit=1000</span>
 <span class="sd">            ...     )</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">endpoint</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">BASE_PATH</span><span class="si">}</span><span class="s2">/grundvattennivaer-tidigare/items&quot;</span>
-        <span class="n">params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_query_params</span><span class="p">(</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_levels</span><span class="o">.</span><span class="n">query</span><span class="p">(</span>
             <span class="n">bbox</span><span class="o">=</span><span class="n">bbox</span><span class="p">,</span>
             <span class="n">datetime</span><span class="o">=</span><span class="n">datetime</span><span class="p">,</span>
             <span class="n">limit</span><span class="o">=</span><span class="n">limit</span><span class="p">,</span>
-            <span class="nb">filter</span><span class="o">=</span><span class="n">filter_expr</span><span class="p">,</span>
+            <span class="n">filter_expr</span><span class="o">=</span><span class="n">filter_expr</span><span class="p">,</span>
             <span class="n">sortby</span><span class="o">=</span><span class="n">sortby</span><span class="p">,</span>
+            <span class="n">tmin</span><span class="o">=</span><span class="n">tmin</span><span class="p">,</span>
+            <span class="n">tmax</span><span class="o">=</span><span class="n">tmax</span><span class="p">,</span>
             <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
-        <span class="p">)</span>
-        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_request</span><span class="p">(</span><span class="n">endpoint</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">ModeledGroundwaterLevelCollection</span><span class="p">(</span><span class="o">**</span><span class="n">response</span><span class="p">)</span></div>
+        <span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="ModeledGroundwaterLevelClient.get_level">
@@ -549,28 +556,24 @@
 <span class="sd">        Raises:</span>
 <span class="sd">            ValueError: If level not found or multiple levels returned</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">endpoint</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">BASE_PATH</span><span class="si">}</span><span class="s2">/grundvattennivaer-tidigare/items/</span><span class="si">{</span><span class="n">level_id</span><span class="si">}</span><span class="s2">&quot;</span>
-        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_request</span><span class="p">(</span><span class="n">endpoint</span><span class="p">,</span> <span class="p">{})</span>
-
-        <span class="c1"># SGU API returns a FeatureCollection even for single items</span>
-        <span class="n">collection</span> <span class="o">=</span> <span class="n">ModeledGroundwaterLevelCollection</span><span class="p">(</span><span class="o">**</span><span class="n">response</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">collection</span><span class="o">.</span><span class="n">features</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Level </span><span class="si">{</span><span class="n">level_id</span><span class="si">}</span><span class="s2"> not found&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">collection</span><span class="o">.</span><span class="n">features</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Multiple levels returned for ID </span><span class="si">{</span><span class="n">level_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">collection</span><span class="o">.</span><span class="n">features</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_levels</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">level_id</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="ModeledGroundwaterLevelClient.get_levels_by_area">
 <a class="viewcode-back" href="../../../../api/modeled.html#sgu_client.client.levels.modeled.ModeledGroundwaterLevelClient.get_levels_by_area">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_levels_by_area</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">area_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">area_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">tmin</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">datetime</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">tmax</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">datetime</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ModeledGroundwaterLevelCollection</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get modeled groundwater levels for a specific area.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            area_id: Area ID to filter by</span>
+<span class="sd">            tmin: Earliest date (ISO string or datetime object)</span>
+<span class="sd">            tmax: Latest date (ISO string or datetime object)</span>
 <span class="sd">            **kwargs: Additional query parameters (limit, datetime, bbox, etc.)</span>
 
 <span class="sd">        Returns:</span>
@@ -588,22 +591,30 @@
 <span class="sd">            ...     # with time filtering</span>
 <span class="sd">            ...     levels = client.levels.modeled.get_levels_by_area(</span>
 <span class="sd">            ...         area_id=30125,</span>
-<span class="sd">            ...         datetime=&quot;2023-01-01/2024-01-01&quot;</span>
+<span class="sd">            ...         tmin=&quot;2023-01-01&quot;,</span>
+<span class="sd">            ...         tmax=&quot;2024-01-01&quot;</span>
 <span class="sd">            ...     )</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">filter_expr</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;omrade_id = </span><span class="si">{</span><span class="n">area_id</span><span class="si">}</span><span class="s2">&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_levels</span><span class="p">(</span><span class="n">filter_expr</span><span class="o">=</span><span class="n">filter_expr</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_levels</span><span class="o">.</span><span class="n">query</span><span class="p">(</span>
+            <span class="n">where</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;omrade_id&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">area_id</span><span class="p">)},</span> <span class="n">tmin</span><span class="o">=</span><span class="n">tmin</span><span class="p">,</span> <span class="n">tmax</span><span class="o">=</span><span class="n">tmax</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="ModeledGroundwaterLevelClient.get_levels_by_areas">
 <a class="viewcode-back" href="../../../../api/modeled.html#sgu_client.client.levels.modeled.ModeledGroundwaterLevelClient.get_levels_by_areas">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_levels_by_areas</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">area_ids</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">area_ids</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+        <span class="n">tmin</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">datetime</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">tmax</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">datetime</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ModeledGroundwaterLevelCollection</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get modeled groundwater levels for multiple areas.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            area_ids: List of area IDs to filter by</span>
+<span class="sd">            tmin: Earliest date (ISO string or datetime object)</span>
+<span class="sd">            tmax: Latest date (ISO string or datetime object)</span>
 <span class="sd">            **kwargs: Additional query parameters (limit, datetime, bbox, etc.)</span>
 
 <span class="sd">        Returns:</span>
@@ -615,21 +626,20 @@
 <span class="sd">            &gt;&gt;&gt; with SGUClient() as client:</span>
 <span class="sd">            ...     levels = client.levels.modeled.get_levels_by_areas(</span>
 <span class="sd">            ...         area_ids=[30125, 30126],</span>
-<span class="sd">            ...         datetime=&quot;2024-09-30/2025-10-01&quot;</span>
+<span class="sd">            ...         tmin=&quot;2024-09-30&quot;,</span>
+<span class="sd">            ...         tmax=&quot;2025-10-01&quot;</span>
 <span class="sd">            ...     )</span>
 <span class="sd">            ...     print(f&quot;Found {len(levels.features)} modeled levels&quot;)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">area_ids</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;At least one area ID must be provided&quot;</span><span class="p">)</span>
 
-        <span class="c1"># Create CQL filter expression for multiple area IDs</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">area_ids</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="n">filter_expr</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;omrade_id = </span><span class="si">{</span><span class="n">area_ids</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">area_ids_str</span> <span class="o">=</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">area_id</span><span class="p">)</span> <span class="k">for</span> <span class="n">area_id</span> <span class="ow">in</span> <span class="n">area_ids</span><span class="p">)</span>
-            <span class="n">filter_expr</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;omrade_id IN (</span><span class="si">{</span><span class="n">area_ids_str</span><span class="si">}</span><span class="s2">)&quot;</span>
-
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_levels</span><span class="p">(</span><span class="n">filter_expr</span><span class="o">=</span><span class="n">filter_expr</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_levels</span><span class="o">.</span><span class="n">query</span><span class="p">(</span>
+            <span class="n">where</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;omrade_id&quot;</span><span class="p">:</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">area_id</span><span class="p">)</span> <span class="k">for</span> <span class="n">area_id</span> <span class="ow">in</span> <span class="n">area_ids</span><span class="p">]},</span>
+            <span class="n">tmin</span><span class="o">=</span><span class="n">tmin</span><span class="p">,</span>
+            <span class="n">tmax</span><span class="o">=</span><span class="n">tmax</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="ModeledGroundwaterLevelClient.get_levels_by_coords">
@@ -639,6 +649,8 @@
         <span class="n">lat</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
         <span class="n">lon</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
         <span class="n">buffer</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.01</span><span class="p">,</span>
+        <span class="n">tmin</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">datetime</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">tmax</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">datetime</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ModeledGroundwaterLevelCollection</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get modeled groundwater levels for a specific coordinate.</span>
@@ -650,6 +662,8 @@
 <span class="sd">            lat: Latitude coordinate (WGS84)</span>
 <span class="sd">            lon: Longitude coordinate (WGS84)</span>
 <span class="sd">            buffer: Buffer distance in degrees around the point (default 0.01 ≈ 1km)</span>
+<span class="sd">            tmin: Earliest date (ISO string or datetime object)</span>
+<span class="sd">            tmax: Latest date (ISO string or datetime object)</span>
 <span class="sd">            **kwargs: Additional query parameters (limit, datetime, etc.)</span>
 
 <span class="sd">        Returns:</span>
@@ -673,7 +687,8 @@
 <span class="sd">            ...         lat=59.33,</span>
 <span class="sd">            ...         lon=18.07,</span>
 <span class="sd">            ...         buffer=0.05,  # ~5km radius</span>
-<span class="sd">            ...         datetime=&quot;2023-01-01/2024-01-01&quot;</span>
+<span class="sd">            ...         tmin=&quot;2023-01-01&quot;,</span>
+<span class="sd">            ...         tmax=&quot;2024-01-01&quot;</span>
 <span class="sd">            ...     )</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Create bounding box around the point</span>
@@ -713,47 +728,8 @@
             <span class="p">)</span>
 
         <span class="c1"># Get levels for all found areas</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_levels_by_areas</span><span class="p">(</span><span class="n">area_ids</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
-
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">_build_query_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Build query parameters for API requests.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            **params: Raw parameter values</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            Cleaned dictionary of query parameters</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">query_params</span> <span class="o">=</span> <span class="p">{}</span>
-
-        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">params</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">continue</span>
-
-            <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;bbox&quot;</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
-                <span class="n">query_params</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">))</span>
-            <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;sortby&quot;</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
-                <span class="n">query_params</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">query_params</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
-
-        <span class="k">return</span> <span class="n">query_params</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">_make_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">endpoint</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Make HTTP request to SGU API.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            endpoint: API endpoint path</span>
-<span class="sd">            params: Query parameters</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            JSON response data</span>
-
-<span class="sd">        Raises:</span>
-<span class="sd">            Various HTTP and API exceptions via base client</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">endpoint</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">,</span> <span class="n">base_url</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">MODELED_BASE_URL</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_levels_by_areas</span><span class="p">(</span><span class="n">area_ids</span><span class="p">,</span> <span class="n">tmin</span><span class="o">=</span><span class="n">tmin</span><span class="p">,</span> <span class="n">tmax</span><span class="o">=</span><span class="n">tmax</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+</div>
 
 </pre></div>
 

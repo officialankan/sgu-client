@@ -43,7 +43,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../_static/documentation_options.js?v=8fa8b3e9"></script>
+    <script src="../_static/documentation_options.js?v=fe7df9b0"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -418,6 +418,12 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#sgu_client.SGUValidationError" title="sgu_client.SGUValidationError"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SGUValidationError</span></code></a></p></td>
 <td><p>Raised when data validation fails.</p></td>
 </tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#sgu_client.SGUNotFoundError" title="sgu_client.SGUNotFoundError"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SGUNotFoundError</span></code></a></p></td>
+<td><p>Raised when a lookup matches no feature.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#sgu_client.SGUAmbiguousError" title="sgu_client.SGUAmbiguousError"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SGUAmbiguousError</span></code></a></p></td>
+<td><p>Raised when a lookup that expects one feature matches several.</p></td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -431,8 +437,8 @@ The configuration is immutable once created.</p>
 <dd><p>Configuration settings for SGU API client.</p>
 <dl class="py attribute pydantic_field">
 <dt class="sig sig-object py" id="sgu_client.SGUConfig.base_url">
-<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">base_url</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'https://api.sgu.se/oppnadata/grundvattennivaer-observerade/ogc/features/v1/'</span></em><a class="headerlink" href="#sgu_client.SGUConfig.base_url" title="Link to this definition">#</a></dt>
-<dd><p>Base URL for SGU API</p>
+<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">base_url</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'https://api.sgu.se/oppnadata/'</span></em><a class="headerlink" href="#sgu_client.SGUConfig.base_url" title="Link to this definition">#</a></dt>
+<dd><p>Root URL of the SGU open data APIs; every dataset is found below it</p>
 </dd></dl>
 
 <dl class="py attribute pydantic_field">
@@ -484,7 +490,10 @@ handles every client error:</p>
 ├── SGUAPIError         the API returned an error response
 ├── SGUConnectionError  the connection to the API failed
 ├── SGUTimeoutError     the request timed out
-└── SGUValidationError  data validation failed
+├── SGUValidationError  data validation failed
+├── SGUNotFoundError    a lookup matched nothing (also a ValueError)
+└── SGUAmbiguousError   a lookup expecting one feature matched several
+                        (also a ValueError)
 </pre></div>
 </div>
 <dl class="py exception">
@@ -515,6 +524,20 @@ handles every client error:</p>
 <dt class="sig sig-object py" id="sgu_client.SGUValidationError">
 <em class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SGUValidationError</span></span><a class="reference internal" href="../_modules/sgu_client/exceptions.html#SGUValidationError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sgu_client.SGUValidationError" title="Link to this definition">#</a></dt>
 <dd><p>Raised when data validation fails.</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="sgu_client.SGUNotFoundError">
+<em class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SGUNotFoundError</span></span><a class="reference internal" href="../_modules/sgu_client/exceptions.html#SGUNotFoundError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sgu_client.SGUNotFoundError" title="Link to this definition">#</a></dt>
+<dd><p>Raised when a lookup matches no feature.</p>
+<p>Subclasses <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> so code that catches <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> keeps working.</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="sgu_client.SGUAmbiguousError">
+<em class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SGUAmbiguousError</span></span><a class="reference internal" href="../_modules/sgu_client/exceptions.html#SGUAmbiguousError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sgu_client.SGUAmbiguousError" title="Link to this definition">#</a></dt>
+<dd><p>Raised when a lookup that expects one feature matches several.</p>
+<p>Subclasses <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> so code that catches <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> keeps working.</p>
 </dd></dl>
 
 </section>

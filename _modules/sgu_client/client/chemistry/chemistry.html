@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../../_static/documentation_options.js?v=8fa8b3e9"></script>
+    <script src="../../../../_static/documentation_options.js?v=fe7df9b0"></script>
     <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -377,11 +377,11 @@
 <span></span><span class="sd">&quot;&quot;&quot;Groundwater chemistry client endpoints.&quot;&quot;&quot;</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Sequence</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">sgu_client.client.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseClient</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sgu_client.client.collection</span><span class="w"> </span><span class="kn">import</span> <span class="n">SGUCollection</span><span class="p">,</span> <span class="n">Where</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">sgu_client.models.chemistry</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">AnalysisResult</span><span class="p">,</span>
     <span class="n">AnalysisResultCollection</span><span class="p">,</span>
@@ -390,6 +390,8 @@
 <span class="p">)</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="n">DATASET</span> <span class="o">=</span> <span class="s2">&quot;grundvattenkvalitet-analysresultat-provplatser-v2&quot;</span>
 
 <span class="c1"># A single site identifier value, or a list of them</span>
 <span class="n">SiteIdentifier</span> <span class="o">=</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span>
@@ -402,13 +404,16 @@
 <span class="p">}</span>
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_site_where</span><span class="p">(</span><span class="n">identifier</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">values</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Where</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Condition matching any of the given values of a site identifier.&quot;&quot;&quot;</span>
+    <span class="n">field</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">SITE_IDENTIFIERS</span><span class="p">[</span><span class="n">identifier</span><span class="p">]</span>
+    <span class="k">return</span> <span class="p">{</span><span class="n">field</span><span class="p">:</span> <span class="n">values</span><span class="p">}</span>
+
+
 <div class="viewcode-block" id="GroundwaterChemistryClient">
 <a class="viewcode-back" href="../../../../api/chemistry.html#sgu_client.client.chemistry.chemistry.GroundwaterChemistryClient">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">GroundwaterChemistryClient</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Client for groundwater chemistry-related SGU API endpoints.&quot;&quot;&quot;</span>
-
-    <span class="n">BASE_PATH</span> <span class="o">=</span> <span class="s2">&quot;collections&quot;</span>
-    <span class="n">CHEMISTRY_BASE_URL</span> <span class="o">=</span> <span class="s2">&quot;https://api.sgu.se/oppnadata/grundvattenkvalitet-analysresultat-provplatser-v2/ogc/features/v1/&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">base_client</span><span class="p">:</span> <span class="n">BaseClient</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize groundwater chemistry client.</span>
@@ -417,6 +422,21 @@
 <span class="sd">            base_client: Base HTTP client instance</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_client</span> <span class="o">=</span> <span class="n">base_client</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sites</span> <span class="o">=</span> <span class="n">SGUCollection</span><span class="p">(</span>
+            <span class="n">base_client</span><span class="p">,</span>
+            <span class="n">dataset</span><span class="o">=</span><span class="n">DATASET</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="s2">&quot;provplatser&quot;</span><span class="p">,</span>
+            <span class="n">model</span><span class="o">=</span><span class="n">SamplingSiteCollection</span><span class="p">,</span>
+            <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Site&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_results</span> <span class="o">=</span> <span class="n">SGUCollection</span><span class="p">(</span>
+            <span class="n">base_client</span><span class="p">,</span>
+            <span class="n">dataset</span><span class="o">=</span><span class="n">DATASET</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="s2">&quot;analysresultat&quot;</span><span class="p">,</span>
+            <span class="n">model</span><span class="o">=</span><span class="n">AnalysisResultCollection</span><span class="p">,</span>
+            <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Result&quot;</span><span class="p">,</span>
+            <span class="n">date_field</span><span class="o">=</span><span class="s2">&quot;provtagningsdatum&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
 
     <span class="c1"># ===== Sampling Sites Methods =====</span>
 
@@ -451,17 +471,14 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            Typed collection of groundwater chemistry sampling sites</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">endpoint</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">BASE_PATH</span><span class="si">}</span><span class="s2">/provplatser/items&quot;</span>
-        <span class="n">params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_query_params</span><span class="p">(</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sites</span><span class="o">.</span><span class="n">query</span><span class="p">(</span>
             <span class="n">bbox</span><span class="o">=</span><span class="n">bbox</span><span class="p">,</span>
             <span class="n">datetime</span><span class="o">=</span><span class="n">datetime</span><span class="p">,</span>
             <span class="n">limit</span><span class="o">=</span><span class="n">limit</span><span class="p">,</span>
-            <span class="nb">filter</span><span class="o">=</span><span class="n">filter_expr</span><span class="p">,</span>
+            <span class="n">filter_expr</span><span class="o">=</span><span class="n">filter_expr</span><span class="p">,</span>
             <span class="n">sortby</span><span class="o">=</span><span class="n">sortby</span><span class="p">,</span>
             <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
-        <span class="p">)</span>
-        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_request</span><span class="p">(</span><span class="n">endpoint</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">SamplingSiteCollection</span><span class="p">(</span><span class="o">**</span><span class="n">response</span><span class="p">)</span></div>
+        <span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="GroundwaterChemistryClient.get_sampling_site">
@@ -480,17 +497,7 @@
 <span class="sd">        Raises:</span>
 <span class="sd">            ValueError: If site not found or multiple sites returned</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">endpoint</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">BASE_PATH</span><span class="si">}</span><span class="s2">/provplatser/items/</span><span class="si">{</span><span class="n">site_id</span><span class="si">}</span><span class="s2">&quot;</span>
-        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_request</span><span class="p">(</span><span class="n">endpoint</span><span class="p">,</span> <span class="p">{})</span>
-
-        <span class="c1"># SGU API returns a FeatureCollection even for single items</span>
-        <span class="n">collection</span> <span class="o">=</span> <span class="n">SamplingSiteCollection</span><span class="p">(</span><span class="o">**</span><span class="n">response</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">collection</span><span class="o">.</span><span class="n">features</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Site </span><span class="si">{</span><span class="n">site_id</span><span class="si">}</span><span class="s2"> not found&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">collection</span><span class="o">.</span><span class="n">features</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Multiple sites returned for ID </span><span class="si">{</span><span class="n">site_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">collection</span><span class="o">.</span><span class="n">features</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sites</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">site_id</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="GroundwaterChemistryClient.get_sampling_site_by_name">
@@ -535,15 +542,7 @@
         <span class="n">identifier</span><span class="p">,</span> <span class="n">values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_select_site_identifier</span><span class="p">(</span>
             <span class="n">national_site_id</span><span class="p">,</span> <span class="n">site_id</span><span class="p">,</span> <span class="n">site_name</span>
         <span class="p">)</span>
-        <span class="n">filter_expr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_site_filter</span><span class="p">(</span><span class="n">identifier</span><span class="p">,</span> <span class="n">values</span><span class="p">)</span>
-        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_sampling_sites</span><span class="p">(</span><span class="n">filter_expr</span><span class="o">=</span><span class="n">filter_expr</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">response</span><span class="o">.</span><span class="n">features</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No sites found for </span><span class="si">{</span><span class="n">filter_expr</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">features</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Multiple sites found for </span><span class="si">{</span><span class="n">filter_expr</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">features</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sites</span><span class="o">.</span><span class="n">find_one</span><span class="p">(</span><span class="n">where</span><span class="o">=</span><span class="n">_site_where</span><span class="p">(</span><span class="n">identifier</span><span class="p">,</span> <span class="n">values</span><span class="p">),</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="GroundwaterChemistryClient.get_sampling_sites_by_names">
@@ -600,6 +599,8 @@
         <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">filter_expr</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">sortby</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">tmin</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">datetime</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">tmax</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">datetime</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AnalysisResultCollection</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get groundwater chemistry analysis results.</span>
@@ -611,28 +612,29 @@
 
 <span class="sd">        Args:</span>
 <span class="sd">            bbox: Bounding box as [min_lon, min_lat, max_lon, max_lat]</span>
-<span class="sd">            datetime: Date/time filter (RFC 3339 format or interval)</span>
+<span class="sd">            datetime: Raw OGC date/time filter; prefer ``tmin``/``tmax``</span>
 <span class="sd">            limit: Maximum number of features to return (paginated automatically)</span>
 <span class="sd">            filter_expr: CQL filter expression</span>
 <span class="sd">            sortby: List of sort expressions (e.g., [&#39;+date&#39;, &#39;-value&#39;])</span>
 <span class="sd">                Note: the SGU v2 chemistry API currently ignores sortby;</span>
 <span class="sd">                features are returned in the server&#39;s default order.</span>
+<span class="sd">            tmin: Earliest sampling date (ISO string or datetime object)</span>
+<span class="sd">            tmax: Latest sampling date (ISO string or datetime object)</span>
 <span class="sd">            **kwargs: Additional query parameters</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Typed collection of groundwater chemistry analysis results</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">endpoint</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">BASE_PATH</span><span class="si">}</span><span class="s2">/analysresultat/items&quot;</span>
-        <span class="n">params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_query_params</span><span class="p">(</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_results</span><span class="o">.</span><span class="n">query</span><span class="p">(</span>
             <span class="n">bbox</span><span class="o">=</span><span class="n">bbox</span><span class="p">,</span>
             <span class="n">datetime</span><span class="o">=</span><span class="n">datetime</span><span class="p">,</span>
             <span class="n">limit</span><span class="o">=</span><span class="n">limit</span><span class="p">,</span>
-            <span class="nb">filter</span><span class="o">=</span><span class="n">filter_expr</span><span class="p">,</span>
+            <span class="n">filter_expr</span><span class="o">=</span><span class="n">filter_expr</span><span class="p">,</span>
             <span class="n">sortby</span><span class="o">=</span><span class="n">sortby</span><span class="p">,</span>
+            <span class="n">tmin</span><span class="o">=</span><span class="n">tmin</span><span class="p">,</span>
+            <span class="n">tmax</span><span class="o">=</span><span class="n">tmax</span><span class="p">,</span>
             <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
-        <span class="p">)</span>
-        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_request</span><span class="p">(</span><span class="n">endpoint</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">AnalysisResultCollection</span><span class="p">(</span><span class="o">**</span><span class="n">response</span><span class="p">)</span></div>
+        <span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="GroundwaterChemistryClient.get_analysis_result">
@@ -651,17 +653,7 @@
 <span class="sd">        Raises:</span>
 <span class="sd">            ValueError: If result not found or multiple results returned</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">endpoint</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">BASE_PATH</span><span class="si">}</span><span class="s2">/analysresultat/items/</span><span class="si">{</span><span class="n">result_id</span><span class="si">}</span><span class="s2">&quot;</span>
-        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_request</span><span class="p">(</span><span class="n">endpoint</span><span class="p">,</span> <span class="p">{})</span>
-
-        <span class="c1"># SGU API returns a FeatureCollection even for single items</span>
-        <span class="n">collection</span> <span class="o">=</span> <span class="n">AnalysisResultCollection</span><span class="p">(</span><span class="o">**</span><span class="n">response</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">collection</span><span class="o">.</span><span class="n">features</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Result </span><span class="si">{</span><span class="n">result_id</span><span class="si">}</span><span class="s2"> not found&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">collection</span><span class="o">.</span><span class="n">features</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Multiple results returned for ID </span><span class="si">{</span><span class="n">result_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">collection</span><span class="o">.</span><span class="n">features</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_results</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">result_id</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="GroundwaterChemistryClient.get_results_by_site">
@@ -719,8 +711,8 @@
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">national_site_ids</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Multiple sites found for </span><span class="si">{</span><span class="n">site_id</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="n">site_name</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_results_for_filters</span><span class="p">(</span>
-            <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_build_site_filter</span><span class="p">(</span><span class="s2">&quot;national_site_id&quot;</span><span class="p">,</span> <span class="n">national_site_ids</span><span class="p">)],</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_results</span><span class="o">.</span><span class="n">query</span><span class="p">(</span>
+            <span class="n">where</span><span class="o">=</span><span class="n">_site_where</span><span class="p">(</span><span class="s2">&quot;national_site_id&quot;</span><span class="p">,</span> <span class="n">national_site_ids</span><span class="p">),</span>
             <span class="n">tmin</span><span class="o">=</span><span class="n">tmin</span><span class="p">,</span>
             <span class="n">tmax</span><span class="o">=</span><span class="n">tmax</span><span class="p">,</span>
             <span class="n">limit</span><span class="o">=</span><span class="n">limit</span><span class="p">,</span>
@@ -780,8 +772,8 @@
             <span class="n">national_site_id</span><span class="p">,</span> <span class="n">site_id</span><span class="p">,</span> <span class="n">site_name</span>
         <span class="p">)</span>
 
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_results_for_filters</span><span class="p">(</span>
-            <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_build_site_filter</span><span class="p">(</span><span class="s2">&quot;national_site_id&quot;</span><span class="p">,</span> <span class="n">national_site_ids</span><span class="p">)],</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_results</span><span class="o">.</span><span class="n">query</span><span class="p">(</span>
+            <span class="n">where</span><span class="o">=</span><span class="n">_site_where</span><span class="p">(</span><span class="s2">&quot;national_site_id&quot;</span><span class="p">,</span> <span class="n">national_site_ids</span><span class="p">),</span>
             <span class="n">tmin</span><span class="o">=</span><span class="n">tmin</span><span class="p">,</span>
             <span class="n">tmax</span><span class="o">=</span><span class="n">tmax</span><span class="p">,</span>
             <span class="n">limit</span><span class="o">=</span><span class="n">limit</span><span class="p">,</span>
@@ -850,18 +842,16 @@
 <span class="sd">            ...         national_site_id=[359366, 378865]</span>
 <span class="sd">            ...     )</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">filters</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;parameternamn=&#39;</span><span class="si">{</span><span class="n">parameter</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">]</span>
+        <span class="n">where</span><span class="p">:</span> <span class="n">Where</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;parameternamn&quot;</span><span class="p">:</span> <span class="n">parameter</span><span class="p">}</span>
 
         <span class="k">if</span> <span class="n">national_site_id</span> <span class="ow">or</span> <span class="n">site_id</span> <span class="ow">or</span> <span class="n">site_name</span><span class="p">:</span>
             <span class="n">national_site_ids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_national_site_ids</span><span class="p">(</span>
                 <span class="n">national_site_id</span><span class="p">,</span> <span class="n">site_id</span><span class="p">,</span> <span class="n">site_name</span>
             <span class="p">)</span>
-            <span class="n">filters</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_build_site_filter</span><span class="p">(</span><span class="s2">&quot;national_site_id&quot;</span><span class="p">,</span> <span class="n">national_site_ids</span><span class="p">)</span>
-            <span class="p">)</span>
+            <span class="n">where</span> <span class="o">|=</span> <span class="n">_site_where</span><span class="p">(</span><span class="s2">&quot;national_site_id&quot;</span><span class="p">,</span> <span class="n">national_site_ids</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_results_for_filters</span><span class="p">(</span>
-            <span class="n">filters</span><span class="p">,</span> <span class="n">tmin</span><span class="o">=</span><span class="n">tmin</span><span class="p">,</span> <span class="n">tmax</span><span class="o">=</span><span class="n">tmax</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="n">limit</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_results</span><span class="o">.</span><span class="n">query</span><span class="p">(</span>
+            <span class="n">where</span><span class="o">=</span><span class="n">where</span><span class="p">,</span> <span class="n">tmin</span><span class="o">=</span><span class="n">tmin</span><span class="p">,</span> <span class="n">tmax</span><span class="o">=</span><span class="n">tmax</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="n">limit</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
         <span class="p">)</span></div>
 
 
@@ -941,9 +931,7 @@
 <span class="sd">        Raises:</span>
 <span class="sd">            ValueError: If any of the requested sites is not found</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">sites</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_sampling_sites</span><span class="p">(</span>
-            <span class="n">filter_expr</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_build_site_filter</span><span class="p">(</span><span class="n">identifier</span><span class="p">,</span> <span class="n">values</span><span class="p">),</span> <span class="o">**</span><span class="n">kwargs</span>
-        <span class="p">)</span>
+        <span class="n">sites</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sites</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">where</span><span class="o">=</span><span class="n">_site_where</span><span class="p">(</span><span class="n">identifier</span><span class="p">,</span> <span class="n">values</span><span class="p">),</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
         <span class="n">_</span><span class="p">,</span> <span class="n">attribute</span> <span class="o">=</span> <span class="n">SITE_IDENTIFIERS</span><span class="p">[</span><span class="n">identifier</span><span class="p">]</span>
         <span class="n">found</span> <span class="o">=</span> <span class="p">{</span><span class="nb">getattr</span><span class="p">(</span><span class="n">site</span><span class="o">.</span><span class="n">properties</span><span class="p">,</span> <span class="n">attribute</span><span class="p">)</span> <span class="k">for</span> <span class="n">site</span> <span class="ow">in</span> <span class="n">sites</span><span class="o">.</span><span class="n">features</span><span class="p">}</span>
@@ -951,104 +939,7 @@
         <span class="k">if</span> <span class="n">missing</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No sampling sites found for </span><span class="si">{</span><span class="n">identifier</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">missing</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">sites</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">_build_site_filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">identifier</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">values</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Build a CQL filter matching any of the given site identifier values.&quot;&quot;&quot;</span>
-        <span class="n">field</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">SITE_IDENTIFIERS</span><span class="p">[</span><span class="n">identifier</span><span class="p">]</span>
-        <span class="n">literals</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">&#39;&quot;</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">values</span>
-        <span class="p">]</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">literals</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">field</span><span class="si">}</span><span class="s2">=</span><span class="si">{</span><span class="n">literals</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">field</span><span class="si">}</span><span class="s2"> in (</span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">literals</span><span class="p">)</span><span class="si">}</span><span class="s2">)&quot;</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">_get_results_for_filters</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">filters</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
-        <span class="n">tmin</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">datetime</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">tmax</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">datetime</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AnalysisResultCollection</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get analysis results matching all filters and the optional time range.&quot;&quot;&quot;</span>
-        <span class="n">filters</span> <span class="o">=</span> <span class="p">[</span><span class="o">*</span><span class="n">filters</span><span class="p">,</span> <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_build_datetime_filters</span><span class="p">(</span><span class="n">tmin</span><span class="p">,</span> <span class="n">tmax</span><span class="p">)]</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_analysis_results</span><span class="p">(</span>
-            <span class="n">filter_expr</span><span class="o">=</span><span class="s2">&quot; AND &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">filters</span><span class="p">),</span> <span class="n">limit</span><span class="o">=</span><span class="n">limit</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
-        <span class="p">)</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">_build_query_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Build query parameters for API requests.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            **params: Raw parameter values</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            Cleaned dictionary of query parameters</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">query_params</span> <span class="o">=</span> <span class="p">{}</span>
-
-        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">params</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">continue</span>
-
-            <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;bbox&quot;</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
-                <span class="n">query_params</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">))</span>
-            <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;sortby&quot;</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
-                <span class="n">query_params</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">query_params</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
-
-        <span class="k">return</span> <span class="n">query_params</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">_build_datetime_filters</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">tmin</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">datetime</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">tmax</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">datetime</span> <span class="o">|</span> <span class="kc">None</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Build CQL datetime filter expressions from tmin/tmax parameters.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            tmin: Start time (ISO string or datetime object)</span>
-<span class="sd">            tmax: End time (ISO string or datetime object)</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            List of CQL filter expressions for datetime constraints</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">filters</span> <span class="o">=</span> <span class="p">[]</span>
-
-        <span class="c1"># Convert datetime objects to ISO strings</span>
-        <span class="k">def</span><span class="w"> </span><span class="nf">to_iso_string</span><span class="p">(</span><span class="n">dt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">datetime</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">dt</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">return</span> <span class="kc">None</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dt</span><span class="p">,</span> <span class="n">datetime</span><span class="p">):</span>
-                <span class="k">return</span> <span class="n">dt</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span>
-            <span class="k">return</span> <span class="n">dt</span>
-
-        <span class="k">if</span> <span class="n">tmin</span><span class="p">:</span>
-            <span class="n">tmin_str</span> <span class="o">=</span> <span class="n">to_iso_string</span><span class="p">(</span><span class="n">tmin</span><span class="p">)</span>
-            <span class="n">filters</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;provtagningsdatum &gt;= &#39;</span><span class="si">{</span><span class="n">tmin_str</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">tmax</span><span class="p">:</span>
-            <span class="n">tmax_str</span> <span class="o">=</span> <span class="n">to_iso_string</span><span class="p">(</span><span class="n">tmax</span><span class="p">)</span>
-            <span class="n">filters</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;provtagningsdatum &lt;= &#39;</span><span class="si">{</span><span class="n">tmax_str</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">filters</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">_make_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">endpoint</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Make HTTP request to SGU API.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            endpoint: API endpoint path</span>
-<span class="sd">            params: Query parameters</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            JSON response data</span>
-
-<span class="sd">        Raises:</span>
-<span class="sd">            Various HTTP and API exceptions via base client</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
-            <span class="n">endpoint</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">,</span> <span class="n">base_url</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">CHEMISTRY_BASE_URL</span>
-        <span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">sites</span></div>
 
 </pre></div>
 

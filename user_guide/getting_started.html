@@ -43,7 +43,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../_static/documentation_options.js?v=8fa8b3e9"></script>
+    <script src="../_static/documentation_options.js?v=fe7df9b0"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -508,8 +508,10 @@ ISO 8601 strings.</p>
     <span class="o">...</span>  <span class="c1"># any other client error</span>
 </pre></div>
 </div>
-<p>Convenience lookups such as <code class="docutils literal notranslate"><span class="pre">get_station_by_name()</span></code> raise <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> when the
-arguments are invalid or the lookup is ambiguous.</p>
+<p>Convenience lookups such as <code class="docutils literal notranslate"><span class="pre">get_station_by_name()</span></code> raise
+<a class="reference internal" href="../api/config.html#sgu_client.SGUNotFoundError" title="sgu_client.SGUNotFoundError"><code class="xref py py-class docutils literal notranslate"><span class="pre">SGUNotFoundError</span></code></a> when nothing matches and
+<a class="reference internal" href="../api/config.html#sgu_client.SGUAmbiguousError" title="sgu_client.SGUAmbiguousError"><code class="xref py py-class docutils literal notranslate"><span class="pre">SGUAmbiguousError</span></code></a> when more than one feature matches. Both are
+also <code class="docutils literal notranslate"><span class="pre">ValueError</span></code>s, as are the errors for invalid arguments.</p>
 </section>
 </section>
 
