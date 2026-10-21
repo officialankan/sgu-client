@@ -36,6 +36,7 @@ dev = [
     "myst-nb>=1.4.0",
     "sphinx-copybutton>=0.5.2",
     "ty>=0.0.89",
+    "pytest-socket>=0.8.1",
 ]
 
 [tool.ruff]
@@ -80,5 +81,6 @@ known-first-party = ["sgu_client"]
 error-on-warning = true
 
 [tool.pytest.ini_options]
-addopts = ""
+# Tests use a fake transport; only tests/test_actual_api.py may reach SGU
+addopts = "--disable-socket"
 testpaths = ["tests"]

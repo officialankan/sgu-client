@@ -8,6 +8,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 import requests
+from pytest_socket import SocketBlockedError
 
 from sgu_client import (
     RequestsTransport,
@@ -108,3 +109,10 @@ def test_close_closes_the_session(transport):
     with patch.object(transport._session, "close") as close:
         transport.close()
     close.assert_called_once()
+
+
+@pytest.mark.filterwarnings("ignore:A test tried to use socket")
+def test_tests_cannot_reach_the_network():
+    """pytest-socket blocks sockets in every test except tests/test_actual_api.py."""
+    with pytest.raises(SocketBlockedError):
+        RequestsTransport().fetch("https://api.sgu.se/oppnadata/", {})
