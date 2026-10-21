@@ -31,7 +31,7 @@ When ready to release accumulated changes from `dev`:
    - **Closes**: one `Closes #N` line for every issue the release ships. These close when the PR is merged
    - **Merge Danger**: every release is a one-way door, because a PyPI version can't be uploaded again (a mistake means a new patch release). Describe the blast radius for users who upgrade, e.g. code that breaks because of a breaking change
 
-3. **Commit the version bump directly to `dev`** as `chore: release vX.Y.Z`. It is the one change that goes into `dev` without a PR, so it needs an account allowed to bypass `dev`'s branch protection. The release PR picks it up and CI runs again. The bump changes:
+3. **Bump the version on `dev`** in a `chore: release vX.Y.Z` commit. Admins aren't held to `dev`'s branch protection, so they can commit the bump directly to `dev`. Otherwise, open a `release vX.Y.Z` issue, bump on a branch from it, and merge that into `dev` by PR. List the issue under **Closes** in the release PR. Either way, the release PR picks up the bump and CI runs again. The bump changes:
    - `version` in `pyproject.toml`
    - `__version__` in `src/sgu_client/__init__.py`
    - `release` in `docs/source/conf.py`
