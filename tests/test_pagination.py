@@ -2,8 +2,8 @@
 
 import pytest
 
-from sgu_client import SGUAPIError, SGUClient, TransportResponse
-from tests.fakes import FakeTransport, paged
+from sgu_client import SGUAPIError, TransportResponse
+from tests.fakes import paged
 from tests.mock_responses import create_mock_modeled_area_feature
 
 STATIONS = "collections/stationer/items"
@@ -24,16 +24,6 @@ def stations(start: int, count: int) -> list[dict]:
 
 def ids(collection) -> list[int]:
     return [station.properties.row_id for station in collection.features]
-
-
-@pytest.fixture
-def fake():
-    return FakeTransport()
-
-
-@pytest.fixture
-def client(fake):
-    return SGUClient(transport=fake)
 
 
 def test_no_pagination_needed(fake, client):

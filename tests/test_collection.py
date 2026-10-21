@@ -13,7 +13,6 @@ from sgu_client.models.observed import (
     GroundwaterStation,
     GroundwaterStationCollection,
 )
-from tests.fakes import FakeTransport
 from tests.mock_responses import (
     create_mock_empty_collection_response,
     create_mock_multiple_stations_response,
@@ -22,11 +21,6 @@ from tests.mock_responses import (
 
 ROOT = "https://example.test/oppnadata/"
 DATASET_URL = f"{ROOT}grundvattennivaer-observerade/ogc/features/v1/"
-
-
-@pytest.fixture
-def fake():
-    return FakeTransport()
 
 
 @pytest.fixture
