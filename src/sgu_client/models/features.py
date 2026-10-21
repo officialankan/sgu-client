@@ -1,5 +1,6 @@
 """GeoJSON features and feature collections, and their conversion to pandas."""
 
+import builtins
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Any, ClassVar, Generic, Literal, TypeVar, get_args
 
@@ -90,8 +91,9 @@ class FeatureCollection(SGUResponse, Generic[F]):
     def _unknown_total_features(cls, value: Any) -> Any:
         return None if value == "unknown" else value
 
+    # builtins.type: the `type` field above shadows the builtin in this class body
     @classmethod
-    def _properties_model(cls) -> type[SGUBaseModel]:
+    def _properties_model(cls) -> builtins.type[SGUBaseModel]:
         (feature,) = get_args(cls.model_fields["features"].annotation)
         return feature.model_fields["properties"].annotation
 
