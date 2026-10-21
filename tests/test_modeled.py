@@ -1,8 +1,7 @@
-"""Tests for modeled groundwater levels endpoints using mocked API responses.
+"""Tests for the modeled groundwater levels client, served canned responses by a fake transport.
 
-These tests use mocked HTTP responses to ensure fast, reliable testing without
-depending on external API availability. For integration tests that verify the
-real API still works, see test_actual_api.py.
+They never touch the network. For canary tests that check the real SGU API still
+works, see test_actual_api.py.
 """
 
 from datetime import UTC, datetime
@@ -42,7 +41,7 @@ def test_create_basic_client() -> None:
 
 
 def test_get_areas(fake, client) -> None:
-    """Test getting modeled areas with mocked response."""
+    """Test getting modeled areas."""
     mock_response_data = create_mock_multiple_modeled_areas_response(
         area_ids=[30125, 30126], limit=10
     )
@@ -56,7 +55,7 @@ def test_get_areas(fake, client) -> None:
 
 
 def test_get_area_by_id(fake, client) -> None:
-    """Test getting a specific area by ID with mocked response."""
+    """Test getting a specific area by ID."""
     mock_response_data = create_mock_single_modeled_area_response(
         area_id=TEST_AREA_ID, omrade_id=TEST_AREA_OMRADE_ID
     )
@@ -81,7 +80,7 @@ def test_get_area_not_found(fake, client) -> None:
 
 
 def test_get_levels(fake, client) -> None:
-    """Test getting modeled levels with mocked response."""
+    """Test getting modeled levels."""
     mock_response_data = create_mock_multiple_modeled_levels_response(
         omrade_id=TEST_LEVEL_OMRADE_ID, count=5
     )
@@ -95,7 +94,7 @@ def test_get_levels(fake, client) -> None:
 
 
 def test_get_level_by_id(fake, client) -> None:
-    """Test getting a specific level by ID with mocked response."""
+    """Test getting a specific level by ID."""
     mock_response_data = create_mock_single_modeled_level_response(
         level_id=TEST_LEVEL_ID,
         omrade_id=TEST_LEVEL_OMRADE_ID,
@@ -123,7 +122,7 @@ def test_get_level_not_found(fake, client) -> None:
 
 
 def test_areas_with_bbox(fake, client) -> None:
-    """Test getting areas with bbox filter using mocked response."""
+    """Test getting areas with bbox filter."""
     mock_response_data = create_mock_multiple_modeled_areas_response(
         area_ids=[30125, 30126], limit=5
     )
@@ -138,7 +137,7 @@ def test_areas_with_bbox(fake, client) -> None:
 
 
 def test_levels_basic_query(fake, client) -> None:
-    """Test basic levels query with mocked response."""
+    """Test basic levels query."""
     mock_response_data = create_mock_multiple_modeled_levels_response(
         omrade_id=TEST_LEVEL_OMRADE_ID, count=5
     )
@@ -157,7 +156,7 @@ def test_levels_basic_query(fake, client) -> None:
 
 
 def test_levels_with_filter_expr(fake, client) -> None:
-    """Test levels query with filter expression using mocked response."""
+    """Test levels query with filter expression."""
     mock_response_data = create_mock_multiple_modeled_levels_response(
         omrade_id=TEST_LEVEL_OMRADE_ID, count=3
     )
@@ -177,7 +176,7 @@ def test_levels_with_filter_expr(fake, client) -> None:
 
 
 def test_levels_with_sortby(fake, client) -> None:
-    """Test levels query with sorting using mocked response."""
+    """Test levels query with sorting."""
     # Create levels with descending dates
     mock_response_data = create_mock_multiple_modeled_levels_response(
         omrade_id=TEST_LEVEL_OMRADE_ID, count=3
@@ -201,7 +200,7 @@ def test_levels_with_sortby(fake, client) -> None:
 
 
 def test_areas_to_dataframe(fake, client) -> None:
-    """Test converting areas to DataFrame with mocked response."""
+    """Test converting areas to DataFrame."""
     mock_response_data = create_mock_multiple_modeled_areas_response(
         area_ids=[TEST_AREA_OMRADE_ID, 30126], limit=5
     )
@@ -222,7 +221,7 @@ def test_areas_to_dataframe(fake, client) -> None:
 
 
 def test_levels_to_dataframe(fake, client) -> None:
-    """Test converting levels to DataFrame with mocked response."""
+    """Test converting levels to DataFrame."""
     mock_response_data = create_mock_multiple_modeled_levels_response(
         omrade_id=TEST_LEVEL_OMRADE_ID, count=5
     )
@@ -247,7 +246,7 @@ def test_levels_to_dataframe(fake, client) -> None:
 
 
 def test_levels_to_series(fake, client) -> None:
-    """Test converting levels to Series with mocked response."""
+    """Test converting levels to Series."""
     mock_response_data = create_mock_multiple_modeled_levels_response(
         omrade_id=TEST_LEVEL_OMRADE_ID, count=5
     )
@@ -262,7 +261,7 @@ def test_levels_to_series(fake, client) -> None:
 
 
 def test_levels_to_series_custom_index_data(fake, client) -> None:
-    """Test converting levels to Series with custom index/data columns using mocked response."""
+    """Test converting levels to Series with custom index/data columns."""
     mock_response_data = create_mock_multiple_modeled_levels_response(
         omrade_id=TEST_LEVEL_OMRADE_ID, count=5
     )
@@ -283,7 +282,7 @@ def test_levels_to_series_custom_index_data(fake, client) -> None:
 
 
 def test_levels_to_dataframe_no_sort(fake, client) -> None:
-    """Test converting levels to DataFrame without sorting using mocked response."""
+    """Test converting levels to DataFrame without sorting."""
     mock_response_data = create_mock_multiple_modeled_levels_response(
         omrade_id=TEST_LEVEL_OMRADE_ID, count=5
     )
@@ -297,7 +296,7 @@ def test_levels_to_dataframe_no_sort(fake, client) -> None:
 
 
 def test_date_property_parsing(fake, client) -> None:
-    """Test date property parsing with mocked response."""
+    """Test date property parsing."""
     mock_response_data = create_mock_single_modeled_level_response(
         level_id=TEST_LEVEL_ID,
         omrade_id=TEST_LEVEL_OMRADE_ID,
@@ -311,7 +310,7 @@ def test_date_property_parsing(fake, client) -> None:
 
 
 def test_percentile_validation(fake, client) -> None:
-    """Test percentile value validation with mocked response."""
+    """Test percentile value validation."""
     mock_response_data = create_mock_multiple_modeled_levels_response(
         omrade_id=TEST_LEVEL_OMRADE_ID, count=5
     )
@@ -334,7 +333,7 @@ def test_percentile_validation(fake, client) -> None:
 
 
 def test_get_levels_by_area(fake, client) -> None:
-    """Test getting levels by area ID with mocked response."""
+    """Test getting levels by area ID."""
     mock_response_data = create_mock_multiple_modeled_levels_response(
         omrade_id=TEST_LEVEL_OMRADE_ID, count=5
     )
@@ -351,7 +350,7 @@ def test_get_levels_by_area(fake, client) -> None:
 
 
 def test_get_levels_by_area_to_dataframe(fake, client) -> None:
-    """Test converting levels by area to DataFrame with mocked response."""
+    """Test converting levels by area to DataFrame."""
     mock_response_data = create_mock_multiple_modeled_levels_response(
         omrade_id=TEST_LEVEL_OMRADE_ID, count=5
     )
@@ -373,7 +372,7 @@ def test_get_levels_by_area_to_dataframe(fake, client) -> None:
 
 
 def test_get_levels_by_area_with_limit(fake, client) -> None:
-    """Test getting levels by area with limit using mocked response."""
+    """Test getting levels by area with limit."""
     mock_response_data = create_mock_multiple_modeled_levels_response(
         omrade_id=TEST_LEVEL_OMRADE_ID, count=3
     )
@@ -390,7 +389,7 @@ def test_get_levels_by_area_with_limit(fake, client) -> None:
 
 
 def test_get_levels_by_areas(fake, client) -> None:
-    """Test getting levels by multiple area IDs with mocked response."""
+    """Test getting levels by multiple area IDs."""
     area_ids = [TEST_LEVEL_OMRADE_ID, 30126]
     # Create levels for both areas
     levels_30125 = create_mock_multiple_modeled_levels_response(
@@ -421,7 +420,7 @@ def test_get_levels_by_areas(fake, client) -> None:
 
 
 def test_get_levels_by_areas_single_area(fake, client) -> None:
-    """Test getting levels by single area ID in list with mocked response."""
+    """Test getting levels by single area ID in list."""
     mock_response_data = create_mock_multiple_modeled_levels_response(
         omrade_id=TEST_LEVEL_OMRADE_ID, count=5
     )
@@ -447,7 +446,7 @@ def test_get_levels_by_areas_empty_list() -> None:
 
 
 def test_get_levels_by_areas_to_dataframe(fake, client) -> None:
-    """Test converting levels by multiple areas to DataFrame with mocked response."""
+    """Test converting levels by multiple areas to DataFrame."""
     area_ids = [TEST_LEVEL_OMRADE_ID, 30126]
     # Create combined response
     levels_30125 = create_mock_multiple_modeled_levels_response(
@@ -487,7 +486,7 @@ def test_get_levels_by_areas_to_dataframe(fake, client) -> None:
 
 
 def test_get_levels_by_areas_with_limit(fake, client) -> None:
-    """Test getting levels by multiple areas with limit using mocked response."""
+    """Test getting levels by multiple areas with limit."""
     area_ids = [TEST_LEVEL_OMRADE_ID, 30126]
     mock_response_data = create_mock_multiple_modeled_levels_response(
         omrade_id=TEST_LEVEL_OMRADE_ID, count=3
@@ -505,7 +504,7 @@ def test_get_levels_by_areas_with_limit(fake, client) -> None:
 
 
 def test_get_levels_by_areas_mixed_existing_nonexistent(fake, client) -> None:
-    """Test mixed existing/non-existent area IDs with mocked response."""
+    """Test mixed existing/non-existent area IDs."""
     mock_response_data = create_mock_multiple_modeled_levels_response(
         omrade_id=TEST_LEVEL_OMRADE_ID, count=5
     )
@@ -523,7 +522,7 @@ def test_get_levels_by_areas_mixed_existing_nonexistent(fake, client) -> None:
 
 
 def test_get_levels_by_coords_single_area(fake, client) -> None:
-    """Test get_levels_by_coords with coordinates that find a single area using mocked response."""
+    """Test get_levels_by_coords with coordinates that find a single area."""
     mock_response_data = create_mock_multiple_modeled_levels_response(
         omrade_id=TEST_LEVEL_OMRADE_ID, count=5
     )
@@ -544,7 +543,7 @@ def test_get_levels_by_coords_single_area(fake, client) -> None:
 
 
 def test_get_levels_by_coords_boundary_warning(fake, client, caplog) -> None:
-    """Test get_levels_by_coords with coordinates near boundary (multiple areas) using mocked response."""
+    """Test get_levels_by_coords with coordinates near boundary (multiple areas)."""
     import logging
 
     # Set up logging to capture warnings
@@ -604,7 +603,7 @@ def test_get_levels_by_coords_boundary_warning(fake, client, caplog) -> None:
 
 
 def test_get_levels_by_coords_outside_sweden(fake, client) -> None:
-    """Test get_levels_by_coords with coordinates outside Sweden using mocked response."""
+    """Test get_levels_by_coords with coordinates outside Sweden."""
     mock_response_data = create_mock_empty_modeled_collection_response()
     fake.add("", mock_response_data)
 
@@ -616,7 +615,7 @@ def test_get_levels_by_coords_outside_sweden(fake, client) -> None:
 
 
 def test_get_levels_by_coords_with_datetime(fake, client) -> None:
-    """Test get_levels_by_coords with datetime filtering using mocked response."""
+    """Test get_levels_by_coords with datetime filtering."""
     from datetime import UTC, datetime
 
     # Create 2023 data

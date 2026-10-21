@@ -1,4 +1,4 @@
-"""Tests for chemistry module with mocked API responses (SGU v2 API)."""
+"""Tests for the chemistry client (SGU v2 API), served canned responses by a fake transport."""
 
 from datetime import UTC, datetime
 

@@ -1,8 +1,7 @@
-"""Tests for observed groundwater levels endpoints using mocked API responses.
+"""Tests for the observed groundwater levels client, served canned responses by a fake transport.
 
-These tests use mocked HTTP responses to ensure fast, reliable testing without
-depending on external API availability. For integration tests that verify the
-real API still works, see test_actual_api.py.
+They never touch the network. For canary tests that check the real SGU API still
+works, see test_actual_api.py.
 """
 
 from datetime import UTC, datetime
@@ -46,7 +45,7 @@ def test_create_basic_client() -> None:
 
 
 def test_get_lagga_station_by_id(fake, client) -> None:
-    """Test getting a specific station by ID with mocked response."""
+    """Test getting a specific station by ID."""
     mock_response_data = create_mock_single_station_response(
         station_id=TEST_STATION_ID,
         platsbeteckning=TEST_STATION_PLATSBETECKNING,
@@ -64,7 +63,7 @@ def test_get_lagga_station_by_id(fake, client) -> None:
 
 
 def test_get_measurement_by_id(fake, client) -> None:
-    """Test getting a specific measurement by ID with mocked response."""
+    """Test getting a specific measurement by ID."""
     mock_response_data = create_mock_single_measurement_response(
         measurement_id=TEST_MEASUREMENT_ID,
         platsbeteckning=TEST_STATION_PLATSBETECKNING,
@@ -81,7 +80,7 @@ def test_get_measurement_by_id(fake, client) -> None:
 
 
 def test_stations_to_dataframe(fake, client) -> None:
-    """Test converting stations collection to DataFrame with mocked response."""
+    """Test converting stations collection to DataFrame."""
     mock_response_data = create_mock_multiple_stations_response(
         platsbeteckningar=["95_2", "101_1"], limit=10
     )
@@ -99,7 +98,7 @@ def test_stations_to_dataframe(fake, client) -> None:
 
 
 def test_station_by_name_station_id(fake, client) -> None:
-    """Test getting station by station_id with mocked response."""
+    """Test getting station by station_id."""
     mock_response_data = create_mock_multiple_stations_response(
         platsbeteckningar=[TEST_STATION_PLATSBETECKNING], limit=1
     )
@@ -114,7 +113,7 @@ def test_station_by_name_station_id(fake, client) -> None:
 
 
 def test_station_by_name_station_name(fake, client) -> None:
-    """Test getting station by station_name with mocked response."""
+    """Test getting station by station_name."""
     mock_response_data = create_mock_multiple_stations_response(
         platsbeteckningar=[TEST_STATION_PLATSBETECKNING], limit=1
     )
@@ -156,7 +155,7 @@ def test_station_by_name_both_args() -> None:
 
 
 def test_get_stations_by_names_station_id(fake, client) -> None:
-    """Test getting multiple stations by station_id with mocked response."""
+    """Test getting multiple stations by station_id."""
     mock_response_data = create_mock_multiple_stations_response(
         platsbeteckningar=["95_2", "101_1"], limit=10
     )
@@ -173,7 +172,7 @@ def test_get_stations_by_names_station_id(fake, client) -> None:
 
 
 def test_get_stations_by_names_station_name(fake, client) -> None:
-    """Test getting multiple stations by station_name with mocked response."""
+    """Test getting multiple stations by station_name."""
     mock_response_data = create_mock_multiple_stations_response(
         platsbeteckningar=[TEST_STATION_PLATSBETECKNING], limit=5
     )
@@ -193,7 +192,7 @@ def test_get_stations_by_names_station_name(fake, client) -> None:
 
 
 def test_get_stations_by_names_single_station(fake, client) -> None:
-    """Test getting single station by platsbeteckning list with mocked response."""
+    """Test getting single station by platsbeteckning list."""
     mock_response_data = create_mock_multiple_stations_response(
         platsbeteckningar=[TEST_STATION_PLATSBETECKNING], limit=5
     )
@@ -246,7 +245,7 @@ def test_get_stations_by_names_empty_list() -> None:
 
 
 def test_get_stations_by_names_to_dataframe(fake, client) -> None:
-    """Test converting multiple stations to DataFrame with mocked response."""
+    """Test converting multiple stations to DataFrame."""
     mock_response_data = create_mock_multiple_stations_response(
         platsbeteckningar=["95_2", "101_1"], limit=10
     )
@@ -266,7 +265,7 @@ def test_get_stations_by_names_to_dataframe(fake, client) -> None:
 
 # Tests for get_measurements_by_name() function
 def test_get_measurements_by_name_station_id(fake, client) -> None:
-    """Test getting measurements by station_id with mocked response."""
+    """Test getting measurements by station_id."""
     mock_response_data = create_mock_multiple_measurements_response(
         platsbeteckning=TEST_STATION_PLATSBETECKNING, count=5
     )
@@ -284,7 +283,7 @@ def test_get_measurements_by_name_station_id(fake, client) -> None:
 
 
 def test_get_measurements_by_name_station_name(fake, client) -> None:
-    """Test getting measurements by station_name with mocked response."""
+    """Test getting measurements by station_name."""
     # station_name lookup resolves the station first, then fetches measurements
     fake.add(
         "",
@@ -306,7 +305,7 @@ def test_get_measurements_by_name_station_name(fake, client) -> None:
 
 
 def test_get_measurements_by_name_with_time_filter(fake, client) -> None:
-    """Test getting measurements with time filter using mocked response."""
+    """Test getting measurements with time filter."""
     tmin = datetime(2020, 1, 1, tzinfo=UTC)
     tmax = datetime(2021, 1, 1, tzinfo=UTC)
 
@@ -331,7 +330,7 @@ def test_get_measurements_by_name_with_time_filter(fake, client) -> None:
 
 
 def test_get_measurements_by_name_with_string_dates(fake, client) -> None:
-    """Test getting measurements with string date filters using mocked response."""
+    """Test getting measurements with string date filters."""
     mock_response_data = create_mock_multiple_measurements_response(
         platsbeteckning=TEST_STATION_PLATSBETECKNING,
         count=3,
@@ -372,7 +371,7 @@ def test_get_measurements_by_name_both_args(client) -> None:
 
 # Tests for get_measurements_by_names() function
 def test_get_measurements_by_names_station_id(fake, client) -> None:
-    """Test getting measurements for multiple stations with mocked response."""
+    """Test getting measurements for multiple stations."""
     # Create measurements for both stations
     measurements_95_2 = create_mock_multiple_measurements_response(
         platsbeteckning="95_2", count=3
@@ -405,7 +404,7 @@ def test_get_measurements_by_names_station_id(fake, client) -> None:
 
 
 def test_get_measurements_by_names_station_name(fake, client) -> None:
-    """Test getting measurements by station_name with mocked response."""
+    """Test getting measurements by station_name."""
     # station_name lookup resolves the stations first, then fetches measurements
     fake.add("stationer/items", create_mock_single_station_response())
     fake.add(
@@ -427,7 +426,7 @@ def test_get_measurements_by_names_station_name(fake, client) -> None:
 
 
 def test_get_measurements_by_names_with_time_filter(fake, client) -> None:
-    """Test getting measurements for multiple stations with time filter using mocked response."""
+    """Test getting measurements for multiple stations with time filter."""
     tmin = datetime(2020, 1, 1, tzinfo=UTC)
     tmax = datetime(2021, 1, 1, tzinfo=UTC)
 
@@ -470,7 +469,7 @@ def test_get_measurements_by_names_both_args() -> None:
 
 
 def test_measurements_to_dataframe(fake, client) -> None:
-    """Test converting measurements to DataFrame with mocked response."""
+    """Test converting measurements to DataFrame."""
     mock_response_data = create_mock_multiple_measurements_response(
         platsbeteckning=TEST_STATION_PLATSBETECKNING, count=5
     )
@@ -496,7 +495,7 @@ def test_measurements_to_dataframe(fake, client) -> None:
 
 
 def test_measurements_to_series(fake, client) -> None:
-    """Test converting measurements to pandas Series with mocked response."""
+    """Test converting measurements to pandas Series."""
     mock_response_data = create_mock_multiple_measurements_response(
         platsbeteckning=TEST_STATION_PLATSBETECKNING, count=5
     )
@@ -513,7 +512,7 @@ def test_measurements_to_series(fake, client) -> None:
 
 
 def test_measurements_to_series_custom_index_data(fake, client) -> None:
-    """Test converting measurements to Series with custom index/data columns using mocked response."""
+    """Test converting measurements to Series with custom index/data columns."""
     mock_response_data = create_mock_multiple_measurements_response(
         platsbeteckning=TEST_STATION_PLATSBETECKNING, count=5
     )
